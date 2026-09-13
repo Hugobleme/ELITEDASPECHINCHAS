@@ -41,9 +41,6 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
               <span className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white">
                 ELITEDAS<span className="text-orange-500">PECHINCHAS</span>
               </span>
-              <span className="hidden rounded-md bg-orange-100 px-1.5 py-0.5 text-[10px] font-black uppercase text-orange-600 sm:inline-block dark:bg-orange-950/60 dark:text-orange-400">
-                AO VIVO
-              </span>
             </div>
             <span className="hidden text-[10px] font-semibold text-slate-400 sm:block">
               As melhores promoções e cupons
