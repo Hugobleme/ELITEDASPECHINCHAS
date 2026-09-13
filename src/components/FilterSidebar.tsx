@@ -4,6 +4,7 @@ import React from 'react';
 import { SlidersHorizontal, X, RotateCcw, Store, Percent, Tag, Check } from 'lucide-react';
 import { useCategories, useStores } from '@/hooks/useTaxonomies';
 import StoreLogo from './StoreLogo';
+import CouponSection from './CouponSection';
 
 const CATEGORY_EMOJIS: Record<string, string> = {
   todas: '✨',
@@ -272,14 +273,19 @@ export default function FilterSidebar({
             })}
         </div>
       </div>
+
+      {/* 4. Campo de Cupons de Descontos */}
+      <div className="pt-3 border-t border-slate-200/80 dark:border-zinc-800">
+        <CouponSection />
+      </div>
     </div>
   );
 
   return (
     <>
-      {/* Desktop Sidebar (Sticky) */}
-      <aside className="hidden w-64 shrink-0 lg:block">
-        <div className="sticky top-24 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-card dark:border-zinc-800 dark:bg-[#121217]">
+      {/* Desktop Sidebar (Sticky com scroll suave) */}
+      <aside className="hidden w-72 shrink-0 lg:block">
+        <div className="sticky top-24 max-h-[calc(100vh-6.5rem)] overflow-y-auto no-scrollbar rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-card dark:border-zinc-800 dark:bg-[#121217]">
           {content}
         </div>
       </aside>

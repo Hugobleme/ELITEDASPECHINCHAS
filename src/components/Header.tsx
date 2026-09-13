@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Flame, Search, X, Heart, Bell } from 'lucide-react';
+import { Flame, Search, X, Heart, Bell, Ticket } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import CategoryChips from './CategoryChips';
 import { UserMenu } from './user/UserMenu';
@@ -79,6 +79,15 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
 
           {/* Right Actions */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            {/* Link direto de Cupons */}
+            <Link
+              href="/cupons"
+              title="Cupons de Desconto Verificados"
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 border border-slate-200/80 dark:border-zinc-800 transition-colors"
+            >
+              <Ticket className="w-3.5 h-3.5 text-red-500" />
+              <span>Cupons</span>
+            </Link>
             <Link
               href="/favoritos"
               title="Meus Favoritos"
