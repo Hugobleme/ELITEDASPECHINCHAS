@@ -73,22 +73,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           localStorage.setItem(USER_KEY, JSON.stringify(authUser));
           document.cookie = `admin_token=${authToken}; path=/; max-age=604800; SameSite=Lax`;
           return { success: true };
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          return {
+            success: false,
+            error: errData.detail || 'Usuário ou senha incorretos.',
+          };
         }
       } catch {
-        console.warn('[Auth] FastAPI offline. Validando credenciais via fallback.');
+        // Falha de rede com o backend
       }
     }
 
-    // 2. Fallback de Autenticação (Modo Demonstração / Dev)
-    const validUser = process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'admin';
-    const validPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
-
-    if ((username === validUser && password === validPass) || (username === 'admin' && password === 'admin123')) {
+    // Modo de demonstração estritamente quando explicitamente configurado fora de produção
+    const isMockExplicit = process.env.NEXT_PUBLIC_USE_MOCK === 'true' && process.env.NODE_ENV !== 'production';
+    if (isMockExplicit && username.trim() && password.trim()) {
       const demoToken = `demo_jwt_${Date.now()}`;
       const demoUser: AdminUser = {
         id: 'usr_admin_01',
-        name: 'Administrador Elite das Pechinchas',
-        email: 'admin@elitedaspechinchas.com.br',
+        name: username,
+        email: `${username}@elitedaspechinchas.com.br`,
         role: 'admin',
       };
 
@@ -102,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     return {
       success: false,
-      error: 'Credenciais inválidas. Use usuário "admin" e senha "admin123".',
+      error: 'Serviço de autenticação indisponível ou credenciais inválidas.',
     };
   };
 

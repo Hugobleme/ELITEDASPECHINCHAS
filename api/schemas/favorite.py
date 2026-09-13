@@ -15,6 +15,7 @@ class OfferSummary(BaseModel):
     category: str
     image_url: str
     affiliate_link: str
+    coupon_code: Optional[str] = None
     status: str
     published_at: Optional[datetime] = None
 

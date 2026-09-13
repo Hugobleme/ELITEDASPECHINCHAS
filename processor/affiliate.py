@@ -28,19 +28,27 @@ def extract_amazon_asin(url: str) -> Optional[str]:
     return None
 
 
-def get_affiliate_tag_for_store(store: str, db: Optional[Session] = None) -> str:
+def get_affiliate_tag_for_store(store: str, db: Optional[Session] = None) -> Optional[str]:
     """
-    Recupera a tag de afiliado no banco (AffiliateRule) ou usa fallback do config.py.
+    Recupera a tag de afiliado no banco (AffiliateRule) ou por variável de ambiente.
+    Retorna None se a tag não estiver configurada.
     """
+    if not store:
+        return None
+
     if db:
         try:
             rule = db.query(AffiliateRule).filter(AffiliateRule.store.ilike(store.strip())).first()
-            if rule and rule.affiliate_tag:
-                return rule.affiliate_tag
+            if rule and rule.affiliate_tag and rule.affiliate_tag.strip():
+                return rule.affiliate_tag.strip()
         except Exception as e:
             logger.warning(f"[Affiliate] Erro ao consultar regra no banco para loja {store}: {e}")
 
-    return DEFAULT_AFFILIATE_TAGS.get(store, "elitedaspechinchas-20")
+    tag = DEFAULT_AFFILIATE_TAGS.get(store)
+    if tag and str(tag).strip():
+        return str(tag).strip()
+
+    return None
 
 
 def replace_amazon_link(url: str, tag: str) -> str:
@@ -108,14 +116,22 @@ def generate_affiliate_link(
     db: Optional[Session] = None,
 ) -> str:
     """
-    Função principal para troca automática do link original pelo MEU link de afiliado.
-    Tolerante a variações e falhas; se a loja não tiver regra, retorna o original.
+    Função principal para troca automática do link original pelo link de afiliado oficial.
+    Se a tag de afiliado não estiver configurada, mantém o link original como fallback seguro
+    e emite aviso de integração pendente, sem inventar tags ou quebrar a navegação.
     """
     if not original_link or not original_link.startswith("http"):
-        return original_link
+        return original_link or ""
 
     try:
         tag = get_affiliate_tag_for_store(store, db)
+        if not tag:
+            logger.warning(
+                f"[Affiliate Pendente] Tag de afiliado para a loja '{store}' não configurada no ambiente. "
+                f"Mantendo link original como fallback seguro."
+            )
+            return original_link
+
         store_lower = store.lower()
 
         if "amazon" in store_lower:

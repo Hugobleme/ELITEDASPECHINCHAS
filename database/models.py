@@ -55,6 +55,7 @@ class Offer(Base):
     image_url = Column(Text, nullable=False)
     original_link = Column(Text, nullable=True)
     affiliate_link = Column(Text, nullable=False)
+    coupon_code = Column(String(64), nullable=True)
     telegram_msg_id = Column(Integer, nullable=True)
     source_name = Column(String(100), nullable=True)
     status = Column(String(50), default="pending")  # pending, approved, published, rejected

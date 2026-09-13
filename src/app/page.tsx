@@ -31,6 +31,9 @@ export default function HomePage() {
   const {
     data: allData,
     isLoading: isAllLoading,
+    isError: isAllError,
+    error: allError,
+    refetch: refetchAll,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -45,12 +48,25 @@ export default function HomePage() {
   const {
     data: feedData,
     isLoading: isFeedLoading,
+    isError: isFeedError,
+    error: feedError,
+    refetch: refetchFeed,
   } = usePersonalizedFeed(1, 24, isForYou);
 
   const generalOffers = allData?.pages.flatMap((page) => page.items) || [];
   const feedOffers = feedData?.items || [];
   const displayedOffers = isForYou ? feedOffers : generalOffers;
   const isLoading = isForYou ? isFeedLoading : isAllLoading;
+  const isError = isForYou ? isFeedError : isAllError;
+  const currentError = (isForYou ? feedError : allError) as Error | null;
+
+  const handleRetry = () => {
+    if (isForYou) {
+      refetchFeed();
+    } else {
+      refetchAll();
+    }
+  };
 
   const handleResetFilters = () => {
     setSelectedStore('');
@@ -183,6 +199,9 @@ export default function HomePage() {
           <OfferGrid
             offers={displayedOffers}
             isLoading={isLoading}
+            isError={isError}
+            error={currentError}
+            onRetry={handleRetry}
             isFetchingNextPage={!isForYou && isFetchingNextPage}
             hasNextPage={!isForYou && hasNextPage}
             onFetchNextPage={() => {

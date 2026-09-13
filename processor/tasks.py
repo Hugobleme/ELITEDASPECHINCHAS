@@ -79,6 +79,7 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
             image_url=parsed["image_url"],
             original_link=parsed["original_link"],
             affiliate_link=affiliate_link,
+            coupon_code=parsed.get("coupon_code"),
             telegram_msg_id=telegram_msg_id,
             source_name=source_name,
             status=initial_status,
@@ -98,8 +99,21 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
         # 5. Fluxo de Publicação Automática (se status='published')
         if initial_status == "published":
             logger.info(f"[Tasks] Disparando publicação automática para oferta {offer_id}")
-            publish_offer_to_channel.delay(offer_id)
-            match_and_notify.delay(offer_id)
+            try:
+                publish_offer_to_channel.delay(offer_id)
+            except Exception:
+                try:
+                    publish_offer_to_channel(offer_id)
+                except Exception as direct_pub_err:
+                    logger.warning(f"[Tasks] Fallback de publicação direta ignorado: {direct_pub_err}")
+
+            try:
+                match_and_notify.delay(offer_id)
+            except Exception:
+                try:
+                    match_and_notify(offer_id)
+                except Exception as direct_notif_err:
+                    logger.warning(f"[Tasks] Fallback de notificação direta ignorado: {direct_notif_err}")
 
         return {
             "status": "success",
@@ -107,6 +121,7 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
             "initial_status": initial_status,
             "title": new_offer.title,
             "affiliate_link": affiliate_link,
+            "coupon_code": new_offer.coupon_code,
         }
 
     except Exception as exc:
@@ -139,7 +154,7 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
             "discount_pct": offer.discount_pct,
             "store": offer.store,
             "affiliate_link": offer.affiliate_link,
-            "coupon_code": None,  # Pode ser extraído se persistido
+            "coupon_code": offer.coupon_code,
         }
 
         formatted_message = format_telegram_card_html(card_data)

@@ -36,11 +36,35 @@ def test_replace_magalu_link():
     assert "magazinevoce.com.br/elitedaspechinchas/celular-xyz/p/12345" in new_url
 
 
-def test_generate_affiliate_link_dispatcher():
+def test_generate_affiliate_link_with_env(monkeypatch):
+    """Quando a tag estiver configurada no ambiente, deve injetar a tag corretamente."""
+    monkeypatch.setenv("AMAZON_TAG", "minhatag-20")
+    # Atualiza o dicionário em config para refletir a variável mockada
+    import config
+    monkeypatch.setitem(config.DEFAULT_AFFILIATE_TAGS, "Amazon", "minhatag-20")
+
     amazon_link = "https://www.amazon.com.br/dp/B08N5WRWNW"
     result = generate_affiliate_link(amazon_link, "Amazon")
-    assert "tag=" in result
+    assert "tag=minhatag-20" in result
 
-    kabum_link = "https://www.kabum.com.br/produto/123"
-    result_kabum = generate_affiliate_link(kabum_link, "Kabum")
-    assert "tag=" in result_kabum
+
+def test_generate_affiliate_link_fallback_when_no_tag(monkeypatch):
+    """Quando a tag NÃO estiver configurada, deve manter o link original sem quebrar."""
+    import config
+    monkeypatch.setitem(config.DEFAULT_AFFILIATE_TAGS, "Kabum", "")
+
+    kabum_link = "https://www.kabum.com.br/produto/999888"
+    result = generate_affiliate_link(kabum_link, "Kabum")
+    assert result == kabum_link
+
+
+def test_generate_affiliate_link_from_db_rule(db_session):
+    """Deve priorizar a tag cadastrada no banco de dados se disponível."""
+    from database.models import AffiliateRule
+    rule = AffiliateRule(store="Shopee", tag_param="af_siteid", affiliate_tag="shopee_afiliado_oficial")
+    db_session.add(rule)
+    db_session.commit()
+
+    shopee_link = "https://shopee.com.br/product/123/456"
+    result = generate_affiliate_link(shopee_link, "Shopee", db=db_session)
+    assert "af_siteid=shopee_afiliado_oficial" in result

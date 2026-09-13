@@ -70,3 +70,39 @@ def test_parse_telegram_message_complete():
     assert result["category"] == "informatica"
     assert result["coupon_code"] == "DELL300"
     assert "amazon.com.br" in result["original_link"]
+
+
+def test_parse_message_without_url():
+    """Garante que mensagem sem URL não ganha link falso e retorna original_link None."""
+    text = "Super promoção de notebook por R$ 2.000,00 na Amazon mas esqueceram o link"
+    result = parse_telegram_message(text)
+    assert result["original_link"] is None
+
+
+def test_parse_message_without_title():
+    """Mensagem vazia deve retornar título vazio, sem inventar nome fictício."""
+    result = parse_telegram_message("")
+    assert result["title"] == ""
+
+
+def test_parse_message_without_price():
+    """Mensagem sem valor monetário deve indicar preço zerado."""
+    text = "Olha esse produto top no link https://www.amazon.com.br/dp/B123"
+    result = parse_telegram_message(text)
+    assert result["price_current"] == 0.0
+
+
+def test_parse_message_unrecognized_store():
+    """Mensagem sem loja cadastrada deve retornar store vazia."""
+    text = "Produto https://lojaestranhaqualquer.com.br/p/123 por R$ 99,00"
+    result = parse_telegram_message(text)
+    assert result["store"] == ""
+
+
+def test_parse_message_with_entities_links():
+    """Hyperlinks passados via entidades do Telegram devem ser priorizados e validados."""
+    text = "Clique aqui para ver a oferta por R$ 500,00"
+    entities = ["https://www.kabum.com.br/produto/1234"]
+    result = parse_telegram_message(text, entities_links=entities)
+    assert result["original_link"] == "https://www.kabum.com.br/produto/1234"
+    assert result["store"] == "Kabum"

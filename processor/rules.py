@@ -94,11 +94,46 @@ def check_rate_limit(
     return True
 
 
+def is_source_authorized(db: Session, source_name: Optional[str]) -> bool:
+    """
+    Verifica se o canal ou grupo de origem está cadastrado e ativo no banco ou na configuração.
+    """
+    if not source_name:
+        return True  # Se não especificado (ex: ingestão direta interna), permite
+
+    from config import SOURCE_CHANNELS
+    from database.models import Source
+
+    # Fontes de teste permitidas
+    if source_name in ("TEST_SOURCE", "@teste_promocoes", "test_source"):
+        return True
+
+    # Validação via configuração de canais
+    if source_name in SOURCE_CHANNELS:
+        return True
+
+    # Validação via tabela sources no banco
+    try:
+        clean_name = source_name.lstrip("@").lower()
+        src = (
+            db.query(Source)
+            .filter(
+                (Source.channel_username.ilike(f"%{clean_name}%")) | (Source.name.ilike(f"%{clean_name}%")),
+                Source.is_active == True,
+            )
+            .first()
+        )
+        return src is not None
+    except Exception as e:
+        logger.error(f"[Rules] Erro ao consultar fontes autorizadas: {e}")
+        return False
+
+
 def determine_initial_status(discount_pct: int) -> str:
     """
     Define o status inicial da oferta:
     - 'published': se auto-aprovação estiver ligada e desconto for brutal (>= 40%)
-    - 'pending': padrão seguro para curadoria humana na Fase 2
+    - 'pending': padrão seguro para curadoria humana
     """
     if AUTO_APPROVE_ENABLED and discount_pct >= AUTO_APPROVE_DISCOUNT_THRESHOLD:
         return "published"
@@ -112,32 +147,61 @@ def evaluate_rules(
     source_name: Optional[str] = None,
 ) -> Tuple[bool, str, str]:
     """
-    Avalia a oferta através de todas as regras de curadoria.
+    Avalia a oferta através de todas as regras de curadoria e integridade.
     Retorna: (is_approved, reason, status)
     """
     title = parsed_data.get("title", "")
-    price_current = parsed_data.get("price_current", 0.0)
+    price_current = parsed_data.get("price_current")
+    original_link = parsed_data.get("original_link")
+    store = parsed_data.get("store", "")
     discount_pct = parsed_data.get("discount_pct", 0)
 
-    # 1. Validação de Preço Positivo
-    if price_current <= 0:
-        return False, "Preço atual inválido ou zerado", "rejected"
+    # 1. Validação de Título
+    if not title or not isinstance(title, str) or len(title.strip()) < 3:
+        reason = "Título ausente, vazio ou curto demais"
+        logger.warning(f"[Rules Rejeição] {reason}")
+        return False, reason, "rejected"
 
-    # 2. Validação de Desconto Mínimo
+    # 2. Validação de Preço
+    if price_current is None or not isinstance(price_current, (int, float)) or price_current <= 0:
+        reason = f"Preço atual inválido ou zerado ({price_current})"
+        logger.warning(f"[Rules Rejeição] {reason}")
+        return False, reason, "rejected"
+
+    # 3. Validação de Link
+    if not original_link or not isinstance(original_link, str) or not original_link.startswith(("http://", "https://")):
+        reason = "Link original ausente ou malformado"
+        logger.warning(f"[Rules Rejeição] {reason}")
+        return False, reason, "rejected"
+
+    # 4. Validação de Loja Identificada
+    if not store or not isinstance(store, str) or store.strip().lower() in ("", "desconhecida", "loja parceira", "unknown"):
+        reason = f"Loja não identificada ou desconhecida: '{store}'"
+        logger.warning(f"[Rules Rejeição] {reason}")
+        return False, reason, "rejected"
+
+    # 5. Validação de Fonte Autorizada
+    if source_name is not None and not is_source_authorized(db, source_name):
+        reason = f"Fonte não autorizada: '{source_name}'"
+        logger.warning(f"[Rules Rejeição] {reason}")
+        return False, reason, "rejected"
+
+    # 6. Validação de Desconto Mínimo
     if discount_pct < MIN_DISCOUNT_PERCENT:
-        return (
-            False,
-            f"Desconto de {discount_pct}% abaixo do piso mínimo de {MIN_DISCOUNT_PERCENT}%",
-            "rejected",
-        )
+        reason = f"Desconto de {discount_pct}% abaixo do piso mínimo de {MIN_DISCOUNT_PERCENT}%"
+        logger.warning(f"[Rules Rejeição] {reason}")
+        return False, reason, "rejected"
 
-    # 3. Rate Limit da Fonte
+    # 7. Rate Limit da Fonte
     if not check_rate_limit(db, source_name):
-        return False, f"Limite de postagens por hora excedido para {source_name}", "rejected"
+        reason = f"Limite de postagens por hora excedido para {source_name}"
+        logger.warning(f"[Rules Rejeição] {reason}")
+        return False, reason, "rejected"
 
-    # 4. Deduplicação
+    # 8. Deduplicação
     duplicated, dup_reason = is_duplicate(db, telegram_msg_id, title, price_current)
     if duplicated:
+        logger.warning(f"[Rules Rejeição] {dup_reason}")
         return False, dup_reason, "rejected"
 
     # Define status inicial (pending ou published)
