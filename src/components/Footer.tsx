@@ -26,7 +26,7 @@ export default function Footer() {
                 <Flame className="h-5 w-5 fill-white stroke-white" />
               </div>
               <span className="text-lg font-black tracking-tight text-slate-900 dark:text-white">
-                PROMO<span className="text-orange-500">RADAR</span>
+                ELITEDAS<span className="text-orange-500">PECHINCHAS</span>
               </span>
             </div>
             <p className="max-w-md text-xs leading-relaxed text-slate-500 dark:text-slate-400">
@@ -110,7 +110,7 @@ export default function Footer() {
 
         {/* Rodapé inferior com copyright */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-200/80 pt-6 text-center text-xs text-slate-400 sm:flex-row dark:border-slate-800">
-          <p>© {new Date().getFullYear()} PromoRadar. Todos os direitos reservados.</p>
+          <p>© {new Date().getFullYear()} Elite das Pechinchas. Todos os direitos reservados.</p>
           <div className="flex items-center gap-1">
             <Sparkles className="h-3 w-3 text-amber-500" />
             <span>Os preços e estoques podem variar conforme a loja parceira.</span>

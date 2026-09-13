@@ -1,4 +1,4 @@
-// Service Worker para Notificações Web Push do PromoRadar
+// Service Worker para Notificações Web Push da Elite das Pechinchas
 
 self.addEventListener('push', function (event) {
   if (!event.data) {
@@ -15,7 +15,7 @@ self.addEventListener('push', function (event) {
     };
   }
 
-  const title = data.title || '🔥 Alerta de Oferta no PromoRadar';
+  const title = data.title || '🔥 Alerta de Oferta na Elite das Pechinchas';
   const options = {
     body: data.body || 'Confira um super desconto disponível agora!',
     icon: data.icon || '/icon-192x192.png',
@@ -47,7 +47,7 @@ self.addEventListener('notificationclick', function (event) {
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (clientList) {
-      // Se já houver uma aba aberta no PromoRadar, foca nela e navega
+      // Se já houver uma aba aberta na Elite das Pechinchas, foca nela e navega
       for (let i = 0; i < clientList.length; i++) {
         const client = clientList[i];
         if ('focus' in client) {

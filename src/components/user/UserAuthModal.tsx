@@ -112,10 +112,10 @@ export function UserAuthModal() {
           <div className="text-center mb-6">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 border border-brand-200 dark:border-brand-800 mb-2">
               <Sparkles className="w-3.5 h-3.5" />
-              PromoRadar VIP
+              Elite das Pechinchas VIP
             </span>
             <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-              {authModalTab === 'login' ? 'Bem-vindo de volta!' : 'Junte-se ao PromoRadar'}
+              {authModalTab === 'login' ? 'Bem-vindo de volta!' : 'Junte-se à Elite das Pechinchas'}
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Salve seus favoritos, crie alertas de preço imediatos e receba ofertas personalizadas.
@@ -222,7 +222,7 @@ export function UserAuthModal() {
                   Processando...
                 </>
               ) : authModalTab === 'login' ? (
-                'Entrar no PromoRadar'
+                'Entrar na Elite das Pechinchas'
               ) : (
                 'Criar Minha Conta Grátis'
               )}

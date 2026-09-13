@@ -1,4 +1,4 @@
-# ⚡ PromoRadar — Agregador de Promoções & Cupons
+# ⚡ Elite das Pechinchas — Agregador de Promoções & Cupons
 
 Um ecossistema completo para agregação, curadoria e recomendação de ofertas em tempo real inspirado no **Pechinchou** e **Promobit**.
 

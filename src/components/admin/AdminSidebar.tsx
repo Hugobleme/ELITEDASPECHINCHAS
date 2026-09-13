@@ -58,7 +58,7 @@ export default function AdminSidebar() {
           </div>
           <div>
             <span className="text-base font-black tracking-tight text-slate-900 dark:text-white">
-              PROMO<span className="text-orange-500">RADAR</span>
+              ELITEDAS<span className="text-orange-500">PECHINCHAS</span>
             </span>
             <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
               <ShieldCheck className="h-3 w-3" />

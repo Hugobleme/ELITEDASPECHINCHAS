@@ -4,7 +4,7 @@ import SearchResultsClient from './SearchResultsClient';
 import { Loader2 } from 'lucide-react';
 
 export const metadata: Metadata = {
-  title: 'Resultado da Busca — PromoRadar',
+  title: 'Resultado da Busca — Elite das Pechinchas',
   description: 'Confira as promoções e ofertas encontradas para sua pesquisa.',
 };
 

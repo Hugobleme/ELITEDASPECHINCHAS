@@ -13,16 +13,16 @@ import Footer from '@/components/Footer';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'PromoRadar — As Melhores Promoções e Cupons da Internet',
+  title: 'Elite das Pechinchas — As Melhores Promoções e Cupons da Internet',
   description:
     'Agregador de promoções com curadoria e links verificados. Encontre descontos imperdíveis em eletrônicos, celulares, games, eletrodomésticos e muito mais.',
-  keywords: ['promoções', 'ofertas', 'desconto', 'cupons', 'black friday', 'amazon', 'mercado livre', 'kabum', 'magalu'],
+  keywords: ['promoções', 'ofertas', 'desconto', 'cupons', 'black friday', 'amazon', 'mercado livre', 'kabum', 'magalu', 'pechinchas'],
   openGraph: {
-    title: 'PromoRadar — Promoções Verificadas em Tempo Real',
+    title: 'Elite das Pechinchas — Promoções Verificadas em Tempo Real',
     description: 'Ofertas com desconto real reunidas em um só lugar.',
     type: 'website',
     locale: 'pt_BR',
-    siteName: 'PromoRadar',
+    siteName: 'Elite das Pechinchas',
   },
 };
 

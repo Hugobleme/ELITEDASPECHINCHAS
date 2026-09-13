@@ -14,7 +14,7 @@ interface StorePageProps {
 export async function generateMetadata({ params }: StorePageProps): Promise<Metadata> {
   const storeName = formatSlugToName(params.slug);
   return {
-    title: `Promoções e Cupons na ${storeName} — PromoRadar`,
+    title: `Promoções e Cupons na ${storeName} — Elite das Pechinchas`,
     description: `Confira as melhores ofertas e cupons verificados para economizar em suas compras na ${storeName}.`,
   };
 }

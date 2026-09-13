@@ -14,8 +14,8 @@ interface CategoryPageProps {
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const categoryName = formatSlugToName(params.slug);
   return {
-    title: `Ofertas de ${categoryName} com Desconto — PromoRadar`,
-    description: `As melhores promoções e cupons de desconto para ${categoryName}. Economize nas principais lojas com o PromoRadar.`,
+    title: `Ofertas de ${categoryName} com Desconto — Elite das Pechinchas`,
+    description: `As melhores promoções e cupons de desconto para ${categoryName}. Economize nas principais lojas com a Elite das Pechinchas.`,
   };
 }
 

@@ -63,7 +63,7 @@ export function PushNotificationBanner() {
               Não perca nenhuma pechincha!
             </h4>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
-              Ative as notificações do PromoRadar e receba na hora quando surgir uma oferta relâmpago ou erro de preço.
+              Ative as notificações da Elite das Pechinchas e receba na hora quando surgir uma oferta relâmpago ou erro de preço.
             </p>
 
             <div className="mt-3 flex items-center gap-2">

@@ -38,8 +38,8 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-1.5">
-              <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-                PROMO<span className="text-orange-500">RADAR</span>
+              <span className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-white">
+                ELITEDAS<span className="text-orange-500">PECHINCHAS</span>
               </span>
               <span className="hidden rounded-md bg-orange-100 px-1.5 py-0.5 text-[10px] font-black uppercase text-orange-600 sm:inline-block dark:bg-orange-950/60 dark:text-orange-400">
                 AO VIVO

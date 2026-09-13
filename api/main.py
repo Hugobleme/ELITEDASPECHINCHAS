@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="PromoRadar API",
+    title="Elite das Pechinchas API",
     description="Backend FastAPI para agregação, curadoria, preferências, favoritos, alertas e Web Push.",
     version="3.0.0",
 )

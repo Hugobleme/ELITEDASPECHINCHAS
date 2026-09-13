@@ -33,14 +33,14 @@ export async function generateMetadata({ params }: OfferPageProps): Promise<Meta
 
   if (!offer) {
     return {
-      title: 'Oferta não encontrada — PromoRadar',
+      title: 'Oferta não encontrada — Elite das Pechinchas',
       description: 'A oferta solicitada não está disponível ou já expirou.',
     };
   }
 
   const discountText = offer.discount_pct > 0 ? `[${offer.discount_pct}% OFF] ` : '';
-  const title = `${discountText}${offer.title} por ${formatBRL(offer.price_current)} na ${offer.store} — PromoRadar`;
-  const description = `Compre ${offer.title} por apenas ${formatBRL(offer.price_current)} na ${offer.store}. Desconto verificado com economia real no PromoRadar.`;
+  const title = `${discountText}${offer.title} por ${formatBRL(offer.price_current)} na ${offer.store} — Elite das Pechinchas`;
+  const description = `Compre ${offer.title} por apenas ${formatBRL(offer.price_current)} na ${offer.store}. Desconto verificado com economia real na Elite das Pechinchas.`;
 
   return {
     title,

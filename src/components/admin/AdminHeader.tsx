@@ -109,7 +109,7 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
                     <Flame className="h-4 w-4 fill-white stroke-white" />
                   </div>
                   <span className="text-sm font-black tracking-tight text-slate-900 dark:text-white">
-                    PROMO<span className="text-orange-500">RADAR</span>
+                    ELITEDAS<span className="text-orange-500">PECHINCHAS</span>
                   </span>
                 </div>
                 <button
