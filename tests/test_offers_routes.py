@@ -97,3 +97,59 @@ def test_admin_publish_offer(client, db_session):
         assert data["published_at"] is not None
         mock_notify.assert_called_once_with("pending-off-01")
         mock_publish.assert_called_once_with("pending-off-01")
+
+
+def test_admin_list_and_filter_offers(client, db_session, sample_offer):
+    # Default list
+    res = client.get("/admin/offers?status=all")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total"] >= 1
+
+    # Filter by specific status
+    res_pending = client.get("/admin/offers?status=pending")
+    assert res_pending.status_code == 200
+    assert "items" in res_pending.json()
+
+
+def test_admin_patch_offer(client, db_session, sample_offer):
+    res = client.patch(
+        f"/admin/offers/{sample_offer.id}",
+        json={"title": "Smart TV OLED Atualizada", "price_current": 1999.0, "price_original": 3000.0},
+    )
+    assert res.status_code == 200
+    updated = res.json()
+    assert updated["title"] == "Smart TV OLED Atualizada"
+    assert updated["price_current"] == 1999.0
+    assert updated["discount_pct"] == 33
+
+
+def test_admin_bulk_actions(client, db_session, sample_offer):
+    res = client.post(
+        "/admin/offers/bulk",
+        json={"ids": [sample_offer.id], "action": "approve"},
+    )
+    assert res.status_code == 200
+    assert res.json()["updated"] == 1
+
+
+def test_admin_metrics(client, db_session, sample_offer):
+    res = client.get("/admin/metrics")
+    assert res.status_code == 200
+    metrics = res.json()
+    assert "total_pending" in metrics
+    assert "status_distribution" in metrics
+    assert "offers_by_store" in metrics
+
+
+def test_admin_sources_and_toggle(client, db_session):
+    res = client.get("/admin/sources")
+    assert res.status_code == 200
+    sources = res.json()
+    assert len(sources) >= 1
+
+    source_id = sources[0]["id"]
+    res_toggle = client.patch(f"/admin/sources/{source_id}", json={"is_active": False})
+    assert res_toggle.status_code == 200
+    assert res_toggle.json()["is_active"] is False
+

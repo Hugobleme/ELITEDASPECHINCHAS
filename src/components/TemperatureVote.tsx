@@ -21,6 +21,10 @@ export default function TemperatureVote({
   const [animating, setAnimating] = useState(false);
 
   useEffect(() => {
+    setTemperature(initialTemperature);
+  }, [initialTemperature]);
+
+  useEffect(() => {
     try {
       const savedVote = localStorage.getItem(`pechinchas_vote_${offerId}`);
       if (savedVote === 'hot' || savedVote === 'cold') {

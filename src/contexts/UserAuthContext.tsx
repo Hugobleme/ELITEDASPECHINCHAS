@@ -36,6 +36,17 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>('login');
 
+  const logout = useCallback(() => {
+    setUser(null);
+    setToken(null);
+    try {
+      localStorage.removeItem(USER_TOKEN_KEY);
+      localStorage.removeItem(LEGACY_USER_TOKEN_KEY);
+      localStorage.removeItem(USER_DATA_KEY);
+      localStorage.removeItem(LEGACY_USER_DATA_KEY);
+    } catch {}
+  }, []);
+
   useEffect(() => {
     try {
       const savedToken =
@@ -48,13 +59,25 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
       if (savedToken && savedUser) {
         setToken(savedToken);
         setUser(JSON.parse(savedUser));
+
+        // Validação assíncrona em background para evitar sessão zumbi caso token tenha expirado
+        apiGetMe(savedToken).catch((err: unknown) => {
+          const errorMsg = err instanceof Error ? err.message : '';
+          if (
+            errorMsg.includes('401') ||
+            errorMsg.includes('Unauthorized') ||
+            errorMsg.includes('token')
+          ) {
+            logout();
+          }
+        });
       }
     } catch {
       // Ignora erro
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [logout]);
 
   const openAuthModal = useCallback((tab: 'login' | 'register' = 'login') => {
     setAuthModalTab(tab);
@@ -119,15 +142,6 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
       return { success: false, error: error.message || 'Erro no login com Google.' };
     }
   }, [closeAuthModal]);
-
-  const logout = useCallback(() => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem(USER_TOKEN_KEY);
-    localStorage.removeItem(LEGACY_USER_TOKEN_KEY);
-    localStorage.removeItem(USER_DATA_KEY);
-    localStorage.removeItem(LEGACY_USER_DATA_KEY);
-  }, []);
 
   const value = useMemo(
     () => ({
