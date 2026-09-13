@@ -34,9 +34,17 @@
   }
 
   body {
-    @apply bg-slate-50 text-zinc-900 antialiased selection:bg-violet-600 selection:text-white dark:bg-[#09090c] dark:text-zinc-100;
+    background-color: #f8fafc;
+    color: #18181b;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     -webkit-tap-highlight-color: transparent;
+  }
+
+  .dark body {
+    background-color: #09090c;
+    color: #f4f4f5;
   }
 }
 
@@ -59,17 +67,47 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-slate-300/80 hover:bg-slate-400 dark:bg-slate-700/80 dark:hover:bg-slate-600;
+  border-radius: 9999px;
+  background-color: rgba(203, 213, 225, 0.8);
   transition: background-color 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: rgba(51, 65, 85, 0.8);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
 }
 
 /* Glassmorphism Surface Classes */
 .glass-panel {
-  @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-slate-800/80;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.dark .glass-panel {
+  background-color: rgba(15, 23, 42, 0.8);
+  border-color: rgba(30, 41, 59, 0.8);
 }
 
 .glass-dropdown {
-  @apply bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xl;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.dark .glass-dropdown {
+  background-color: rgba(15, 23, 42, 0.95);
+  border-color: rgba(30, 41, 59, 0.8);
 }
 
 /* Hide scrollbar for clean chip/tag horizontal scrolling */
@@ -85,6 +123,7 @@
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
