@@ -7,6 +7,7 @@ import { Flame, Search, X, Heart, Bell } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import CategoryChips from './CategoryChips';
 import { UserMenu } from './user/UserMenu';
+import { useFavorites } from '@/hooks/useFavorites';
 
 interface HeaderProps {
   showCategorySubbar?: boolean;
@@ -15,6 +16,7 @@ interface HeaderProps {
 export default function Header({ showCategorySubbar = true }: HeaderProps) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+  const { data: favorites = [] } = useFavorites();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,12 +30,12 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/85 backdrop-blur-md dark:border-slate-800/80 dark:bg-[#0b0f19]/85">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/90 transition-colors">
       {/* Top Navbar */}
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
         {/* Logo */}
-        <Link href="/" className="group flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-orange-600 via-orange-500 to-amber-400 text-white shadow-md shadow-orange-500/30 transition-transform group-hover:scale-105">
+        <Link href="/" className="group flex items-center gap-2.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-600 via-orange-500 to-amber-400 text-white shadow-md shadow-orange-500/25 transition-transform duration-200 group-hover:scale-105">
             <Flame className="h-6 w-6 fill-white stroke-white" />
           </div>
           <div className="flex flex-col">
@@ -42,8 +44,8 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
                 ELITEDAS<span className="text-orange-500">PECHINCHAS</span>
               </span>
             </div>
-            <span className="hidden text-[10px] font-semibold text-slate-400 sm:block">
-              As melhores promoções e cupons
+            <span className="hidden text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:block">
+              Promoções e cupons verificados
             </span>
           </div>
         </Link>
@@ -59,18 +61,18 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
               placeholder="Buscar produtos, marcas, celulares..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-100/80 py-2.5 pl-10 pr-10 text-xs font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-orange-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 sm:text-sm dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-orange-500 dark:focus:bg-slate-900"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-100/90 py-2.5 pl-10 pr-10 text-xs font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-orange-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-orange-500/15 sm:text-sm dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-orange-500 dark:focus:bg-slate-900"
             />
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            {searchQuery && (
+            {searchQuery ? (
               <button
                 type="button"
                 onClick={handleClear}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
-            )}
+            ) : null}
           </div>
         </form>
 
@@ -79,22 +81,28 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
           <Link
             href="/favoritos"
             title="Meus Favoritos"
-            className="p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-rose-400 dark:hover:bg-slate-800 transition-colors"
+            className="relative p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-rose-400 dark:hover:bg-slate-850 transition-colors"
           >
             <Heart className="w-5 h-5" />
+            {favorites.length > 0 && (
+              <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500" />
+              </span>
+            )}
           </Link>
 
           <Link
             href="/alertas"
             title="Meus Alertas de Preço"
-            className="p-2 rounded-xl text-slate-500 hover:text-orange-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-orange-400 dark:hover:bg-slate-800 transition-colors"
+            className="p-2 rounded-xl text-slate-500 hover:text-orange-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-orange-400 dark:hover:bg-slate-850 transition-colors"
           >
             <Bell className="w-5 h-5" />
           </Link>
 
           <ThemeToggle />
 
-          <div className="h-5 w-[1px] bg-slate-200 dark:bg-slate-800 mx-0.5" />
+          <div className="h-5 w-[1px] bg-slate-200 dark:border-slate-800 dark:bg-slate-800 mx-0.5" />
 
           <UserMenu />
         </div>
@@ -102,7 +110,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
 
       {/* Categories Subbar */}
       {showCategorySubbar && (
-        <div className="border-t border-slate-100 bg-slate-50/50 px-4 dark:border-slate-800/60 dark:bg-slate-900/30 sm:px-6">
+        <div className="border-t border-slate-100 bg-slate-50/60 px-4 dark:border-slate-800/60 dark:bg-slate-900/40 sm:px-6">
           <div className="mx-auto max-w-7xl">
             <CategoryChips />
           </div>

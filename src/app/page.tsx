@@ -8,7 +8,7 @@ import OfferGrid from '@/components/OfferGrid';
 import FilterSidebar from '@/components/FilterSidebar';
 import SortDropdown from '@/components/SortDropdown';
 import { UserPreferencesModal } from '@/components/user/UserPreferencesModal';
-import { SlidersHorizontal, Flame, Sparkles, Compass, Sliders, Check } from 'lucide-react';
+import { SlidersHorizontal, Flame, Sparkles, Sliders, Check } from 'lucide-react';
 
 export default function HomePage() {
   const { isAuthenticated, openAuthModal } = useUserAuth();
@@ -61,42 +61,54 @@ export default function HomePage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-      {/* Hero Banner Inspirado em Sites de Promoção */}
-      <div className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-r from-orange-600 via-orange-500 to-amber-500 p-6 text-white shadow-xl shadow-orange-500/10 sm:p-8">
-        <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
-          <div className="max-w-xl space-y-2">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+      {/* Hero Banner Inspirado em Plataformas Modernas */}
+      <div className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500 p-6 text-white shadow-xl shadow-orange-500/15 sm:p-8 md:p-10">
+        {/* Glow de fundo sutil */}
+        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-black/10 blur-3xl" />
+
+        <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+          <div className="max-w-xl space-y-2.5">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3.5 py-1 text-xs font-black uppercase tracking-wider backdrop-blur-md">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-200 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-300" />
+              </span>
               <Flame className="h-3.5 w-3.5 fill-amber-200 text-amber-200" />
               <span>Curadoria em Tempo Real</span>
             </div>
-            <h1 className="text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl">
+            <h1 className="text-2xl font-black tracking-tight sm:text-3xl lg:text-4xl leading-tight text-white drop-shadow-sm">
               Descontos Reais e Cupons Verificados
             </h1>
-            <p className="text-xs font-medium text-orange-100 sm:text-sm">
-              Nossa automação vasculha grupos e lojas oficiais 24 horas por dia para você nunca mais pagar o preço cheio.
+            <p className="text-xs font-medium text-orange-100 sm:text-sm leading-relaxed max-w-lg">
+              Monitoramos os maiores e-commerces 24 horas por dia para você nunca mais pagar o preço cheio nas suas compras.
             </p>
           </div>
 
-          <div className="flex items-center gap-3 rounded-2xl bg-black/20 p-3.5 backdrop-blur-md">
-            <Sparkles className="h-6 w-6 text-amber-300" />
+          <div className="flex items-center gap-3.5 rounded-2xl bg-black/25 p-4 backdrop-blur-md border border-white/10 shadow-inner">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-400/20 text-amber-300">
+              <Sparkles className="h-6 w-6" />
+            </div>
             <div className="text-left">
-              <div className="text-xs font-medium text-orange-100">Ofertas Ativas Hoje</div>
-              <div className="text-lg font-black">{totalCount > 0 ? `${totalCount}+ Ofertas` : 'Monitorando'}</div>
+              <div className="text-xs font-semibold text-orange-100">Ofertas Ativas Hoje</div>
+              <div className="text-xl font-black tracking-tight text-white">
+                {totalCount > 0 ? `${totalCount}+ Ofertas` : 'Monitorando'}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Barra de Seleção de Feed: Todas vs Para Você */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800/80 pb-3">
-        <div className="flex items-center gap-2">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800/80 pb-3.5">
+        <div className="inline-flex p-1 rounded-2xl bg-slate-100/90 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
           <button
             type="button"
             onClick={() => setActiveTab('all')}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               !isForYou
-                ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20'
-                : 'bg-white dark:bg-slate-850 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+                ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Flame className="w-4 h-4" />
@@ -107,14 +119,11 @@ export default function HomePage() {
             type="button"
             onClick={() => {
               setActiveTab('for_you');
-              if (!isAuthenticated) {
-                // Usuário vê as recomendações com opções de login/personalização
-              }
             }}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               isForYou
-                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
-                : 'bg-white dark:bg-slate-850 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
+                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Sparkles className="w-4 h-4" />
@@ -127,7 +136,7 @@ export default function HomePage() {
             <button
               type="button"
               onClick={() => setIsPrefModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-purple-200 dark:border-purple-900/50 bg-purple-50 dark:bg-purple-950/30 text-xs font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-purple-200 dark:border-purple-900/50 bg-purple-50 dark:bg-purple-950/40 text-xs font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer"
             >
               <Sliders className="w-3.5 h-3.5" />
               <span>Personalizar Interesses</span>
@@ -154,18 +163,18 @@ export default function HomePage() {
         {/* Content Area */}
         <div className="flex-1 space-y-6">
           {/* Controls Bar: Total counter + Mobile Filter Button + Sort */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-card dark:border-slate-800 dark:bg-slate-900/90">
+            <div className="flex items-center gap-2.5">
               {/* Botão de Filtros no Mobile */}
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(true)}
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 lg:hidden dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 lg:hidden dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
               >
                 <SlidersHorizontal className="h-4 w-4 text-orange-500" />
                 <span>Filtros</span>
                 {hasActiveFilters && (
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] text-white">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-black text-white">
                     •
                   </span>
                 )}
@@ -176,7 +185,7 @@ export default function HomePage() {
                   'Buscando promoções...'
                 ) : (
                   <>
-                    <strong className="text-slate-900 dark:text-slate-100">{displayedOffers.length}</strong>{' '}
+                    <strong className="text-slate-900 dark:text-slate-100 font-bold">{displayedOffers.length}</strong>{' '}
                     {isForYou ? 'ofertas recomendadas' : 'ofertas encontradas'}
                   </>
                 )}
@@ -197,8 +206,16 @@ export default function HomePage() {
               if (!isForYou) fetchNextPage();
             }}
             onResetFilters={handleResetFilters}
-            emptyTitle={isForYou ? "Nenhuma oferta combina com suas preferências" : "Nenhuma oferta encontrada para estes filtros"}
-            emptyDescription={isForYou ? "Clique em 'Personalizar Interesses' para selecionar mais categorias ou ajustar o desconto mínimo." : "Experimente diminuir o percentual de desconto mínimo ou escolher outra categoria."}
+            emptyTitle={
+              isForYou
+                ? 'Nenhuma oferta combina com suas preferências'
+                : 'Nenhuma oferta encontrada para estes filtros'
+            }
+            emptyDescription={
+              isForYou
+                ? "Clique em 'Personalizar Interesses' para selecionar mais categorias ou diminuir o desconto mínimo."
+                : 'Experimente diminuir o percentual de desconto mínimo ou escolher outra categoria.'
+            }
           />
         </div>
       </div>

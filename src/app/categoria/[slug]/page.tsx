@@ -34,16 +34,24 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       </nav>
 
       {/* Banner da Categoria */}
-      <div className="mb-8 rounded-3xl bg-slate-900 p-6 text-white shadow-lg dark:bg-slate-900/90 sm:p-8">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-500 text-white">
-            <Tag className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black sm:text-3xl">Ofertas de {categoryName}</h1>
-            <p className="text-xs text-slate-300 sm:text-sm">
-              Descontos verificados e preços baixos em {categoryName.toLowerCase()}
-            </p>
+      <div className="relative mb-8 overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-850 p-6 text-white shadow-card sm:p-8">
+        <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-orange-500/15 blur-3xl" />
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 text-white shadow-glow-brand">
+              <Tag className="h-6 w-6 stroke-[2.5]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center rounded-full bg-orange-500/20 px-2.5 py-0.5 text-[11px] font-bold text-orange-400">
+                  Categoria Oficial
+                </span>
+              </div>
+              <h1 className="text-2xl font-black sm:text-3xl mt-0.5 tracking-tight">Ofertas de {categoryName}</h1>
+              <p className="text-xs text-slate-400 sm:text-sm mt-0.5">
+                Descontos verificados e preços baixos em {categoryName.toLowerCase()}
+              </p>
+            </div>
           </div>
         </div>
       </div>

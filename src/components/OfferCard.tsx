@@ -9,7 +9,7 @@ import AffiliateButton from './AffiliateButton';
 import { FavoriteButton } from './user/FavoriteButton';
 import CouponBadge from './CouponBadge';
 import TemperatureVote from './TemperatureVote';
-import { Clock, ExternalLink, Truck } from 'lucide-react';
+import { Clock, Truck, ChevronRight } from 'lucide-react';
 
 interface OfferCardProps {
   offer: Offer;
@@ -33,11 +33,11 @@ export default function OfferCard({ offer }: OfferCardProps) {
   } = offer;
 
   return (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-orange-300 hover:shadow-card-hover dark:border-slate-800/80 dark:bg-slate-900/90 dark:hover:border-orange-500/40 dark:hover:shadow-card-hover-dark">
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/85 bg-white shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:border-orange-400/40 hover:shadow-card-hover dark:border-slate-800/80 dark:bg-slate-900/95 dark:hover:border-orange-500/40 dark:hover:shadow-card-hover-dark">
       {/* Top Header: Store, Temperature & Relative Time */}
-      <div className="relative flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800/60">
+      <div className="relative flex items-center justify-between border-b border-slate-100/90 px-3.5 py-2.5 dark:border-slate-800/60">
         <div className="flex items-center gap-1.5">
-          <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+          <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800/90 dark:text-slate-300">
             {store}
           </span>
           <TemperatureVote offerId={id} initialTemperature={temperature || 120} size="sm" />
@@ -49,22 +49,25 @@ export default function OfferCard({ offer }: OfferCardProps) {
       </div>
 
       {/* Product Image + Discount Badge */}
-      <Link href={`/oferta/${id}`} className="relative block aspect-[4/3] w-full overflow-hidden bg-white p-4 dark:bg-slate-900">
-        {/* Desconto Chamativo no canto (estilo Pechinchou) */}
+      <Link
+        href={`/oferta/${id}`}
+        className="relative block aspect-[4/3] w-full overflow-hidden bg-white p-4 transition-colors dark:bg-slate-925"
+      >
+        {/* Desconto Chamativo no canto */}
         {discount_pct > 0 && (
-          <div className="absolute left-3 top-3 z-10 flex items-center justify-center rounded-lg bg-red-600 px-2.5 py-1 text-xs font-black tracking-wide text-white shadow-md shadow-red-500/30">
+          <div className="absolute left-3 top-3 z-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-red-600 to-rose-600 px-2.5 py-1 text-xs font-black tracking-wide text-white shadow-md shadow-red-500/25">
             {formatDiscount(discount_pct)}
           </div>
         )}
 
         {/* Botão de Favoritar flutuante */}
         <div className="absolute right-3 top-3 z-20">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-md backdrop-blur-sm transition-all hover:bg-white dark:bg-slate-800/90 dark:hover:bg-slate-800">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-md transition-all hover:scale-110 hover:bg-white dark:bg-slate-800/90 dark:hover:bg-slate-800">
             <FavoriteButton offerId={id} size="sm" />
           </div>
         </div>
 
-        <div className="relative h-full w-full transition-transform duration-300 group-hover:scale-105">
+        <div className="relative h-full w-full transition-transform duration-300 ease-out group-hover:scale-105">
           <ImageWithFallback
             src={image_url}
             alt={title}
@@ -76,12 +79,12 @@ export default function OfferCard({ offer }: OfferCardProps) {
       </Link>
 
       {/* Details & Pricing */}
-      <div className="flex flex-1 flex-col justify-between p-4 pt-2">
+      <div className="flex flex-1 flex-col justify-between p-4 pt-3">
         <div>
           {/* Title */}
           <Link href={`/oferta/${id}`}>
             <h3
-              className="line-clamp-2 text-sm font-semibold leading-snug text-slate-800 transition-colors hover:text-orange-600 dark:text-slate-200 dark:hover:text-orange-400"
+              className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 transition-colors group-hover:text-orange-600 dark:text-slate-100 dark:group-hover:text-orange-400"
               title={title}
             >
               {title}
@@ -89,7 +92,7 @@ export default function OfferCard({ offer }: OfferCardProps) {
           </Link>
 
           {/* Pricing Block */}
-          <div className="mt-2.5 space-y-1">
+          <div className="mt-3 space-y-1">
             {price_original > price_current && (
               <div className="text-xs font-medium text-slate-400 line-through dark:text-slate-500">
                 De {formatBRL(price_original)}
@@ -98,24 +101,24 @@ export default function OfferCard({ offer }: OfferCardProps) {
             <div className="flex flex-wrap items-baseline justify-between gap-1">
               <div className="flex items-baseline gap-1.5">
                 <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Por</span>
-                <span className="text-xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
+                <span className="text-xl font-black tracking-tight text-emerald-600 dark:text-emerald-400">
                   {formatBRL(price_current)}
                 </span>
               </div>
               {free_shipping && (
-                <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+                <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
                   <Truck className="h-2.5 w-2.5" />
                   Frete Grátis
                 </span>
               )}
             </div>
             {installments && (
-              <div className="text-[11px] text-slate-500 dark:text-slate-400">
+              <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
                 ou {installments}
               </div>
             )}
             {coupon_code && (
-              <div className="pt-1">
+              <div className="pt-1.5">
                 <CouponBadge code={coupon_code} size="sm" />
               </div>
             )}
@@ -123,12 +126,13 @@ export default function OfferCard({ offer }: OfferCardProps) {
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-4 grid grid-cols-2 gap-2">
+        <div className="mt-4 grid grid-cols-2 gap-2 pt-1 border-t border-slate-100/90 dark:border-slate-800/60">
           <Link
             href={`/oferta/${id}`}
-            className="flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-200 dark:hover:bg-slate-700"
+            className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700/80"
           >
-            Ver Detalhes
+            <span>Detalhes</span>
+            <ChevronRight className="h-3 w-3 opacity-60" />
           </Link>
           <AffiliateButton
             offerId={id}

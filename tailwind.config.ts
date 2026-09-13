@@ -16,12 +16,17 @@ const config: Config = {
           200: '#fed7aa',
           300: '#fdba74',
           400: '#fb923c',
-          500: '#f97316', // Core bright orange (Pechinchou style)
+          500: '#f97316', // Core bright orange
           600: '#ea580c',
           700: '#c2410c',
           800: '#9a3412',
           900: '#7c2d12',
           DEFAULT: '#f97316',
+        },
+        slate: {
+          850: '#131c2e',
+          925: '#0b1120',
+          950: '#070b14',
         },
         discount: {
           badge: '#ef4444',
@@ -31,9 +36,16 @@ const config: Config = {
         },
       },
       boxShadow: {
-        'card-hover': '0 12px 30px -10px rgba(0, 0, 0, 0.12), 0 4px 10px -5px rgba(0, 0, 0, 0.04)',
-        'card-hover-dark': '0 12px 30px -10px rgba(0, 0, 0, 0.6), 0 0 20px 0 rgba(249, 115, 22, 0.15)',
-        'glow-brand': '0 0 25px -5px rgba(249, 115, 22, 0.4)',
+        subtle: '0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04)',
+        card: '0 2px 10px -2px rgba(15, 23, 42, 0.06), 0 1px 4px -1px rgba(15, 23, 42, 0.04)',
+        'card-hover': '0 16px 32px -8px rgba(15, 23, 42, 0.12), 0 4px 12px -3px rgba(15, 23, 42, 0.06)',
+        'card-hover-dark': '0 16px 36px -10px rgba(0, 0, 0, 0.75), 0 0 24px -2px rgba(249, 115, 22, 0.16)',
+        'glow-brand': '0 0 25px -4px rgba(249, 115, 22, 0.45)',
+        'glow-emerald': '0 0 20px -4px rgba(16, 185, 129, 0.35)',
+        modal: '0 25px 60px -15px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+      },
+      transitionTimingFunction: {
+        spring: 'cubic-bezier(0.16, 1, 0.3, 1)',
       },
       keyframes: {
         shimmer: {
@@ -41,12 +53,12 @@ const config: Config = {
         },
         pulseSlow: {
           '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.6' },
+          '50%': { opacity: '0.5' },
         },
       },
       animation: {
         shimmer: 'shimmer 1.8s infinite',
-        'pulse-slow': 'pulseSlow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'pulse-slow': 'pulseSlow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },

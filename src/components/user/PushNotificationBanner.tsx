@@ -45,43 +45,43 @@ export function PushNotificationBanner() {
 
   return (
     <div className="fixed bottom-4 right-4 z-40 max-w-md w-[calc(100vw-2rem)] animate-in slide-in-from-bottom-5 fade-in duration-300">
-      <div className="bg-white dark:bg-gray-900 border border-brand-200 dark:border-brand-900/60 rounded-2xl shadow-xl p-4 sm:p-5 relative overflow-hidden">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-xl p-4 sm:p-5 shadow-card dark:border-slate-800 dark:bg-slate-900/95">
         {/* Glow de fundo */}
-        <div className="absolute top-0 right-0 -mr-10 -mt-10 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl pointer-events-none" />
+        <div className="pointer-events-none absolute right-0 top-0 -mr-10 -mt-10 h-32 w-32 rounded-full bg-orange-500/10 blur-2xl" />
 
         <div className="flex items-start gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-amber-400 text-white flex items-center justify-center flex-shrink-0 shadow-md shadow-brand-500/20">
-            <BellRing className="w-5 h-5 animate-bounce" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 text-white shadow-glow-brand">
+            <BellRing className="h-5 w-5 animate-bounce" />
           </div>
 
           <div className="flex-1 pr-6">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-brand-600 dark:text-brand-400 mb-0.5">
-              <Sparkles className="w-3 h-3" />
+            <div className="mb-0.5 flex items-center gap-1.5 text-xs font-bold text-orange-600 dark:text-orange-400">
+              <Sparkles className="h-3 w-3" />
               <span>SUPER ALERTA</span>
             </div>
-            <h4 className="text-sm font-bold text-gray-900 dark:text-white leading-snug">
+            <h4 className="text-sm font-bold leading-snug text-slate-900 dark:text-white">
               Não perca nenhuma pechincha!
             </h4>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-relaxed">
+            <p className="mt-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
               Ative as notificações da Elite das Pechinchas e receba na hora quando surgir uma oferta relâmpago ou erro de preço.
             </p>
 
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-3.5 flex items-center gap-2">
               <button
                 type="button"
                 onClick={handleSubscribe}
                 disabled={isLoading}
-                className="px-3.5 py-1.5 bg-brand-500 hover:bg-brand-600 text-white text-xs font-semibold rounded-lg transition-colors shadow-sm flex items-center gap-1.5 disabled:opacity-60"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 text-xs font-bold text-white shadow-md shadow-orange-500/20 transition-all hover:from-orange-600 hover:to-amber-600 active:scale-95 disabled:opacity-60"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    Ativando...
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <span>Ativando...</span>
                   </>
                 ) : isSubscribed ? (
                   <>
-                    <Check className="w-3.5 h-3.5" />
-                    Ativado!
+                    <Check className="h-3.5 w-3.5" />
+                    <span>Ativado!</span>
                   </>
                 ) : (
                   'Ativar Notificações'
@@ -90,7 +90,7 @@ export function PushNotificationBanner() {
               <button
                 type="button"
                 onClick={handleDismiss}
-                className="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+                className="rounded-xl px-3 py-2 text-xs font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
               >
                 Agora não
               </button>
@@ -99,9 +99,10 @@ export function PushNotificationBanner() {
 
           <button
             onClick={handleDismiss}
-            className="absolute top-3 right-3 p-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            aria-label="Fechar banner"
+            className="absolute right-3 top-3 rounded-xl p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
           >
-            <X className="w-4 h-4" />
+            <X className="h-4 w-4" />
           </button>
         </div>
       </div>

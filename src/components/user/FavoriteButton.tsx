@@ -53,7 +53,7 @@ export function FavoriteButton({
       className={`group relative inline-flex items-center justify-center transition-all duration-200 active:scale-90 ${
         isFav
           ? 'text-rose-500 dark:text-rose-400'
-          : 'text-gray-400 hover:text-rose-500 dark:text-gray-400 dark:hover:text-rose-400'
+          : 'text-slate-400 hover:text-rose-500 dark:text-slate-500 dark:hover:text-rose-400'
       } ${
         animating ? 'scale-125' : 'scale-100'
       } ${className}`}
