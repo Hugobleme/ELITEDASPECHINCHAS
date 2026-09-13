@@ -1,0 +1,40 @@
+# Dependências e caches de compilação
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Ambientes virtuais e caches do Python
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Sessões locais do Telethon (mantidas via volumes persistentes)
+*.session
+*.session-journal
+sessions/
+
+# Variáveis locais e segredos
+.env
+.env.local
+.env.*.local
+
+# Controle de versão e IDEs
+.git/
+.gitignore
+.gitattributes
+.github/
+.vscode/
+.idea/
+.gemini/
+
+# Arquivos do sistema operacional
+.DS_Store
+Thumbs.db

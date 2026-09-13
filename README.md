@@ -150,7 +150,82 @@ A camada de automação é responsável por monitorar grupos-fonte no Telegram, 
 
 ---
 
-## ⚙️ Guia de Execução Completo
+## 🐳 Subir com Docker (Stack Completa)
+
+A aplicação conta com orquestração completa via **Docker Compose** que sobe todos os 6 serviços interconectados em uma rede privada com um único comando.
+
+### 🧩 Serviços Orquestrados no `docker-compose.yml`
+
+| Serviço | Imagem / Build | Porta | Descrição |
+|---|---|---|---|
+| **`postgres`** | `postgres:16-alpine` | `5432` | Banco de dados relacional com volume persistente `postgres_data` e healthcheck. |
+| **`redis`** | `redis:7-alpine` | `6379` | Broker de mensagens Celery e cache com persistência e healthcheck. |
+| **`api`** | `Dockerfile.backend` | `8000` | FastAPI (Uvicorn), aplica migrações Alembic automaticamente no start e expõe OpenAPI Swagger. |
+| **`worker`** | `Dockerfile.backend` | — | Celery Worker que consome tarefas de parsing, motor de regras, troca de afiliados e Web Push. |
+| **`listener`** | `Dockerfile.backend` | — | Userbot Telethon que monitora canais-fonte em tempo real com volume persistente para o `.session`. |
+| **`web`** | `Dockerfile.frontend` | `3000` | Frontend Next.js 14 App Router construído em imagem multi-stage Node 20. |
+
+---
+
+### 🚀 Passo a Passo para Subir a Stack
+
+#### 1. Clonar o repositório e configurar variáveis:
+```bash
+cp .env.example .env
+```
+> Preencha suas credenciais do Telegram (`TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_BOT_TOKEN`), tags de afiliados e chaves JWT/VAPID no `.env`.
+
+#### 2. Subir todos os serviços com build:
+```bash
+docker compose up --build
+```
+Para rodar em segundo plano (modo detached):
+```bash
+docker compose up -d --build
+```
+
+#### 3. Popular o banco de dados com fontes e regras iniciais (Seed):
+Em outro terminal (com os containers rodando):
+```bash
+docker compose exec api python seed.py
+```
+
+#### 4. Autenticação Inicial do Userbot Telethon (Primeira Execução):
+Na primeira execução, o Telegram exige autenticação do número de telefone via código SMS/Telegram. Execute o container em modo interativo para digitar seu telefone e código:
+```bash
+docker compose run --rm listener python main.py
+```
+> **Nota de Persistência:** A sessão fica gravada no volume persistente `telethon_sessions` (`/app/sessions`). Uma vez autenticado, o container `listener` iniciará automaticamente 24h sem pedir código novamente.
+
+#### 5. Verificar o status dos serviços e healthchecks:
+```bash
+docker compose ps
+```
+
+Acessos locais:
+- 🌐 **Web App:** http://localhost:3000
+- 📚 **Documentação Swagger:** http://localhost:8000/docs
+- 🩺 **Healthcheck da API:** http://localhost:8000/health
+
+---
+
+### ☁️ Estratégias de Deploy em Produção
+
+1. **Deploy Híbrido (Vercel + VPS)**:
+   - O frontend Next.js pode ser hospedado diretamente na **Vercel**, configurando a variável de ambiente `NEXT_PUBLIC_API_URL` apontando para o seu domínio da API (ex: `https://api.elitedaspechinchas.com.br`).
+   - Em sua VPS (ex: Hetzner, DigitalOcean, AWS), execute apenas a infraestrutura e backend 24/7 omitindo o container web:
+     ```bash
+     docker compose up -d postgres redis api worker listener
+     ```
+
+2. **Deploy All-in-One (VPS Única)**:
+   - Execute todos os 6 containers via `docker compose up -d`.
+   - Utilize um reverse proxy como **Nginx** ou **Caddy** com SSL automático (Let's Encrypt) roteando `elitedaspechinchas.com.br` para a porta 3000 e `api.elitedaspechinchas.com.br` para a porta 8000.
+
+---
+
+## ⚙️ Guia de Execução Local (Sem Docker)
+
 
 ### 1. Criar e Ativar Ambiente Virtual
 ```bash

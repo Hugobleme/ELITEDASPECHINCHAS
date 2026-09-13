@@ -52,7 +52,13 @@ def create_telegram_client() -> TelegramClient:
             "TELEGRAM_API_ID ou TELEGRAM_API_HASH não configurados no arquivo .env!\n"
             "Obtenha suas credenciais em https://my.telegram.org/apps"
         )
+    session_dir = os.path.dirname(TELEGRAM_SESSION_NAME)
+    if session_dir:
+        os.makedirs(session_dir, exist_ok=True)
+
     return TelegramClient(TELEGRAM_SESSION_NAME, TELEGRAM_API_ID, TELEGRAM_API_HASH)
+
+
 
 
 async def setup_event_handlers(client: TelegramClient, channels: List[str]):

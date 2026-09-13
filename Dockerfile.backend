@@ -1,0 +1,41 @@
+# ==============================================================================
+# DOCKERFILE BACKEND — ELITE DAS PECHINCHAS (API / CELERY WORKER / LISTENER)
+# ==============================================================================
+FROM python:3.11-slim
+
+# Evita arquivos .pyc e permite que logs cheguem diretamente ao stdout/stderr
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Instala dependências de compilação para psycopg2 e extensões
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    libpq-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instala dependências do Python
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copia script de inicialização e concede permissão de execução
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Copia todo o código fonte
+COPY . /app
+
+# Cria diretório de sessões persistentes do Telethon
+RUN mkdir -p /app/sessions
+
+# Expõe porta da API FastAPI
+EXPOSE 8000
+
+# Entrypoint inteligente com wait-for-db e migrations
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+# Comando padrão
+CMD ["api"]
