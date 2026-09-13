@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { EndUser } from '@/types/user';
 import { apiUserLogin, apiUserRegister, apiUserGoogle, apiGetMe } from '@/lib/api';
 import { CONFIG } from '@/lib/config';
@@ -56,16 +56,16 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const openAuthModal = (tab: 'login' | 'register' = 'login') => {
+  const openAuthModal = useCallback((tab: 'login' | 'register' = 'login') => {
     setAuthModalTab(tab);
     setIsAuthModalOpen(true);
-  };
+  }, []);
 
-  const closeAuthModal = () => {
+  const closeAuthModal = useCallback(() => {
     setIsAuthModalOpen(false);
-  };
+  }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string) => {
     try {
       const res = await apiUserLogin(email, password);
       setToken(res.access_token);
@@ -82,9 +82,9 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
       const error = err as Error;
       return { success: false, error: error.message || 'Erro ao realizar login.' };
     }
-  };
+  }, [closeAuthModal]);
 
-  const register = async (email: string, password: string, name: string) => {
+  const register = useCallback(async (email: string, password: string, name: string) => {
     try {
       const res = await apiUserRegister(email, password, name);
       setToken(res.access_token);
@@ -100,9 +100,9 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
       const error = err as Error;
       return { success: false, error: error.message || 'Erro ao criar conta.' };
     }
-  };
+  }, [closeAuthModal]);
 
-  const loginWithGoogle = async (idToken?: string) => {
+  const loginWithGoogle = useCallback(async (idToken?: string) => {
     try {
       const res = await apiUserGoogle(idToken || 'mock_google_usuario_demo');
       setToken(res.access_token);
@@ -118,34 +118,49 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
       const error = err as Error;
       return { success: false, error: error.message || 'Erro no login com Google.' };
     }
-  };
+  }, [closeAuthModal]);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     setToken(null);
     localStorage.removeItem(USER_TOKEN_KEY);
     localStorage.removeItem(LEGACY_USER_TOKEN_KEY);
     localStorage.removeItem(USER_DATA_KEY);
     localStorage.removeItem(LEGACY_USER_DATA_KEY);
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      user,
+      token,
+      isAuthenticated: !!user,
+      isLoading,
+      isAuthModalOpen,
+      authModalTab,
+      openAuthModal,
+      closeAuthModal,
+      login,
+      register,
+      loginWithGoogle,
+      logout,
+    }),
+    [
+      user,
+      token,
+      isLoading,
+      isAuthModalOpen,
+      authModalTab,
+      openAuthModal,
+      closeAuthModal,
+      login,
+      register,
+      loginWithGoogle,
+      logout,
+    ]
+  );
 
   return (
-    <UserAuthContext.Provider
-      value={{
-        user,
-        token,
-        isAuthenticated: !!user,
-        isLoading,
-        isAuthModalOpen,
-        authModalTab,
-        openAuthModal,
-        closeAuthModal,
-        login,
-        register,
-        loginWithGoogle,
-        logout,
-      }}
-    >
+    <UserAuthContext.Provider value={value}>
       {children}
     </UserAuthContext.Provider>
   );

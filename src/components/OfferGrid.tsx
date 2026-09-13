@@ -52,10 +52,12 @@ export default function OfferGrid({
 
   return (
     <div className="space-y-8">
-      {/* Grid Responsiva */}
+      {/* Grid Responsiva com Virtualização Leve de Conteúdo */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-        {offers.map((offer) => (
-          <OfferCard key={offer.id} offer={offer} />
+        {offers.map((offer, idx) => (
+          <div key={offer.id} className={idx > 8 ? 'content-visibility-auto' : undefined}>
+            <OfferCard offer={offer} />
+          </div>
         ))}
       </div>
 

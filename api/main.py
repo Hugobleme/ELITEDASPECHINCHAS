@@ -3,6 +3,7 @@ import logging
 from datetime import datetime, timezone
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 
 from database.connection import engine, Base
 from api.routes.auth import router as auth_router
@@ -28,6 +29,11 @@ app = FastAPI(
     description="Backend FastAPI modular para agregação, curadoria, preferências, favoritos, alertas e Web Push.",
     version="3.0.0",
 )
+
+# ==========================================
+# Compressão GZip Automática para Payloads > 1KB
+# ==========================================
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # ==========================================
 # Configuração de CORS

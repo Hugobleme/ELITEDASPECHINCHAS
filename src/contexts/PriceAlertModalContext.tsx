@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 export interface AlertModalDefaults {
   keyword?: string;
@@ -22,24 +22,27 @@ export function PriceAlertModalProvider({ children }: { children: React.ReactNod
   const [isOpen, setIsOpen] = useState(false);
   const [defaults, setDefaults] = useState<AlertModalDefaults>({});
 
-  const openAlertModal = (newDefaults?: AlertModalDefaults) => {
+  const openAlertModal = useCallback((newDefaults?: AlertModalDefaults) => {
     setDefaults(newDefaults || {});
     setIsOpen(true);
-  };
+  }, []);
 
-  const closeAlertModal = () => {
+  const closeAlertModal = useCallback(() => {
     setIsOpen(false);
-  };
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      isOpen,
+      defaults,
+      openAlertModal,
+      closeAlertModal,
+    }),
+    [isOpen, defaults, openAlertModal, closeAlertModal]
+  );
 
   return (
-    <PriceAlertModalContext.Provider
-      value={{
-        isOpen,
-        defaults,
-        openAlertModal,
-        closeAlertModal,
-      }}
-    >
+    <PriceAlertModalContext.Provider value={value}>
       {children}
     </PriceAlertModalContext.Provider>
   );

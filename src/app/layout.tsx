@@ -1,17 +1,33 @@
+import dynamic from 'next/dynamic';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import QueryProvider from '@/providers/QueryProvider';
 import { UserAuthProvider } from '@/contexts/UserAuthContext';
 import { PriceAlertModalProvider } from '@/contexts/PriceAlertModalContext';
-import { UserAuthModal } from '@/components/user/UserAuthModal';
-import { PriceAlertModal } from '@/components/user/PriceAlertModal';
-import { PushNotificationBanner } from '@/components/user/PushNotificationBanner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import ScrollToTop from '@/components/ScrollToTop';
 
-const inter = Inter({ subsets: ['latin'] });
+// Code-split heavy modals and floating widgets so they don't block critical page load JS
+const UserAuthModal = dynamic(
+  () => import('@/components/user/UserAuthModal').then((mod) => mod.UserAuthModal),
+  { ssr: false }
+);
+const PriceAlertModal = dynamic(
+  () => import('@/components/user/PriceAlertModal').then((mod) => mod.PriceAlertModal),
+  { ssr: false }
+);
+const PushNotificationBanner = dynamic(
+  () => import('@/components/user/PushNotificationBanner').then((mod) => mod.PushNotificationBanner),
+  { ssr: false }
+);
+const ScrollToTop = dynamic(() => import('@/components/ScrollToTop'), { ssr: false });
+
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+});
 
 export const viewport = {
   themeColor: '#f97316',
@@ -45,6 +61,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        {/* Anti-FOUC Theme Script: executes synchronously before render */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('elitedaspechinchas_theme')||localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(!t&&d)){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body className={inter.className}>
         <QueryProvider>
           <UserAuthProvider>
@@ -55,7 +79,7 @@ export default function RootLayout({
                 <Footer />
               </div>
 
-              {/* Modais e Banners Globais de Usuário */}
+              {/* Modais e Banners Globais de Usuário (Carregados Sob Demanda) */}
               <UserAuthModal />
               <PriceAlertModal />
               <PushNotificationBanner />

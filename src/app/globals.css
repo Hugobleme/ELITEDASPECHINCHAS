@@ -122,3 +122,15 @@
     rgba(255, 255, 255, 0)
   );
 }
+
+/* Content Visibility Optimization for Long Virtualized Feeds */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 380px;
+}
+
+/* GPU Hardware Acceleration Helper */
+.gpu-accelerate {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}

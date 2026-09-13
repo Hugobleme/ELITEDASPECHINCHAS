@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUserFavorites, addUserFavorite, removeUserFavorite } from '@/lib/api';
 import { useUserAuth } from '@/contexts/UserAuthContext';
@@ -45,7 +46,22 @@ export function useRemoveFavorite() {
   });
 }
 
-export function useIsFavorite(offerId: string): boolean {
+/**
+ * Retorna um Set memoizado com todos os IDs favoritados, transformando checagens em O(1).
+ */
+export function useFavoriteIds(): Set<string> {
   const { data: favorites = [] } = useFavorites();
-  return favorites.some((fav) => fav.offer_id === offerId || fav.offer?.id === offerId);
+  return useMemo(() => {
+    const ids = new Set<string>();
+    favorites.forEach((fav) => {
+      if (fav.offer_id) ids.add(fav.offer_id);
+      if (fav.offer?.id) ids.add(fav.offer.id);
+    });
+    return ids;
+  }, [favorites]);
+}
+
+export function useIsFavorite(offerId: string): boolean {
+  const favoriteIds = useFavoriteIds();
+  return favoriteIds.has(offerId);
 }

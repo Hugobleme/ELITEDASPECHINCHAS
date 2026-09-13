@@ -11,7 +11,7 @@ interface FavoriteButtonProps {
   showLabel?: boolean;
 }
 
-export function FavoriteButton({
+function FavoriteButtonComponent({
   offerId,
   className = '',
   size = 'md',
@@ -72,3 +72,5 @@ export function FavoriteButton({
     </button>
   );
 }
+
+export const FavoriteButton = React.memo(FavoriteButtonComponent);

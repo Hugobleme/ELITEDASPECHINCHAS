@@ -4,11 +4,16 @@ import React, { useState } from 'react';
 import { useOffersInfinite } from '@/hooks/useOffers';
 import { usePersonalizedFeed } from '@/hooks/useFeed';
 import { useUserAuth } from '@/contexts/UserAuthContext';
+import dynamic from 'next/dynamic';
 import OfferGrid from '@/components/OfferGrid';
 import FilterSidebar from '@/components/FilterSidebar';
 import SortDropdown from '@/components/SortDropdown';
-import { UserPreferencesModal } from '@/components/user/UserPreferencesModal';
 import { SlidersHorizontal, Flame, Sparkles, Sliders, Check } from 'lucide-react';
+
+const UserPreferencesModal = dynamic(
+  () => import('@/components/user/UserPreferencesModal').then((m) => m.UserPreferencesModal),
+  { ssr: false }
+);
 
 export default function HomePage() {
   const { isAuthenticated, openAuthModal } = useUserAuth();
@@ -19,6 +24,8 @@ export default function HomePage() {
   const [minDiscount, setMinDiscount] = useState(0);
   const [sort, setSort] = useState<'recent' | 'discount' | 'price'>('recent');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+
+  const isForYou = activeTab === 'for_you';
 
   // Ofertas Gerais
   const {
@@ -34,13 +41,12 @@ export default function HomePage() {
     sort,
   });
 
-  // Ofertas Personalizadas do Feed
+  // Ofertas Personalizadas do Feed (executada sob demanda apenas quando na aba 'Para Você')
   const {
     data: feedData,
     isLoading: isFeedLoading,
-  } = usePersonalizedFeed(1, 24);
+  } = usePersonalizedFeed(1, 24, isForYou);
 
-  const isForYou = activeTab === 'for_you';
   const generalOffers = allData?.pages.flatMap((page) => page.items) || [];
   const feedOffers = feedData?.items || [];
   const displayedOffers = isForYou ? feedOffers : generalOffers;

@@ -15,7 +15,7 @@ interface AffiliateButtonProps {
   showIcon?: boolean;
 }
 
-export default function AffiliateButton({
+function AffiliateButtonComponent({
   offerId,
   affiliateLink,
   storeName,
@@ -82,3 +82,6 @@ export default function AffiliateButton({
     </button>
   );
 }
+
+const AffiliateButton = React.memo(AffiliateButtonComponent);
+export default AffiliateButton;

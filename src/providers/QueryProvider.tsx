@@ -10,8 +10,11 @@ export default function QueryProvider({ children }: { children: React.ReactNode 
         defaultOptions: {
           queries: {
             refetchOnWindowFocus: false,
+            refetchOnReconnect: true,
+            refetchOnMount: false,
             retry: 1,
-            staleTime: 1000 * 60 * 2, // 2 minutos
+            staleTime: 1000 * 60 * 3, // 3 minutos de frescor
+            gcTime: 1000 * 60 * 15, // Mantém dados inativos em cache por 15 minutos evitando refetches ao navegar
           },
         },
       })

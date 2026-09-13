@@ -15,7 +15,7 @@ interface OfferCardProps {
   offer: Offer;
 }
 
-export default function OfferCard({ offer }: OfferCardProps) {
+function OfferCardComponent({ offer }: OfferCardProps) {
   const {
     id,
     title,
@@ -148,3 +148,6 @@ export default function OfferCard({ offer }: OfferCardProps) {
     </div>
   );
 }
+
+const OfferCard = React.memo(OfferCardComponent);
+export default OfferCard;

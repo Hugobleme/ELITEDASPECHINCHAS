@@ -6,13 +6,14 @@ import { useUserAuth } from '@/contexts/UserAuthContext';
 import { UserPreference } from '@/types/user';
 import { queryKeys } from '@/lib/query-keys';
 
-export function usePersonalizedFeed(page = 1, limit = 12) {
+export function usePersonalizedFeed(page = 1, limit = 12, enabled = true) {
   const { token, isAuthenticated } = useUserAuth();
 
   return useQuery({
     queryKey: queryKeys.user.feed(page, limit, isAuthenticated),
     queryFn: () => getPersonalizedFeed(page, limit, token || undefined),
     staleTime: 1000 * 60 * 2, // 2 minutos
+    enabled,
   });
 }
 
