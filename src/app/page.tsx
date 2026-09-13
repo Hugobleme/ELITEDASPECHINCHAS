@@ -51,9 +51,6 @@ export default function HomePage() {
   const feedOffers = feedData?.items || [];
   const displayedOffers = isForYou ? feedOffers : generalOffers;
   const isLoading = isForYou ? isFeedLoading : isAllLoading;
-  const totalCount = isForYou
-    ? (feedData?.total ?? feedOffers.length)
-    : (allData?.pages[0]?.total ?? generalOffers.length);
 
   const handleResetFilters = () => {
     setSelectedStore('');
@@ -73,26 +70,14 @@ export default function HomePage() {
         <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-black/10 blur-3xl" />
 
-        <div className="relative z-10 flex flex-col items-start justify-between gap-5 sm:gap-6 md:flex-row md:items-center">
-          <div className="max-w-xl space-y-2 sm:space-y-2.5">
+        <div className="relative z-10">
+          <div className="max-w-2xl space-y-2 sm:space-y-2.5">
             <h1 className="text-xl xs:text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white drop-shadow-sm">
               Descontos Reais e Cupons Verificados
             </h1>
-            <p className="text-xs font-medium text-orange-100 sm:text-sm leading-relaxed max-w-lg">
+            <p className="text-xs font-medium text-orange-100 sm:text-sm leading-relaxed max-w-xl">
               Monitoramos os maiores e-commerces 24 horas por dia para você nunca mais pagar o preço cheio nas suas compras.
             </p>
-          </div>
-
-          <div className="flex items-center gap-3.5 rounded-2xl bg-black/25 p-3.5 sm:p-4 backdrop-blur-md border border-white/10 shadow-inner w-full sm:w-auto">
-            <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-amber-400/20 text-amber-300">
-              <Sparkles className="h-5 w-5 sm:h-6 sm:w-6" />
-            </div>
-            <div className="text-left">
-              <div className="text-[11px] sm:text-xs font-semibold text-orange-100">Ofertas Ativas Hoje</div>
-              <div className="text-lg sm:text-xl font-black tracking-tight text-white">
-                {totalCount > 0 ? `${totalCount}+ Ofertas` : 'Monitorando'}
-              </div>
-            </div>
           </div>
         </div>
       </div>
