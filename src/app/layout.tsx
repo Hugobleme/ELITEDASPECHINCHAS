@@ -30,7 +30,7 @@ const inter = Inter({
 });
 
 export const viewport = {
-  themeColor: '#f97316',
+  themeColor: '#7c3aed',
   width: 'device-width',
   initialScale: 1,
 };
@@ -42,7 +42,10 @@ export const metadata: Metadata = {
   keywords: ['promoções', 'ofertas', 'desconto', 'cupons', 'black friday', 'amazon', 'mercado livre', 'kabum', 'magalu', 'pechinchas'],
   manifest: '/manifest.json',
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '32x32' },
+    ],
     apple: '/apple-touch-icon.png',
   },
   openGraph: {

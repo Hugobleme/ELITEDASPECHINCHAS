@@ -2,17 +2,17 @@ const fs = require('fs');
 const path = require('path');
 const sharp = require('sharp');
 
-// SVG de alta resolução da chama da Elite das Pechinchas com fundo degradê laranja
+// SVG de alta resolução da chama da Elite das Pechinchas com fundo degradê violeta elétrico e magenta neon
 const svgIcon = `
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ea580c"/>
-      <stop offset="50%" stop-color="#f97316"/>
-      <stop offset="100%" stop-color="#fbbf24"/>
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="50%" stop-color="#9333ea"/>
+      <stop offset="100%" stop-color="#ec4899"/>
     </linearGradient>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="0.25"/>
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="0.3"/>
     </filter>
   </defs>
   
@@ -70,6 +70,10 @@ async function generate() {
     .png()
     .toFile(path.join(publicDir, 'favicon.ico'));
   console.log('✓ favicon.ico gerado');
+
+  // 6. favicon.svg (vetorial nativo para navegadores modernos)
+  fs.writeFileSync(path.join(publicDir, 'favicon.svg'), svgIcon.trim());
+  console.log('✓ favicon.svg gerado');
 }
 
 generate().catch(console.error);

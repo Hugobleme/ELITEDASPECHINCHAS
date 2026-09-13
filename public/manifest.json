@@ -4,8 +4,8 @@
   "description": "As melhores promoções, ofertas e cupons de desconto verificados da internet.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b0f19",
-  "theme_color": "#f97316",
+  "background_color": "#09090c",
+  "theme_color": "#7c3aed",
   "orientation": "portrait-primary",
   "icons": [
     {
