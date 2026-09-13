@@ -8,6 +8,8 @@ import ImageWithFallback from '@/components/ImageWithFallback';
 import AffiliateButton from '@/components/AffiliateButton';
 import ShareButton from '@/components/ShareButton';
 import OfferCard from '@/components/OfferCard';
+import CouponBadge from '@/components/CouponBadge';
+import TemperatureVote from '@/components/TemperatureVote';
 import { OfferDetailActions } from '@/components/user/OfferDetailActions';
 import {
   Clock,
@@ -17,6 +19,7 @@ import {
   TrendingDown,
   Sparkles,
   ExternalLink,
+  Truck,
 } from 'lucide-react';
 
 interface OfferPageProps {
@@ -77,8 +80,33 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
 
   const savings = formatSavings(offer.price_original, offer.price_current);
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: offer.title,
+    image: offer.image_url,
+    description: `Compre ${offer.title} com desconto verificado na ${offer.store}.`,
+    offers: {
+      '@type': 'Offer',
+      price: offer.price_current,
+      priceCurrency: 'BRL',
+      availability: 'https://schema.org/InStock',
+      url: offer.affiliate_link,
+      seller: {
+        '@type': 'Organization',
+        name: offer.store,
+      },
+    },
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+      {/* Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* Breadcrumb de Navegação */}
       <nav className="mb-6 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
         <Link href="/" className="hover:text-orange-600 dark:hover:text-orange-400">
@@ -125,15 +153,18 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
           {/* Lado Direito: Informações, Preços e Botões */}
           <div className="flex flex-col justify-between lg:col-span-6">
             <div className="space-y-4">
-              {/* Loja e Data */}
+              {/* Loja, Temperatura e Data */}
               <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-800/80">
-                <Link
-                  href={`/loja/${encodeURIComponent(offer.store.toLowerCase().replace(/\s+/g, '-'))}`}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-orange-50 px-3 py-1 text-xs font-bold text-orange-600 hover:bg-orange-100 dark:bg-orange-950/40 dark:text-orange-400"
-                >
-                  <Tag className="h-3.5 w-3.5" />
-                  <span>Vendido por {offer.store}</span>
-                </Link>
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/loja/${encodeURIComponent(offer.store.toLowerCase().replace(/\s+/g, '-'))}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-orange-50 px-3 py-1 text-xs font-bold text-orange-600 hover:bg-orange-100 dark:bg-orange-950/40 dark:text-orange-400"
+                  >
+                    <Tag className="h-3.5 w-3.5" />
+                    <span>Vendido por {offer.store}</span>
+                  </Link>
+                  <TemperatureVote offerId={offer.id} initialTemperature={offer.temperature || 180} />
+                </div>
 
                 <div className="flex items-center gap-1 text-xs font-medium text-slate-400 dark:text-slate-500">
                   <Clock className="h-3.5 w-3.5" />
@@ -164,12 +195,29 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
                       Economize {savings}
                     </span>
                   )}
+                  {offer.free_shipping && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-600 text-white px-2.5 py-0.5 text-xs font-bold shadow-sm">
+                      <Truck className="h-3 w-3" />
+                      Frete Grátis
+                    </span>
+                  )}
                 </div>
+
+                {offer.installments && (
+                  <p className="mt-1 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                    ou {offer.installments}
+                  </p>
+                )}
 
                 <p className="mt-2 text-[11px] text-slate-500 dark:text-slate-400">
                   *Preço e condições verificados na publicação. Sujeito à alteração pela loja sem aviso prévio.
                 </p>
               </div>
+
+              {/* Cupom em Destaque Especial */}
+              {offer.coupon_code && (
+                <CouponBadge code={offer.coupon_code} size="lg" />
+              )}
 
               {/* Reassurance da Loja */}
               <div className="flex items-center gap-2 rounded-xl bg-slate-50 p-3 text-xs text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">

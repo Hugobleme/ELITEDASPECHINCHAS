@@ -9,14 +9,26 @@ import { PriceAlertModal } from '@/components/user/PriceAlertModal';
 import { PushNotificationBanner } from '@/components/user/PushNotificationBanner';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import ScrollToTop from '@/components/ScrollToTop';
 
 const inter = Inter({ subsets: ['latin'] });
+
+export const viewport = {
+  themeColor: '#f97316',
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: 'Elite das Pechinchas — As Melhores Promoções e Cupons da Internet',
   description:
     'Agregador de promoções com curadoria e links verificados. Encontre descontos imperdíveis em eletrônicos, celulares, games, eletrodomésticos e muito mais.',
   keywords: ['promoções', 'ofertas', 'desconto', 'cupons', 'black friday', 'amazon', 'mercado livre', 'kabum', 'magalu', 'pechinchas'],
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
   openGraph: {
     title: 'Elite das Pechinchas — Promoções Verificadas em Tempo Real',
     description: 'Ofertas com desconto real reunidas em um só lugar.',
@@ -47,6 +59,7 @@ export default function RootLayout({
               <UserAuthModal />
               <PriceAlertModal />
               <PushNotificationBanner />
+              <ScrollToTop />
             </PriceAlertModalProvider>
           </UserAuthProvider>
         </QueryProvider>

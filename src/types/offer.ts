@@ -16,6 +16,10 @@ export interface Offer {
   status: OfferStatus;
   published_at: string | null;
   created_at: string;
+  coupon_code?: string; // Cupom de desconto exclusivo (ex: VALE20)
+  installments?: string; // Informações de parcelamento (ex: 10x de R$ 219,90 sem juros)
+  free_shipping?: boolean; // Se conta com frete grátis
+  temperature?: number; // Pontuação de temperatura da comunidade (ex: +280°)
 }
 
 export interface OffersFilterParams {

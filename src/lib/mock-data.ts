@@ -40,6 +40,10 @@ export const MOCK_OFFERS: Offer[] = [
     status: 'published',
     published_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 25 * 60 * 1000).toISOString(),
+    coupon_code: 'TV150',
+    installments: '10x de R$ 219,90 sem juros',
+    free_shipping: true,
+    temperature: 342,
   },
   {
     id: 'a12b3c4d-5e6f-7a8b-9c0d-1e2f3a4b5c6d',
@@ -57,6 +61,10 @@ export const MOCK_OFFERS: Offer[] = [
     status: 'published',
     published_at: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    coupon_code: 'PLAY200',
+    installments: '10x de R$ 319,99 sem juros',
+    free_shipping: true,
+    temperature: 518,
   },
   {
     id: 'b23c4d5e-6f7a-8b9c-0d1e-2f3a4b5c6d7e',
@@ -74,6 +82,10 @@ export const MOCK_OFFERS: Offer[] = [
     status: 'published',
     published_at: new Date(Date.now() - 80 * 60 * 1000).toISOString(),
     created_at: new Date(Date.now() - 100 * 60 * 1000).toISOString(),
+    coupon_code: 'GALAXY500',
+    installments: '10x de R$ 549,90 sem juros',
+    free_shipping: true,
+    temperature: 842,
   },
   {
     id: 'c34d5e6f-7a8b-9c0d-1e2f-3a4b5c6d7e8f',

@@ -7,7 +7,9 @@ import { formatBRL, formatDiscount, formatRelativeDate } from '@/lib/formatters'
 import ImageWithFallback from './ImageWithFallback';
 import AffiliateButton from './AffiliateButton';
 import { FavoriteButton } from './user/FavoriteButton';
-import { Clock, ExternalLink } from 'lucide-react';
+import CouponBadge from './CouponBadge';
+import TemperatureVote from './TemperatureVote';
+import { Clock, ExternalLink, Truck } from 'lucide-react';
 
 interface OfferCardProps {
   offer: Offer;
@@ -24,15 +26,22 @@ export default function OfferCard({ offer }: OfferCardProps) {
     image_url,
     affiliate_link,
     published_at,
+    coupon_code,
+    installments,
+    free_shipping,
+    temperature,
   } = offer;
 
   return (
     <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white transition-all duration-300 hover:-translate-y-1 hover:border-orange-300 hover:shadow-card-hover dark:border-slate-800/80 dark:bg-slate-900/90 dark:hover:border-orange-500/40 dark:hover:shadow-card-hover-dark">
-      {/* Top Header: Store & Relative Time */}
-      <div className="relative flex items-center justify-between border-b border-slate-100 px-3.5 py-2.5 dark:border-slate-800/60">
-        <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-          {store}
-        </span>
+      {/* Top Header: Store, Temperature & Relative Time */}
+      <div className="relative flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800/60">
+        <div className="flex items-center gap-1.5">
+          <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            {store}
+          </span>
+          <TemperatureVote offerId={id} initialTemperature={temperature || 120} size="sm" />
+        </div>
         <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
           <Clock className="h-3 w-3" />
           {formatRelativeDate(published_at)}
@@ -80,18 +89,36 @@ export default function OfferCard({ offer }: OfferCardProps) {
           </Link>
 
           {/* Pricing Block */}
-          <div className="mt-3">
+          <div className="mt-2.5 space-y-1">
             {price_original > price_current && (
               <div className="text-xs font-medium text-slate-400 line-through dark:text-slate-500">
                 De {formatBRL(price_original)}
               </div>
             )}
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Por</span>
-              <span className="text-xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
-                {formatBRL(price_current)}
-              </span>
+            <div className="flex flex-wrap items-baseline justify-between gap-1">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Por</span>
+                <span className="text-xl font-extrabold tracking-tight text-emerald-600 dark:text-emerald-400">
+                  {formatBRL(price_current)}
+                </span>
+              </div>
+              {free_shipping && (
+                <span className="inline-flex items-center gap-1 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400">
+                  <Truck className="h-2.5 w-2.5" />
+                  Frete Grátis
+                </span>
+              )}
             </div>
+            {installments && (
+              <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                ou {installments}
+              </div>
+            )}
+            {coupon_code && (
+              <div className="pt-1">
+                <CouponBadge code={coupon_code} size="sm" />
+              </div>
+            )}
           </div>
         </div>
 
