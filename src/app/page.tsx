@@ -75,14 +75,6 @@ export default function HomePage() {
 
         <div className="relative z-10 flex flex-col items-start justify-between gap-5 sm:gap-6 md:flex-row md:items-center">
           <div className="max-w-xl space-y-2 sm:space-y-2.5">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-[11px] sm:text-xs font-black uppercase tracking-wider backdrop-blur-md">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-200 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-300" />
-              </span>
-              <Flame className="h-3.5 w-3.5 fill-amber-200 text-amber-200" />
-              <span>Curadoria em Tempo Real</span>
-            </div>
             <h1 className="text-xl xs:text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white drop-shadow-sm">
               Descontos Reais e Cupons Verificados
             </h1>
