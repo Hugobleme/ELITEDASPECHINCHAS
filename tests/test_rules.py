@@ -108,3 +108,82 @@ def test_seed_database(monkeypatch, db_session):
     sources_after = db_session.query(Source).all()
     assert len(sources_after) == len(sources)
 
+
+def test_evaluate_rules_empty_title(db_session):
+    """Rejeita oferta sem título ou com título excessivamente curto."""
+    parsed = {
+        "title": "",
+        "price_current": 100.0,
+        "price_original": 200.0,
+        "discount_pct": 50,
+        "store": "Amazon",
+        "original_link": "https://amazon.com.br/dp/123",
+    }
+    approved, reason, status = evaluate_rules(parsed, db_session)
+    assert approved is False
+    assert status == "rejected"
+    assert "Título ausente" in reason
+
+
+def test_evaluate_rules_invalid_price(db_session):
+    """Rejeita oferta com preço zerado, negativo ou nulo."""
+    parsed_zero = {
+        "title": "Fone Bluetooth JBL",
+        "price_current": 0.0,
+        "price_original": 100.0,
+        "discount_pct": 100,
+        "store": "Amazon",
+        "original_link": "https://amazon.com.br/dp/123",
+    }
+    approved, reason, status = evaluate_rules(parsed_zero, db_session)
+    assert approved is False
+    assert status == "rejected"
+    assert "Preço atual inválido" in reason
+
+
+def test_evaluate_rules_missing_or_malformed_link(db_session):
+    """Rejeita oferta sem link ou com link que não seja http/https."""
+    parsed_no_link = {
+        "title": "Smart TV 50 Polegadas LG",
+        "price_current": 1899.0,
+        "price_original": 2500.0,
+        "discount_pct": 24,
+        "store": "Amazon",
+        "original_link": None,
+    }
+    approved, reason, status = evaluate_rules(parsed_no_link, db_session)
+    assert approved is False
+    assert status == "rejected"
+    assert "Link original ausente ou malformado" in reason
+
+
+def test_evaluate_rules_unidentified_store(db_session):
+    """Rejeita oferta cuja loja não foi identificada."""
+    parsed_no_store = {
+        "title": "Cadeira de Escritório",
+        "price_current": 300.0,
+        "price_original": 500.0,
+        "discount_pct": 40,
+        "store": "",
+        "original_link": "https://desconhecido.com/p/123",
+    }
+    approved, reason, status = evaluate_rules(parsed_no_store, db_session)
+    assert approved is False
+    assert status == "rejected"
+    assert "Loja não identificada" in reason
+
+
+def test_evaluate_rules_unauthorized_source(db_session):
+    """Rejeita mensagens vindas de grupos/canais de origem não autorizados."""
+    parsed = {
+        "title": "Notebook Dell Inspiron",
+        "price_current": 2500.0,
+        "price_original": 4000.0,
+        "discount_pct": 37,
+        "store": "Amazon",
+        "original_link": "https://amazon.com.br/dp/123",
+    }
+    approved, reason, status = evaluate_rules(parsed, db_session, source_name="@canal_estranho_spam")
+    assert approved is False
+    assert status == "rejected"
+    assert "Fonte não autorizada" in reason

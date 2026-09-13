@@ -10,6 +10,9 @@ import { Loader2, ArrowDown } from 'lucide-react';
 interface OfferGridProps {
   offers: Offer[];
   isLoading: boolean;
+  isError?: boolean;
+  error?: Error | null;
+  onRetry?: () => void;
   isFetchingNextPage?: boolean;
   hasNextPage?: boolean;
   onFetchNextPage?: () => void;
@@ -21,6 +24,9 @@ interface OfferGridProps {
 export default function OfferGrid({
   offers,
   isLoading,
+  isError = false,
+  error = null,
+  onRetry,
   isFetchingNextPage = false,
   hasNextPage = false,
   onFetchNextPage,
@@ -28,6 +34,34 @@ export default function OfferGrid({
   emptyTitle,
   emptyDescription,
 }: OfferGridProps) {
+  // Estado de Erro da API
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center rounded-3xl border border-rose-200/80 bg-rose-50/50 p-8 text-center dark:border-rose-900/40 dark:bg-rose-950/20 sm:p-12">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400">
+          <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+        <h3 className="mt-4 text-base font-bold text-slate-900 dark:text-slate-100">
+          Não foi possível carregar as ofertas
+        </h3>
+        <p className="mt-1.5 max-w-md text-xs font-medium text-slate-500 dark:text-slate-400">
+          {error?.message || 'Ocorreu uma instabilidade na comunicação com o servidor. Verifique sua conexão e tente novamente.'}
+        </p>
+        {onRetry && (
+          <button
+            type="button"
+            onClick={onRetry}
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-violet-500/25 transition-all hover:bg-violet-700 active:scale-95"
+          >
+            Tentar Novamente
+          </button>
+        )}
+      </div>
+    );
+  }
+
   // Estado de Carregamento Inicial
   if (isLoading) {
     return (

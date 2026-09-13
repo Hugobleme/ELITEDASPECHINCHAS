@@ -25,6 +25,8 @@ export async function getOffers(
     search = '',
   } = params;
 
+  const isMockExplicit = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
+
   if (API_BASE_URL) {
     try {
       const query = new URLSearchParams();
@@ -40,9 +42,7 @@ export async function getOffers(
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
-          const filtered = data.filter(
-            (o: Offer) => o.status === 'published' || o.status === 'approved'
-          );
+          const filtered = data.filter((o: Offer) => o.status === 'published');
           return {
             items: filtered,
             total: filtered.length,
@@ -52,24 +52,32 @@ export async function getOffers(
           };
         }
         return {
-          items: (data.items || []).filter(
-            (o: Offer) => o.status === 'published' || o.status === 'approved'
-          ),
+          items: (data.items || []).filter((o: Offer) => o.status === 'published'),
           total: data.total ?? data.items?.length ?? 0,
           page: data.page ?? page,
           limit: data.limit ?? limit,
           has_more: data.has_more ?? false,
         };
       }
-    } catch {
-      console.warn('[API] FastAPI offline. Usando dados mockados.');
+
+      // Erro HTTP retornado pela API
+      const errData = await res.json().catch(() => ({}));
+      const errorMsg = errData.detail || `Erro na API de ofertas (Status ${res.status})`;
+      if (!isMockExplicit) {
+        throw new Error(errorMsg);
+      }
+    } catch (networkErr) {
+      if (!isMockExplicit) {
+        throw networkErr instanceof Error ? networkErr : new Error(String(networkErr));
+      }
+      console.warn('[API] FastAPI indisponível. Usando mock configurado em NEXT_PUBLIC_USE_MOCK.');
     }
+  } else if (!isMockExplicit) {
+    throw new Error('NEXT_PUBLIC_API_URL não configurado.');
   }
 
-  // Fallback vitrine pública: apenas ofertas com status published ou approved
-  let results = mockStore.offers.filter(
-    (o) => o.status === 'published' || o.status === 'approved'
-  );
+  // Fallback vitrine pública (apenas ativado quando NEXT_PUBLIC_USE_MOCK=true)
+  let results = mockStore.offers.filter((o) => o.status === 'published');
 
   if (store && store !== 'todas') {
     const storeLower = store.toLowerCase();
@@ -119,23 +127,35 @@ export async function getOffers(
  * Busca oferta específica pelo ID.
  */
 export async function getOfferById(id: string): Promise<Offer | null> {
+  const isMockExplicit = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
+
   if (API_BASE_URL) {
     try {
       const res = await fetchWithTimeout(`${API_BASE_URL}/offers/${id}`);
       if (res.ok) {
         const offer = await res.json();
-        if (offer.status === 'published' || offer.status === 'approved') {
+        if (offer.status === 'published') {
           return offer;
         }
         return null;
       }
-    } catch {
-      // Fallback offline
+      if (res.status === 404) {
+        return null;
+      }
+      if (!isMockExplicit) {
+        throw new Error(`Erro ao buscar oferta (Status ${res.status})`);
+      }
+    } catch (networkErr) {
+      if (!isMockExplicit) {
+        throw networkErr instanceof Error ? networkErr : new Error(String(networkErr));
+      }
     }
+  } else if (!isMockExplicit) {
+    throw new Error('NEXT_PUBLIC_API_URL não configurado.');
   }
 
   const found = mockStore.offers.find((o) => o.id === id);
-  if (found && (found.status === 'published' || found.status === 'approved')) {
+  if (found && found.status === 'published') {
     return found;
   }
   return null;

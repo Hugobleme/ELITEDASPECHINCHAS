@@ -30,12 +30,12 @@ SOURCE_CHANNELS: List[str] = [
 # 2. Tags e Regras de Afiliados por Loja
 # ------------------------------------------------------------------------------
 DEFAULT_AFFILIATE_TAGS = {
-    "Amazon": os.getenv("AMAZON_TAG", "elitedaspechinchas-20"),
-    "Mercado Livre": os.getenv("MERCADOLIVRE_TAG", "elitedaspechinchas"),
-    "Magazine Luiza": os.getenv("MAGALU_TAG", "elitedaspechinchas"),
-    "Kabum": os.getenv("KABUM_TAG", "elitedaspechinchas-20"),
-    "Shopee": os.getenv("SHOPEE_TAG", "elitedaspechinchas"),
-    "AliExpress": os.getenv("ALIEXPRESS_TAG", "elitedaspechinchas"),
+    "Amazon": os.getenv("AMAZON_TAG", ""),
+    "Mercado Livre": os.getenv("MERCADOLIVRE_TAG", ""),
+    "Magazine Luiza": os.getenv("MAGALU_TAG", ""),
+    "Kabum": os.getenv("KABUM_TAG", ""),
+    "Shopee": os.getenv("SHOPEE_TAG", ""),
+    "AliExpress": os.getenv("ALIEXPRESS_TAG", ""),
 }
 
 # Parâmetros de URL utilizados por cada loja

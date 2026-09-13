@@ -71,13 +71,30 @@ CATEGORY_DEFAULT_IMAGES = {
 
 
 
+def is_valid_url(url: Optional[str]) -> bool:
+    """
+    Valida se uma URL é sintaticamente válida com esquema http ou https e domínio.
+    """
+    if not url or not isinstance(url, str):
+        return False
+    try:
+        parsed = urllib.parse.urlparse(url.strip())
+        return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+    except Exception:
+        return False
+
+
 def clean_text_title(raw_text: str) -> str:
     """
     Remove emojis, hashtags e termos promocionais agressivos do início do título.
+    Retorna string vazia se não houver texto válido.
     """
+    if not raw_text or not raw_text.strip():
+        return ""
+
     lines = [line.strip() for line in raw_text.split("\n") if line.strip()]
     if not lines:
-        return "Oferta Imperdível"
+        return ""
 
     # Seleciona a primeira ou segunda linha que contenha texto descritivo
     first_line = lines[0]
@@ -91,7 +108,7 @@ def clean_text_title(raw_text: str) -> str:
     cleaned = re.sub(r"[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒\s\-•]+$", "", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
-    return cleaned if len(cleaned) > 5 else lines[0]
+    return cleaned
 
 
 def parse_price(price_str: str) -> Optional[float]:
@@ -189,6 +206,7 @@ def extract_first_url(text: str) -> Optional[str]:
 def detect_store(url: Optional[str], text: str = "") -> str:
     """
     Detecta a loja a partir do domínio do link ou pelo conteúdo do texto.
+    Retorna string vazia caso nenhuma loja seja identificada.
     """
     if url:
         try:
@@ -207,7 +225,7 @@ def detect_store(url: Optional[str], text: str = "") -> str:
             if store_name.lower() in text_lower:
                 return store_name
 
-    return "Loja Parceira"
+    return ""
 
 
 def detect_category(title: str, text: str = "") -> str:
@@ -269,17 +287,24 @@ def parse_telegram_message(
 ) -> Dict[str, Any]:
     """
     Função principal de parsing de mensagens do Telegram.
-    Retorna dicionário pronto para a persistência no banco.
+    Retorna dicionário pronto para validação de regras e persistência.
+    Não injeta links nem dados fictícios.
     """
     if not text:
         text = ""
 
-    # Extração de Links
+    # Extração de Links válidos (sem fallback para URLs fictícias)
     original_link = None
     if entities_links and len(entities_links) > 0:
-        original_link = entities_links[0]
+        for link in entities_links:
+            if is_valid_url(link):
+                original_link = link.strip()
+                break
+
     if not original_link:
-        original_link = extract_first_url(text) or "https://elitedaspechinchas.com.br"
+        candidate_url = extract_first_url(text)
+        if is_valid_url(candidate_url):
+            original_link = candidate_url.strip()
 
     # Extração de Título
     title = clean_text_title(text)

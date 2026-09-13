@@ -153,3 +153,104 @@ def test_admin_sources_and_toggle(client, db_session):
     assert res_toggle.status_code == 200
     assert res_toggle.json()["is_active"] is False
 
+
+def test_list_offers_only_published(client, db_session):
+    """Garante que apenas ofertas com status 'published' aparecem na vitrine pública."""
+    pending = Offer(
+        id="offer-pending",
+        title="Oferta Pendente",
+        price_current=100.0,
+        price_original=200.0,
+        discount_pct=50,
+        store="Amazon",
+        category="eletronicos",
+        image_url="https://img.com/p.jpg",
+        affiliate_link="https://amazon.com.br/dp/123",
+        status="pending",
+    )
+    approved = Offer(
+        id="offer-approved",
+        title="Oferta Aprovada Nao Publicada",
+        price_current=150.0,
+        price_original=300.0,
+        discount_pct=50,
+        store="Amazon",
+        category="eletronicos",
+        image_url="https://img.com/a.jpg",
+        affiliate_link="https://amazon.com.br/dp/456",
+        status="approved",
+    )
+    published = Offer(
+        id="offer-pub",
+        title="Oferta Real Publicada",
+        price_current=180.0,
+        price_original=360.0,
+        discount_pct=50,
+        store="Amazon",
+        category="eletronicos",
+        image_url="https://img.com/pub.jpg",
+        affiliate_link="https://amazon.com.br/dp/789",
+        coupon_code="VALE10",
+        status="published",
+    )
+    db_session.add_all([pending, approved, published])
+    db_session.commit()
+
+    res = client.get("/offers")
+    assert res.status_code == 200
+    data = res.json()
+    items = data["items"]
+    ids = [it["id"] for it in items]
+    assert "offer-pub" in ids
+    assert "offer-pending" not in ids
+    assert "offer-approved" not in ids
+
+    # Confirma que coupon_code é serializado na resposta
+    pub_item = next(it for it in items if it["id"] == "offer-pub")
+    assert pub_item["coupon_code"] == "VALE10"
+
+
+def test_test_ingest_offer_flow(client, monkeypatch):
+    """Testa o endpoint de ingestão controlada de oferta de teste em dev."""
+    monkeypatch.setenv("ENVIRONMENT", "development")
+    monkeypatch.setenv("TEST_INGEST_KEY", "secret_dev_key")
+
+    payload = {
+        "title": "Smartphone Samsung Galaxy S24 Ultra",
+        "price_current": 4999.0,
+        "price_original": 6999.0,
+        "discount_pct": 28,
+        "store": "Amazon",
+        "category": "smartphones",
+        "original_link": "https://www.amazon.com.br/dp/B0CX123456",
+        "coupon_code": "SAMSUNG100",
+        "source_name": "TEST_SOURCE",
+    }
+    headers = {"X-Test-Key": "secret_dev_key"}
+
+    res = client.post("/offers/test-ingest", json=payload, headers=headers)
+    assert res.status_code == 201
+    data = res.json()
+    assert data["title"] == payload["title"]
+    assert data["status"] == "published"
+    assert data["coupon_code"] == "SAMSUNG100"
+    assert "amazon" in data["affiliate_link"]
+
+    # Verifica que aparece na vitrine pública
+    get_res = client.get(f"/offers/{data['id']}")
+    assert get_res.status_code == 200
+    assert get_res.json()["title"] == payload["title"]
+
+
+def test_test_ingest_offer_security(client, monkeypatch):
+    """Testa bloqueio de segurança: não permite em produção e rejeita chave errada."""
+    # 1. Chave errada em dev
+    monkeypatch.setenv("ENVIRONMENT", "development")
+    monkeypatch.setenv("TEST_INGEST_KEY", "secret_dev_key")
+    res_unauth = client.post("/offers/test-ingest", json={"title": "Teste"}, headers={"X-Test-Key": "wrong"})
+    assert res_unauth.status_code == 401
+
+    # 2. Bloqueio em produção
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    res_prod = client.post("/offers/test-ingest", json={"title": "Teste"}, headers={"X-Test-Key": "secret_dev_key"})
+    assert res_prod.status_code == 403

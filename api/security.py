@@ -6,7 +6,15 @@ from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-JWT_SECRET = os.getenv("JWT_SECRET", "super_secret_promoradar_jwt_key_2026")
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower().strip()
+JWT_SECRET = os.getenv("JWT_SECRET") or os.getenv("SECRET_KEY")
+if not JWT_SECRET:
+    if ENVIRONMENT == "production":
+        raise RuntimeError(
+            "CRÍTICO DE SEGURANÇA: JWT_SECRET ou SECRET_KEY não configurado no ambiente de produção!"
+        )
+    JWT_SECRET = "dev_insecure_jwt_secret_change_in_production"
+
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TTL_MINUTES = int(os.getenv("JWT_ACCESS_TTL", "30"))  # 30 minutos
 JWT_REFRESH_TTL_DAYS = int(os.getenv("JWT_REFRESH_TTL", "30"))   # 30 dias
