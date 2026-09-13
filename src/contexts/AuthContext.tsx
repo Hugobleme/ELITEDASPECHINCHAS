@@ -1,8 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { AdminUser } from '@/types/admin';
+import { CONFIG } from '@/lib/config';
 
 interface AuthContextType {
   user: AdminUser | null;
@@ -15,25 +16,27 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const TOKEN_KEY = 'promoradar_admin_token';
-const USER_KEY = 'promoradar_admin_user';
+const TOKEN_KEY = CONFIG.STORAGE_KEYS.ADMIN_TOKEN;
+const LEGACY_TOKEN_KEY = CONFIG.STORAGE_KEYS.LEGACY_ADMIN_TOKEN;
+const USER_KEY = 'elitedaspechinchas_admin_user';
+const LEGACY_USER_KEY = 'promoradar_admin_user';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Carrega sessão salva no navegador
+    // Carrega sessão salva no navegador com compatibilidade retroativa
     try {
-      const savedToken = localStorage.getItem(TOKEN_KEY);
-      const savedUser = localStorage.getItem(USER_KEY);
+      const savedToken =
+        localStorage.getItem(TOKEN_KEY) || localStorage.getItem(LEGACY_TOKEN_KEY);
+      const savedUser =
+        localStorage.getItem(USER_KEY) || localStorage.getItem(LEGACY_USER_KEY);
       if (savedToken && savedUser) {
         setToken(savedToken);
         setUser(JSON.parse(savedUser));
-        // Seta cookie para requisições de página
         document.cookie = `admin_token=${savedToken}; path=/; max-age=604800; SameSite=Lax`;
       }
     } catch {
@@ -45,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (username: string, password: string): Promise<{ success: boolean; error?: string }> => {
     // 1. Se houver API FastAPI configurada, tenta autenticar no endpoint remoto
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '');
+    const apiUrl = CONFIG.API_BASE_URL;
     if (apiUrl) {
       try {
         const res = await fetch(`${apiUrl}/admin/auth/login`, {
@@ -60,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const authUser: AdminUser = data.user || {
             id: '1',
             name: username,
-            email: `${username}@promoradar.com.br`,
+            email: `${username}@elitedaspechinchas.com.br`,
             role: 'admin',
           };
 
@@ -77,7 +80,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     // 2. Fallback de Autenticação (Modo Demonstração / Dev)
-    // Permite admin / admin123 ou credenciais configuradas em env
     const validUser = process.env.NEXT_PUBLIC_ADMIN_USERNAME || 'admin';
     const validPass = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || 'admin123';
 
@@ -85,8 +87,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const demoToken = `demo_jwt_${Date.now()}`;
       const demoUser: AdminUser = {
         id: 'usr_admin_01',
-        name: 'Administrador PromoRadar',
-        email: 'admin@promoradar.com.br',
+        name: 'Administrador Elite das Pechinchas',
+        email: 'admin@elitedaspechinchas.com.br',
         role: 'admin',
       };
 
@@ -108,7 +110,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setToken(null);
     setUser(null);
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(LEGACY_TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(LEGACY_USER_KEY);
     document.cookie = 'admin_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     router.push('/admin/login');
   };

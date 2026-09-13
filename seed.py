@@ -5,7 +5,7 @@ Execução: python seed.py
 """
 
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from database.connection import SessionLocal, engine, Base
 from database.models import Source, AffiliateRule
 from config import SOURCE_CHANNELS, DEFAULT_AFFILIATE_TAGS, AFFILIATE_PARAM_NAMES
@@ -34,7 +34,7 @@ def seed_database():
                     name=f"Grupo {friendly_name}",
                     channel_username=clean_channel,
                     is_active=True,
-                    created_at=datetime.utcnow(),
+                    created_at=datetime.now(timezone.utc),
                 )
                 db.add(source)
                 sources_seeded += 1

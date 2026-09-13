@@ -10,12 +10,13 @@ import {
 } from '@/lib/api';
 import { AdminOffersFilterParams, AdminOfferUpdatePayload } from '@/types/admin';
 import { useAuth } from '@/contexts/AuthContext';
+import { queryKeys } from '@/lib/query-keys';
 
 export function useAdminOffers(params: AdminOffersFilterParams = {}) {
   const { token } = useAuth();
 
   return useQuery({
-    queryKey: ['admin', 'offers', params],
+    queryKey: queryKeys.admin.offers(params),
     queryFn: () => getAdminOffers(params, token || undefined),
     staleTime: 1000 * 30, // 30 segundos
   });
@@ -25,7 +26,7 @@ export function useAdminOffer(id: string) {
   const { token } = useAuth();
 
   return useQuery({
-    queryKey: ['admin', 'offer', id],
+    queryKey: queryKeys.admin.offer(id),
     queryFn: () => getAdminOfferById(id, token || undefined),
     enabled: !!id,
   });
@@ -40,9 +41,9 @@ export function useUpdateAdminOffer() {
       updateAdminOffer(id, payload, token || undefined),
     onSuccess: () => {
       // Invalida cache de ofertas do admin, métricas e vitrine pública
-      queryClient.invalidateQueries({ queryKey: ['admin', 'offers'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'metrics'] });
-      queryClient.invalidateQueries({ queryKey: ['offers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.offersRoot() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.metricsRoot() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.offers.all() });
     },
   });
 }
@@ -54,9 +55,9 @@ export function usePublishAdminOffer() {
   return useMutation({
     mutationFn: (id: string) => publishAdminOffer(id, token || undefined),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'offers'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'metrics'] });
-      queryClient.invalidateQueries({ queryKey: ['offers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.offersRoot() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.metricsRoot() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.offers.all() });
     },
   });
 }
@@ -69,9 +70,9 @@ export function useBulkAdminOffers() {
     mutationFn: ({ ids, action }: { ids: string[]; action: 'approve' | 'reject' | 'publish' }) =>
       bulkActionAdminOffers(ids, action, token || undefined),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'offers'] });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'metrics'] });
-      queryClient.invalidateQueries({ queryKey: ['offers'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.offersRoot() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.metricsRoot() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.offers.all() });
     },
   });
 }

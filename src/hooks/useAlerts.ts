@@ -3,12 +3,13 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUserAlerts, createUserAlert, deleteUserAlert } from '@/lib/api';
 import { useUserAuth } from '@/contexts/UserAuthContext';
+import { queryKeys } from '@/lib/query-keys';
 
 export function useAlerts() {
   const { token, isAuthenticated } = useUserAuth();
 
   return useQuery({
-    queryKey: ['user', 'alerts', isAuthenticated],
+    queryKey: queryKeys.user.alerts(isAuthenticated),
     queryFn: () => getUserAlerts(token || undefined),
     staleTime: 1000 * 60 * 2,
   });
@@ -27,7 +28,7 @@ export function useCreateAlert() {
       return createUserAlert(payload, token || undefined);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user', 'alerts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.alertsRoot() });
     },
   });
 }
@@ -39,7 +40,7 @@ export function useDeleteAlert() {
   return useMutation({
     mutationFn: (alertId: string) => deleteUserAlert(alertId, token || undefined),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['user', 'alerts'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.user.alertsRoot() });
     },
   });
 }

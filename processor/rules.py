@@ -1,5 +1,5 @@
 import hashlib
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 from typing import Tuple, Optional
 from sqlalchemy.orm import Session
@@ -18,11 +18,12 @@ logger = logging.getLogger(__name__)
 
 def generate_offer_hash(title: str, price_current: float) -> str:
     """
-    Gera um hash único baseado no título simplificado e no preço atual.
+    Gera um hash único combinando o título normalizado e o preço.
+    Permite detectar o mesmo produto postado com pequenos intervalos.
     """
-    simplified_title = "".join(e for e in title.lower() if e.isalnum())[:50]
-    payload = f"{simplified_title}_{price_current:.2f}"
-    return hashlib.md5(payload.encode("utf-8")).hexdigest()
+    normalized_title = title.lower().strip()
+    raw_key = f"{normalized_title}_{price_current:.2f}"
+    return hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
 
 
 def is_duplicate(
@@ -42,7 +43,7 @@ def is_duplicate(
             return True, f"Mensagem duplicada já capturada (telegram_msg_id: {telegram_msg_id})"
 
     # 2. Checagem por título e preço na janela de tempo
-    cutoff_time = datetime.utcnow() - timedelta(hours=hours)
+    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=hours)
     
     # Busca ofertas recentes da mesma faixa de preço (tolerância de R$ 1,00)
     recent_offers = (
@@ -74,7 +75,7 @@ def check_rate_limit(
     if not source_name:
         return True
 
-    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+    one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
     count = (
         db.query(Offer)
         .filter(

@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { EndUser } from '@/types/user';
 import { apiUserLogin, apiUserRegister, apiUserGoogle, apiGetMe } from '@/lib/api';
+import { CONFIG } from '@/lib/config';
 
 interface UserAuthContextType {
   user: EndUser | null;
@@ -21,8 +22,10 @@ interface UserAuthContextType {
 
 const UserAuthContext = createContext<UserAuthContextType | undefined>(undefined);
 
-const USER_TOKEN_KEY = 'promoradar_user_token';
-const USER_DATA_KEY = 'promoradar_user_data';
+const USER_TOKEN_KEY = CONFIG.STORAGE_KEYS.USER_TOKEN;
+const LEGACY_USER_TOKEN_KEY = CONFIG.STORAGE_KEYS.LEGACY_USER_TOKEN;
+const USER_DATA_KEY = 'elitedaspechinchas_user_data';
+const LEGACY_USER_DATA_KEY = 'promoradar_user_data';
 
 export function UserAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<EndUser | null>(null);
@@ -35,8 +38,13 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const savedToken = localStorage.getItem(USER_TOKEN_KEY);
-      const savedUser = localStorage.getItem(USER_DATA_KEY);
+      const savedToken =
+        localStorage.getItem(USER_TOKEN_KEY) ||
+        localStorage.getItem(LEGACY_USER_TOKEN_KEY);
+      const savedUser =
+        localStorage.getItem(USER_DATA_KEY) ||
+        localStorage.getItem(LEGACY_USER_DATA_KEY);
+
       if (savedToken && savedUser) {
         setToken(savedToken);
         setUser(JSON.parse(savedUser));
@@ -70,8 +78,9 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
 
       closeAuthModal();
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Erro ao realizar login.' };
+    } catch (err: unknown) {
+      const error = err as Error;
+      return { success: false, error: error.message || 'Erro ao realizar login.' };
     }
   };
 
@@ -87,8 +96,9 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
 
       closeAuthModal();
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Erro ao criar conta.' };
+    } catch (err: unknown) {
+      const error = err as Error;
+      return { success: false, error: error.message || 'Erro ao criar conta.' };
     }
   };
 
@@ -104,8 +114,9 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
 
       closeAuthModal();
       return { success: true };
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Erro no login com Google.' };
+    } catch (err: unknown) {
+      const error = err as Error;
+      return { success: false, error: error.message || 'Erro no login com Google.' };
     }
   };
 
@@ -113,7 +124,9 @@ export function UserAuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setToken(null);
     localStorage.removeItem(USER_TOKEN_KEY);
+    localStorage.removeItem(LEGACY_USER_TOKEN_KEY);
     localStorage.removeItem(USER_DATA_KEY);
+    localStorage.removeItem(LEGACY_USER_DATA_KEY);
   };
 
   return (

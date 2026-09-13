@@ -3,12 +3,13 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import { getOffers } from '@/lib/api';
 import { OffersFilterParams } from '@/types/offer';
+import { queryKeys } from '@/lib/query-keys';
 
 export function useOffersInfinite(params: OffersFilterParams = {}) {
   const { store, category, min_discount, sort, search } = params;
 
   return useInfiniteQuery({
-    queryKey: ['offers', 'infinite', { store, category, min_discount, sort, search }],
+    queryKey: queryKeys.offers.infinite({ store, category, min_discount, sort, search }),
     queryFn: async ({ pageParam = 1 }) => {
       return getOffers({
         ...params,
@@ -31,7 +32,7 @@ export function useOffers(params: OffersFilterParams = {}) {
   const { store, category, min_discount, sort, search, page = 1, limit = 12 } = params;
 
   return useQuery({
-    queryKey: ['offers', { store, category, min_discount, sort, search, page, limit }],
+    queryKey: queryKeys.offers.list({ store, category, min_discount, sort, search, page, limit }),
     queryFn: () => getOffers(params),
     staleTime: 1000 * 60 * 2,
   });

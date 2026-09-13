@@ -1,5 +1,5 @@
 import pytest
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from database.models import Offer
 from processor.rules import (
     generate_offer_hash,
@@ -48,7 +48,7 @@ def test_is_duplicate_by_hash(db_session):
         category="casa-cozinha",
         image_url="https://img.com/cad.jpg",
         affiliate_link="https://ml.com/af",
-        created_at=datetime.utcnow() - timedelta(hours=2),
+        created_at=datetime.now(timezone.utc) - timedelta(hours=2),
         status="pending",
     )
     db_session.add(existing)

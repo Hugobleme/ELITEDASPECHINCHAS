@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import (
     Column,
     String,
@@ -22,6 +22,11 @@ def UUID_COLUMN():
     return Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
 
 
+# Helper para timestamp UTC atual
+def utcnow():
+    return datetime.now(timezone.utc)
+
+
 # ==========================================
 # Modelos Existentes (Contexto do Backend)
 # ==========================================
@@ -34,7 +39,7 @@ class Source(Base):
     name = Column(String(255), nullable=False)
     channel_username = Column(String(255), nullable=False)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
 
 class Offer(Base):
@@ -54,7 +59,7 @@ class Offer(Base):
     source_name = Column(String(100), nullable=True)
     status = Column(String(50), default="pending")  # pending, approved, published, rejected
     published_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
     favorites = relationship("Favorite", back_populates="offer", cascade="all, delete-orphan")
 
@@ -81,7 +86,7 @@ class User(Base):
     password_hash = Column(String(255), nullable=True)  # Null se cadastro via Google
     name = Column(String(255), nullable=False)
     provider = Column(String(50), default="email")  # email, google
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
     preferences = relationship("UserPreference", back_populates="user", uselist=False, cascade="all, delete-orphan")
     favorites = relationship("Favorite", back_populates="user", cascade="all, delete-orphan")
@@ -108,7 +113,7 @@ class Favorite(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     offer_id = Column(String(36), ForeignKey("offers.id", ondelete="CASCADE"), nullable=False, index=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
     __table_args__ = (
         UniqueConstraint("user_id", "offer_id", name="uq_user_favorite_offer"),
@@ -128,7 +133,7 @@ class PriceAlert(Base):
     keyword = Column(String(255), nullable=True)
     target_discount = Column(Integer, nullable=False, default=0)
     active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
     user = relationship("User", back_populates="alerts")
 
@@ -141,7 +146,7 @@ class PushSubscription(Base):
     endpoint = Column(Text, nullable=False, index=True)
     p256dh = Column(Text, nullable=False)
     auth = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utcnow)
 
     __table_args__ = (
         UniqueConstraint("user_id", "endpoint", name="uq_user_push_endpoint"),
@@ -157,7 +162,7 @@ class Notification(Base):
     user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     offer_id = Column(String(36), ForeignKey("offers.id", ondelete="CASCADE"), nullable=False, index=True)
     alert_id = Column(String(36), ForeignKey("price_alerts.id", ondelete="SET NULL"), nullable=True)
-    sent_at = Column(DateTime, default=datetime.utcnow)
+    sent_at = Column(DateTime, default=utcnow)
     status = Column(String(50), default="sent")  # sent, failed, expired
 
     user = relationship("User", back_populates="notifications")
