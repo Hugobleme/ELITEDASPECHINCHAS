@@ -3,19 +3,7 @@
 import React, { useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import {
-  Sparkles,
-  Smartphone,
-  Laptop,
-  Gamepad2,
-  Home,
-  Tv,
-  Shirt,
-  HeartPulse,
-  Tag,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useCategories } from '@/hooks/useTaxonomies';
 
 interface CategoryChipsProps {
@@ -24,16 +12,52 @@ interface CategoryChipsProps {
   isFilterMode?: boolean;
 }
 
-const ICON_MAP: Record<string, React.ReactNode> = {
-  todas: <Sparkles className="h-4 w-4" />,
-  eletronicos: <Smartphone className="h-4 w-4" />,
-  informatica: <Laptop className="h-4 w-4" />,
-  games: <Gamepad2 className="h-4 w-4" />,
-  'casa-e-cozinha': <Home className="h-4 w-4" />,
-  'tv-e-audio': <Tv className="h-4 w-4" />,
-  'moda-e-calcados': <Shirt className="h-4 w-4" />,
-  'beleza-e-saude': <HeartPulse className="h-4 w-4" />,
+const CATEGORY_EMOJIS: Record<string, string> = {
+  todas: '✨',
+  eletronicos: '📱',
+  informatica: '💻',
+  games: '🎮',
+  'casa-e-cozinha': '🍳',
+  'tv-e-audio': '📺',
+  'moda-e-calcados': '👟',
+  'beleza-e-saude': '💄',
+  esportes: '⚽',
+  livros: '📚',
+  automotivo: '🚗',
+  bebes: '🍼',
+  supermercado: '🛒',
+  ferramentas: '🔧',
 };
+
+function getCategoryEmoji(slugOrName: string): string {
+  const norm = (slugOrName || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '-');
+
+  for (const [key, emoji] of Object.entries(CATEGORY_EMOJIS)) {
+    if (norm.includes(key) || key.includes(norm)) {
+      return emoji;
+    }
+  }
+
+  if (norm.includes('eletro') || norm.includes('celular') || norm.includes('fone')) return '📱';
+  if (norm.includes('info') || norm.includes('pc') || norm.includes('computador')) return '💻';
+  if (norm.includes('game') || norm.includes('jogo') || norm.includes('console')) return '🎮';
+  if (norm.includes('casa') || norm.includes('cozinha') || norm.includes('lar')) return '🍳';
+  if (norm.includes('tv') || norm.includes('audio') || norm.includes('som')) return '📺';
+  if (norm.includes('moda') || norm.includes('calcado') || norm.includes('roupa') || norm.includes('tenis')) return '👟';
+  if (norm.includes('beleza') || norm.includes('saude') || norm.includes('perfum')) return '💄';
+  if (norm.includes('esporte') || norm.includes('fitness') || norm.includes('treino')) return '⚽';
+  if (norm.includes('livro') || norm.includes('papelaria')) return '📚';
+  if (norm.includes('auto') || norm.includes('carro')) return '🚗';
+  if (norm.includes('bebe') || norm.includes('infantil') || norm.includes('crianca')) return '🍼';
+  if (norm.includes('mercado') || norm.includes('alimento') || norm.includes('bebida')) return '🛒';
+  if (norm.includes('ferramenta') || norm.includes('construcao')) return '🔧';
+
+  return '🏷️';
+}
 
 export default function CategoryChips({
   selectedCategory = 'todas',
@@ -77,7 +101,7 @@ export default function CategoryChips({
             selectedCategory === cat.slug ||
             (pathname === `/categoria/${cat.slug}` && !isFilterMode);
 
-          const icon = ICON_MAP[cat.slug] || <Tag className="h-4 w-4" />;
+          const emoji = getCategoryEmoji(cat.slug || cat.name);
 
           if (isFilterMode && onSelectCategory) {
             return (
@@ -91,7 +115,7 @@ export default function CategoryChips({
                     : 'border border-slate-200/90 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50/60 hover:text-violet-600 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-violet-500/40 dark:hover:bg-slate-800'
                 }`}
               >
-                {icon}
+                <span className="text-sm leading-none shrink-0" aria-hidden="true">{emoji}</span>
                 <span>{cat.name}</span>
               </button>
             );
@@ -110,7 +134,7 @@ export default function CategoryChips({
                   : 'border border-slate-200/90 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50/60 hover:text-violet-600 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-violet-500/40 dark:hover:bg-slate-800'
               }`}
             >
-              {icon}
+              <span className="text-sm leading-none shrink-0" aria-hidden="true">{emoji}</span>
               <span>{cat.name}</span>
             </Link>
           );

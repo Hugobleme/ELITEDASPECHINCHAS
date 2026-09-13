@@ -9,6 +9,7 @@ import AffiliateButton from './AffiliateButton';
 import { FavoriteButton } from './user/FavoriteButton';
 import CouponBadge from './CouponBadge';
 import TemperatureVote from './TemperatureVote';
+import StoreLogo from './StoreLogo';
 import { Clock, Truck, ChevronRight } from 'lucide-react';
 
 interface OfferCardProps {
@@ -37,8 +38,9 @@ function OfferCardComponent({ offer }: OfferCardProps) {
       {/* Top Header: Store, Temperature & Relative Time */}
       <div className="relative flex items-center justify-between gap-1.5 border-b border-slate-100/90 px-3.5 py-2.5 dark:border-zinc-800/60">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-zinc-800/90 dark:text-zinc-300 truncate max-w-[115px]">
-            {store}
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-zinc-800/90 dark:text-zinc-300 truncate max-w-[130px]">
+            <StoreLogo storeName={store} size="xs" />
+            <span className="truncate">{store}</span>
           </span>
           <TemperatureVote offerId={id} initialTemperature={temperature || 120} size="sm" />
         </div>

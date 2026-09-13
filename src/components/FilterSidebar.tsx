@@ -3,6 +3,54 @@
 import React from 'react';
 import { SlidersHorizontal, X, RotateCcw, Store, Percent, Tag, Check } from 'lucide-react';
 import { useCategories, useStores } from '@/hooks/useTaxonomies';
+import StoreLogo from './StoreLogo';
+
+const CATEGORY_EMOJIS: Record<string, string> = {
+  todas: '✨',
+  eletronicos: '📱',
+  informatica: '💻',
+  games: '🎮',
+  'casa-e-cozinha': '🍳',
+  'tv-e-audio': '📺',
+  'moda-e-calcados': '👟',
+  'beleza-e-saude': '💄',
+  esportes: '⚽',
+  livros: '📚',
+  automotivo: '🚗',
+  bebes: '🍼',
+  supermercado: '🛒',
+  ferramentas: '🔧',
+};
+
+function getCategoryEmoji(slugOrName: string): string {
+  const norm = (slugOrName || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '-');
+
+  for (const [key, emoji] of Object.entries(CATEGORY_EMOJIS)) {
+    if (norm.includes(key) || key.includes(norm)) {
+      return emoji;
+    }
+  }
+
+  if (norm.includes('eletro') || norm.includes('celular') || norm.includes('fone')) return '📱';
+  if (norm.includes('info') || norm.includes('pc') || norm.includes('computador')) return '💻';
+  if (norm.includes('game') || norm.includes('jogo') || norm.includes('console')) return '🎮';
+  if (norm.includes('casa') || norm.includes('cozinha') || norm.includes('lar')) return '🍳';
+  if (norm.includes('tv') || norm.includes('audio') || norm.includes('som')) return '📺';
+  if (norm.includes('moda') || norm.includes('calcado') || norm.includes('roupa') || norm.includes('tenis')) return '👟';
+  if (norm.includes('beleza') || norm.includes('saude') || norm.includes('perfum')) return '💄';
+  if (norm.includes('esporte') || norm.includes('fitness') || norm.includes('treino')) return '⚽';
+  if (norm.includes('livro') || norm.includes('papelaria')) return '📚';
+  if (norm.includes('auto') || norm.includes('carro')) return '🚗';
+  if (norm.includes('bebe') || norm.includes('infantil') || norm.includes('crianca')) return '🍼';
+  if (norm.includes('mercado') || norm.includes('alimento') || norm.includes('bebida')) return '🛒';
+  if (norm.includes('ferramenta') || norm.includes('construcao')) return '🔧';
+
+  return '🏷️';
+}
 
 interface FilterSidebarProps {
   selectedStore: string;
@@ -120,8 +168,19 @@ export default function FilterSidebar({
                 : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
             }`}
           >
-            <span>Todas as lojas</span>
-            {!selectedStore && <Check className="h-3.5 w-3.5 text-white" />}
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] ${
+                  !selectedStore
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-300'
+                }`}
+              >
+                <Store className="h-3 w-3" />
+              </div>
+              <span className="truncate">Todas as lojas</span>
+            </div>
+            {!selectedStore && <Check className="h-3.5 w-3.5 shrink-0 text-white" />}
           </button>
           {stores.map((s) => {
             const isSelected = selectedStore.toLowerCase() === s.name.toLowerCase();
@@ -136,11 +195,14 @@ export default function FilterSidebar({
                     : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
                 }`}
               >
-                <span>{s.name}</span>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <StoreLogo storeName={s.name} size="sm" className="shrink-0" />
+                  <span className="truncate">{s.name}</span>
+                </div>
                 {isSelected ? (
-                  <Check className="h-3.5 w-3.5 text-white" />
+                  <Check className="h-3.5 w-3.5 shrink-0 text-white" />
                 ) : s.count ? (
-                  <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                  <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
                     {s.count}
                   </span>
                 ) : null}
@@ -166,15 +228,21 @@ export default function FilterSidebar({
                 : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
             }`}
           >
-            <span>Todas as categorias</span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center text-sm leading-none" aria-hidden="true">
+                ✨
+              </span>
+              <span className="truncate">Todas as categorias</span>
+            </div>
             {(!selectedCategory || selectedCategory === 'todas') && (
-              <Check className="h-3.5 w-3.5 text-white" />
+              <Check className="h-3.5 w-3.5 shrink-0 text-white" />
             )}
           </button>
           {categories
             .filter((c) => c.slug !== 'todas')
             .map((c) => {
               const isSelected = selectedCategory === c.slug;
+              const emoji = getCategoryEmoji(c.slug || c.name);
               return (
                 <button
                   key={c.slug}
@@ -186,11 +254,16 @@ export default function FilterSidebar({
                       : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
                   }`}
                 >
-                  <span>{c.name}</span>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center text-sm leading-none" aria-hidden="true">
+                      {emoji}
+                    </span>
+                    <span className="truncate">{c.name}</span>
+                  </div>
                   {isSelected ? (
-                    <Check className="h-3.5 w-3.5 text-white" />
+                    <Check className="h-3.5 w-3.5 shrink-0 text-white" />
                   ) : c.count ? (
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
+                    <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
                       {c.count}
                     </span>
                   ) : null}
