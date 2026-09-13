@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { SlidersHorizontal, X, RotateCcw, Store, Percent, Tag, Check } from 'lucide-react';
 import { useCategories, useStores } from '@/hooks/useTaxonomies';
 import StoreLogo from './StoreLogo';
@@ -78,16 +78,24 @@ export default function FilterSidebar({
 }: FilterSidebarProps) {
   const { data: stores = [] } = useStores();
   const { data: categories = [] } = useCategories();
+  const [showAllStores, setShowAllStores] = useState(false);
+  const [showAllCategories, setShowAllCategories] = useState(false);
 
   const activeFiltersCount =
     (selectedStore ? 1 : 0) +
     (selectedCategory && selectedCategory !== 'todas' ? 1 : 0) +
     (minDiscount > 0 ? 1 : 0);
 
+  const displayedStores = showAllStores ? stores : stores.slice(0, 5);
+  const nonTodasCategories = categories.filter((c) => c.slug !== 'todas');
+  const displayedCategories = showAllCategories
+    ? nonTodasCategories
+    : nonTodasCategories.slice(0, 5);
+
   const content = (
-    <div className="flex h-full flex-col space-y-6">
+    <div className="flex h-full flex-col space-y-4">
       {/* Header do Filtro */}
-      <div className="flex items-center justify-between border-b border-slate-200/80 pb-4 dark:border-zinc-800">
+      <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-zinc-800">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500 dark:bg-violet-500/20">
             <SlidersHorizontal className="h-4 w-4" />
@@ -105,7 +113,7 @@ export default function FilterSidebar({
             <button
               type="button"
               onClick={onReset}
-              className="flex items-center gap-1 text-xs font-bold text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors"
+              className="flex items-center gap-1 text-xs font-bold text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors cursor-pointer"
             >
               <RotateCcw className="h-3 w-3" />
               <span>Limpar</span>
@@ -125,7 +133,7 @@ export default function FilterSidebar({
       </div>
 
       {/* 1. Desconto Mínimo (Slider) */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         <div className="flex items-center justify-between">
           <label htmlFor="min-discount-slider" className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-zinc-300">
             <Percent className="h-3.5 w-3.5 text-violet-500" />
@@ -154,7 +162,7 @@ export default function FilterSidebar({
       </div>
 
       {/* 2. Filtro por Loja */}
-      <div className="space-y-2.5">
+      <div className="space-y-1.5">
         <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-zinc-300">
           <Store className="h-3.5 w-3.5 text-violet-500" />
           <span>Lojas Parceiras</span>
@@ -163,13 +171,13 @@ export default function FilterSidebar({
           <button
             type="button"
             onClick={() => onStoreChange('')}
-            className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+            className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all ${
               !selectedStore
                 ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-sm shadow-violet-500/25'
                 : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <div
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] ${
                   !selectedStore
@@ -183,38 +191,47 @@ export default function FilterSidebar({
             </div>
             {!selectedStore && <Check className="h-3.5 w-3.5 shrink-0 text-white" />}
           </button>
-          {stores.map((s) => {
+          {displayedStores.map((s) => {
             const isSelected = selectedStore.toLowerCase() === s.name.toLowerCase();
             return (
               <button
                 key={s.slug}
                 type="button"
                 onClick={() => onStoreChange(isSelected ? '' : s.name)}
-                className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+                className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all ${
                   isSelected
                     ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-sm shadow-violet-500/25'
                     : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
                 }`}
               >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <StoreLogo storeName={s.name} size="sm" className="shrink-0" />
+                <div className="flex items-center gap-2 min-w-0">
+                  <StoreLogo storeName={s.name} size="xs" className="shrink-0" />
                   <span className="truncate">{s.name}</span>
                 </div>
                 {isSelected ? (
                   <Check className="h-3.5 w-3.5 shrink-0 text-white" />
                 ) : s.count ? (
-                  <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
+                  <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
                     {s.count}
                   </span>
                 ) : null}
               </button>
             );
           })}
+          {stores.length > 5 && (
+            <button
+              type="button"
+              onClick={() => setShowAllStores(!showAllStores)}
+              className="text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline pt-0.5 pl-1 cursor-pointer"
+            >
+              {showAllStores ? 'Mostrar menos' : `+ Ver mais (${stores.length - 5})`}
+            </button>
+          )}
         </div>
       </div>
 
       {/* 3. Filtro por Categoria */}
-      <div className="space-y-2.5">
+      <div className="space-y-1.5">
         <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-zinc-300">
           <Tag className="h-3.5 w-3.5 text-violet-500" />
           <span>Categorias</span>
@@ -223,13 +240,13 @@ export default function FilterSidebar({
           <button
             type="button"
             onClick={() => onCategoryChange('todas')}
-            className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+            className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all ${
               !selectedCategory || selectedCategory === 'todas'
                 ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-sm shadow-violet-500/25'
                 : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
             }`}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-2 min-w-0">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center text-sm leading-none" aria-hidden="true">
                 ✨
               </span>
@@ -239,53 +256,60 @@ export default function FilterSidebar({
               <Check className="h-3.5 w-3.5 shrink-0 text-white" />
             )}
           </button>
-          {categories
-            .filter((c) => c.slug !== 'todas')
-            .map((c) => {
-              const isSelected = selectedCategory === c.slug;
-              const emoji = getCategoryEmoji(c.slug || c.name);
-              return (
-                <button
-                  key={c.slug}
-                  type="button"
-                  onClick={() => onCategoryChange(isSelected ? 'todas' : c.slug)}
-                  className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-sm shadow-violet-500/25'
-                      : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center text-sm leading-none" aria-hidden="true">
-                      {emoji}
-                    </span>
-                    <span className="truncate">{c.name}</span>
-                  </div>
-                  {isSelected ? (
-                    <Check className="h-3.5 w-3.5 shrink-0 text-white" />
-                  ) : c.count ? (
-                    <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
-                      {c.count}
-                    </span>
-                  ) : null}
-                </button>
-              );
-            })}
+          {displayedCategories.map((c) => {
+            const isSelected = selectedCategory === c.slug;
+            const emoji = getCategoryEmoji(c.slug || c.name);
+            return (
+              <button
+                key={c.slug}
+                type="button"
+                onClick={() => onCategoryChange(isSelected ? 'todas' : c.slug)}
+                className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-sm shadow-violet-500/25'
+                    : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
+                }`}
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center text-sm leading-none" aria-hidden="true">
+                    {emoji}
+                  </span>
+                  <span className="truncate">{c.name}</span>
+                </div>
+                {isSelected ? (
+                  <Check className="h-3.5 w-3.5 shrink-0 text-white" />
+                ) : c.count ? (
+                  <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
+                    {c.count}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+          {nonTodasCategories.length > 5 && (
+            <button
+              type="button"
+              onClick={() => setShowAllCategories(!showAllCategories)}
+              className="text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline pt-0.5 pl-1 cursor-pointer"
+            >
+              {showAllCategories ? 'Mostrar menos' : `+ Ver mais (${nonTodasCategories.length - 5})`}
+            </button>
+          )}
         </div>
       </div>
 
       {/* 4. Campo de Cupons de Descontos */}
-      <div className="pt-3 border-t border-slate-200/80 dark:border-zinc-800">
-        <CouponSection />
+      <div className="pt-2 border-t border-slate-200/80 dark:border-zinc-800">
+        <CouponSection limit={2} />
       </div>
     </div>
   );
 
   return (
     <>
-      {/* Desktop Sidebar (Sticky com scroll suave) */}
+      {/* Desktop Sidebar: FIXA na tela, sem scroll interno, tudo visível */}
       <aside className="hidden w-72 shrink-0 lg:block">
-        <div className="sticky top-24 max-h-[calc(100vh-6.5rem)] overflow-y-auto no-scrollbar rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-card dark:border-zinc-800 dark:bg-[#121217]">
+        <div className="sticky top-20 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-card dark:border-zinc-800 dark:bg-[#121217]">
           {content}
         </div>
       </aside>
