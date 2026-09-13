@@ -118,7 +118,39 @@ flowchart TD
 
 ---
 
-## ⚙️ Guia de Execução do Backend
+---
+
+## 🤖 Automação de Captura & Ingestão (Telethon + Celery)
+
+A camada de automação é responsável por monitorar grupos-fonte no Telegram, realizar o parsing das mensagens, aplicar filtros de curadoria/deduplicação, trocar as tags de afiliados e persistir as ofertas no banco para posterior curadoria ou publicação automática.
+
+### Fluxo de Ingestão em 5 Etapas:
+1. **Captura em Tempo Real (`bot/listener.py`)**:
+   - Userbot Telethon escuta mensagens dos grupos/canais autorizados configurados em `SOURCE_CHANNELS`.
+   - Extrai texto, ID da mensagem, hyperlinks (`MessageEntityTextUrl`) e mídia.
+   - Enfileira a mensagem no Celery via task assíncrona `process_telegram_message`.
+2. **Parser Inteligente (`processor/parser.py`)**:
+   - Extrai título limpo, preço atual, preço original e calcula o `% OFF`.
+   - Reconhece cupons de desconto (`CUPOM: ...`, `Use o cupom ...`).
+   - Identifica a loja de origem por domínio e heurística textual (Amazon, Mercado Livre, Magalu, Shopee, Kabum, etc.).
+   - Classifica automaticamente na categoria correta (smartphones, informatica, games, moda, etc.).
+3. **Motor de Regras & Deduplicação (`processor/rules.py`)**:
+   - **Desconto Mínimo**: Rejeita ofertas com desconto abaixo de `MIN_DISCOUNT_PERCENT` (padrão 10%).
+   - **Deduplicação Dupla**: Verifica unicidade por `telegram_msg_id` e por hash de conteúdo (`título + preço`) nas últimas 24 horas.
+   - **Rate Limit**: Limita o volume de postagens por fonte para evitar inundações de spam.
+4. **Substituição Automática de Afiliado (`processor/affiliate.py`)**:
+   - Converte URLs da Amazon extraindo o ASIN (`/dp/ASIN?tag=minhatag-20`).
+   - Limpa parâmetros de outros afiliados no Mercado Livre e injeta a tag própria.
+   - Redireciona links Magalu para a vitrine do parceiro (`magazinevoce.com.br/parceiro/...`).
+   - Injeta parâmetros oficiais para Kabum, Shopee e AliExpress.
+   - Fallback tolerante: se a loja não tiver regra, mantém o link original e encaminha para revisão.
+5. **Persistência & Publicação (`processor/tasks.py`)**:
+   - Salva no banco com status `pending` (para aprovação na curadoria `/admin/ofertas`) ou `published` (se auto-aprovação estiver ligada).
+   - Ao ser publicada, dispara `publish_offer_to_channel` (publica no canal oficial via Bot API) e `match_and_notify` (envia Web Push aos alertas cadastrados pelos usuários).
+
+---
+
+## ⚙️ Guia de Execução Completo
 
 ### 1. Criar e Ativar Ambiente Virtual
 ```bash
@@ -134,39 +166,56 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Gerar Chaves VAPID para Web Push
-Você pode gerar o par de chaves públicas/privadas pelo terminal:
+### 3. Configurar Variáveis de Ambiente
+Copie o arquivo `.env.example` para `.env` e preencha suas chaves:
 ```bash
-# Opção A: via pywebpush
-pip install pywebpush
-vapid --gen
-
-# Opção B: via npx
-npx web-push generate-vapid-keys
+cp .env.example .env
 ```
-Insira as chaves geradas no seu arquivo `.env` em `VAPID_PUBLIC_KEY` e `VAPID_PRIVATE_KEY`.
+Variáveis principais:
+- `TELEGRAM_API_ID` e `TELEGRAM_API_HASH`: obtidos em https://my.telegram.org/apps
+- `TELEGRAM_BOT_TOKEN`: obtido com o @BotFather no Telegram
+- `TARGET_CHANNEL_ID`: canal de destino das ofertas (ex: `@elitedaspechinchas`)
+- `SOURCE_CHANNELS`: canais monitorados separados por vírgula (ex: `@grupo1,@grupo2`)
+- Tags de afiliados: `AMAZON_TAG`, `MERCADOLIVRE_TAG`, etc.
 
-### 4. Executar Migrações do Banco de Dados
+### 4. Executar Migrações e Inicializar Dados (Seed)
 ```bash
+# Executa migrações do banco
 alembic upgrade head
+
+# Popula fontes e regras iniciais de afiliados
+python seed.py
 ```
 
-### 5. Iniciar o Servidor FastAPI
+### 5. Iniciar o Worker Celery (Processamento + Notificações)
+Certifique-se de que o Redis está rodando:
 ```bash
-uvicorn api.main:app --reload --port 8000
-```
-Documentação interativa disponível em: **http://localhost:8000/docs**
-
-### 6. Iniciar o Worker Celery (para envio assíncrono de notificações)
-```bash
-# Certifique-se de que o Redis está rodando (porta 6379)
 celery -A processor.celery_app worker --loglevel=info
 ```
 
-### 7. Executar a Suíte de Testes
+### 6. Iniciar o Listener do Userbot Telethon
+Em um terminal separado:
+```bash
+python main.py
+```
+
+### 7. Iniciar a API FastAPI
+```bash
+uvicorn api.main:app --reload --port 8000
+```
+Documentação Swagger interativa: **http://localhost:8000/docs**
+
+### 8. Executar a Suíte de Testes
 ```bash
 pytest tests/ -v
 ```
+Foram implementados testes unitários e de integração cobrindo:
+- `tests/test_parser.py`: extração de preços, lojas, categorias e cupons.
+- `tests/test_affiliate.py`: substituição e sanitização de links por loja.
+- `tests/test_rules.py`: motor de regras, pisos de desconto e deduplicação 24h.
+- `tests/test_bot_formatter_publisher.py`: renderização de cards e publicação.
+- `tests/test_auth.py`, `tests/test_favorites.py`, `tests/test_alerts_matching.py`: rotas de usuário e Web Push.
+
 
 ---
 
