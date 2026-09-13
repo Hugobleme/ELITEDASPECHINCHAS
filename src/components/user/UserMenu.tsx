@@ -32,7 +32,7 @@ export function UserMenu() {
       <button
         type="button"
         onClick={() => openAuthModal('login')}
-        className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-bold rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white transition-all shadow-md shadow-orange-500/20 active:scale-95 cursor-pointer"
+        className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-bold rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white transition-all shadow-md shadow-violet-500/25 active:scale-95 cursor-pointer"
       >
         <User className="w-4 h-4" />
         <span>Entrar</span>
@@ -58,7 +58,7 @@ export function UserMenu() {
         className="flex items-center gap-2 p-1 pl-1.5 pr-3 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm cursor-pointer"
         aria-expanded={isOpen}
       >
-        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-500 via-orange-500 to-amber-400 text-white font-black text-xs flex items-center justify-center shadow-sm">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-500 text-white font-black text-xs flex items-center justify-center shadow-sm">
           {initials}
         </div>
         <span className="hidden md:inline-block text-xs font-bold text-slate-800 dark:text-slate-100 max-w-[100px] truncate">
@@ -102,11 +102,11 @@ export function UserMenu() {
               className="flex items-center justify-between px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-colors"
             >
               <div className="flex items-center gap-2.5">
-                <Bell className="w-4 h-4 text-orange-500" />
+                <Bell className="w-4 h-4 text-violet-500" />
                 <span>Alertas de Preço</span>
               </div>
               {alerts.length > 0 && (
-                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-orange-100 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400">
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400">
                   {alerts.length}
                 </span>
               )}

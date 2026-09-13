@@ -105,11 +105,11 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-500 text-white">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white">
                     <Flame className="h-4 w-4 fill-white stroke-white" />
                   </div>
                   <span className="text-sm font-black tracking-tight text-slate-900 dark:text-white">
-                    ELITEDAS<span className="text-orange-500">PECHINCHAS</span>
+                    ELITEDAS<span className="text-violet-500">PECHINCHAS</span>
                   </span>
                 </div>
                 <button
@@ -129,7 +129,7 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
                     onClick={() => setIsMobileMenuOpen(false)}
                     className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold ${
                       pathname === item.href
-                        ? 'bg-orange-500 text-white'
+                        ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white'
                         : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900'
                     }`}
                   >
@@ -138,7 +138,7 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
                       <span>{item.label}</span>
                     </div>
                     {item.badge && (
-                      <span className="rounded-full bg-orange-100 px-2 py-0.5 text-[10px] font-black text-orange-600 dark:bg-orange-950">
+                      <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-black text-violet-600 dark:bg-violet-950">
                         {item.badge}
                       </span>
                     )}

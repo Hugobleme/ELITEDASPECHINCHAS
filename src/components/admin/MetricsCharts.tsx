@@ -30,14 +30,14 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
       <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600 dark:bg-orange-950 dark:text-orange-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-400">
               <TrendingUp className="h-4 w-4" />
             </div>
             <h3 className="text-sm font-bold text-slate-900 dark:text-white">
               Cliques nos Links de Afiliado por Dia
             </h3>
           </div>
-          <span className="text-xs font-black text-orange-600 dark:text-orange-400">
+          <span className="text-xs font-black text-violet-600 dark:text-violet-400">
             {metrics.clicks_week.toLocaleString('pt-BR')} cliques
           </span>
         </div>
@@ -50,9 +50,9 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
               <YAxis tickLine={false} tick={{ fontSize: 11 }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0f172a',
+                  backgroundColor: '#121217',
                   borderRadius: '12px',
-                  border: 'none',
+                  border: '1px solid #27272a',
                   color: '#ffffff',
                   fontSize: '12px',
                 }}
@@ -61,9 +61,9 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
               <Line
                 type="monotone"
                 dataKey="clicks"
-                stroke="#f97316"
+                stroke="#8b5cf6"
                 strokeWidth={3}
-                dot={{ r: 4, fill: '#f97316' }}
+                dot={{ r: 4, fill: '#8b5cf6' }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>
@@ -105,9 +105,9 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0f172a',
+                  backgroundColor: '#121217',
                   borderRadius: '12px',
-                  border: 'none',
+                  border: '1px solid #27272a',
                   color: '#ffffff',
                   fontSize: '12px',
                 }}
@@ -143,9 +143,9 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
               <YAxis tickLine={false} tick={{ fontSize: 11 }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0f172a',
+                  backgroundColor: '#121217',
                   borderRadius: '12px',
-                  border: 'none',
+                  border: '1px solid #27272a',
                   color: '#ffffff',
                   fontSize: '12px',
                 }}
@@ -178,9 +178,9 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
               <YAxis tickLine={false} tick={{ fontSize: 11 }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#0f172a',
+                  backgroundColor: '#121217',
                   borderRadius: '12px',
-                  border: 'none',
+                  border: '1px solid #27272a',
                   color: '#ffffff',
                   fontSize: '12px',
                 }}

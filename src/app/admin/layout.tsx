@@ -28,7 +28,7 @@ function AdminProtectedShell({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-3 text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
+          <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
           <span className="text-xs font-semibold text-slate-500">Carregando painel administrativo...</span>
         </div>
       </div>

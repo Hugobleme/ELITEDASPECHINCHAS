@@ -34,7 +34,7 @@ export default function ScrollToTop() {
       onClick={scrollToTop}
       aria-label="Voltar ao topo da página"
       title="Voltar ao topo"
-      className="fixed bottom-20 left-4 sm:bottom-6 sm:left-6 z-40 flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200/80 bg-white/90 text-slate-700 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-orange-300 hover:bg-orange-500 hover:text-white active:scale-95 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-orange-500 dark:hover:bg-orange-500 dark:hover:text-white animate-in fade-in slide-in-from-bottom-4"
+      className="fixed bottom-20 left-4 sm:bottom-6 sm:left-6 z-40 flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200/80 bg-white/90 text-slate-700 shadow-xl backdrop-blur-md transition-all duration-300 hover:scale-110 hover:border-violet-300 hover:bg-violet-600 hover:text-white active:scale-95 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-violet-500 dark:hover:bg-violet-600 dark:hover:text-white animate-in fade-in slide-in-from-bottom-4"
     >
       <ArrowUp className="h-5 w-5 stroke-[2.5]" />
     </button>

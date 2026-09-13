@@ -14,14 +14,19 @@ interface MetricCardProps {
     isPositive: boolean;
   };
   href?: string;
-  colorScheme?: 'orange' | 'emerald' | 'blue' | 'purple' | 'amber';
+  colorScheme?: 'violet' | 'orange' | 'emerald' | 'blue' | 'purple' | 'amber';
 }
 
 const COLOR_MAP = {
+  violet: {
+    bg: 'bg-violet-50 dark:bg-violet-950/30',
+    text: 'text-violet-600 dark:text-violet-400',
+    border: 'hover:border-violet-300 dark:hover:border-violet-500/40',
+  },
   orange: {
-    bg: 'bg-orange-50 dark:bg-orange-950/30',
-    text: 'text-orange-600 dark:text-orange-400',
-    border: 'hover:border-orange-300 dark:hover:border-orange-500/40',
+    bg: 'bg-violet-50 dark:bg-violet-950/30',
+    text: 'text-violet-600 dark:text-violet-400',
+    border: 'hover:border-violet-300 dark:hover:border-violet-500/40',
   },
   emerald: {
     bg: 'bg-emerald-50 dark:bg-emerald-950/30',
@@ -52,7 +57,7 @@ export default function MetricCard({
   icon,
   trend,
   href,
-  colorScheme = 'orange',
+  colorScheme = 'violet',
 }: MetricCardProps) {
   const scheme = COLOR_MAP[colorScheme];
 

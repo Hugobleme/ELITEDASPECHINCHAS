@@ -108,13 +108,13 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
 
       {/* Breadcrumb de Navegação */}
       <nav className="mb-6 flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-        <Link href="/" className="hover:text-orange-600 dark:hover:text-orange-400 transition-colors">
+        <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
           Início
         </Link>
         <ChevronRight className="h-3 w-3 text-slate-400" />
         <Link
           href={`/categoria/${offer.category}`}
-          className="capitalize hover:text-orange-600 dark:hover:text-orange-400 transition-colors"
+          className="capitalize hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
         >
           {offer.category.replace(/-/g, ' ')}
         </Link>
@@ -132,7 +132,7 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
             <div className="relative aspect-square w-full max-w-lg overflow-hidden rounded-2xl bg-white p-6 shadow-inner border border-slate-100 dark:border-slate-800/80 dark:bg-slate-925">
               {/* Badge OFF chamativo */}
               {offer.discount_pct > 0 && (
-                <div className="absolute left-4 top-4 z-10 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 px-3 py-1.5 text-sm font-black text-white shadow-lg shadow-red-500/30">
+                <div className="absolute left-4 top-4 z-10 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-rose-600 px-3 py-1.5 text-sm font-black text-white shadow-lg shadow-fuchsia-500/30">
                   <TrendingDown className="h-4 w-4 stroke-[3]" />
                   <span>{formatDiscount(offer.discount_pct)}</span>
                 </div>
@@ -157,7 +157,7 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/loja/${encodeURIComponent(offer.store.toLowerCase().replace(/\s+/g, '-'))}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-orange-50 px-3 py-1 text-xs font-bold text-orange-600 hover:bg-orange-100 dark:bg-orange-950/40 dark:text-orange-400 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-violet-50 px-3 py-1 text-xs font-bold text-violet-600 hover:bg-violet-100 dark:bg-violet-950/40 dark:text-violet-400 transition-colors"
                   >
                     <Tag className="h-3.5 w-3.5" />
                     <span>Vendido por {offer.store}</span>
@@ -271,7 +271,7 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
       {relatedOffers.length > 0 && (
         <section className="mt-14 space-y-6">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-500/10 text-orange-500 dark:bg-orange-500/20">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500 dark:bg-violet-500/20">
               <Sparkles className="h-4 w-4" />
             </div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">

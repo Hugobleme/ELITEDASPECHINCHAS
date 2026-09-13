@@ -56,7 +56,7 @@ export default function AffiliateLinkCheck({
 
         {/* Seta indicativa */}
         <div className="flex justify-center py-1 lg:col-span-1 lg:py-0">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-100 text-orange-600 dark:bg-orange-950 dark:text-orange-400">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-400">
             <ArrowRight className="h-3.5 w-3.5" />
           </div>
         </div>
@@ -81,7 +81,7 @@ export default function AffiliateLinkCheck({
                 href={affiliateLink}
                 target="_blank"
                 rel="noopener noreferrer sponsored"
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-orange-600 hover:text-orange-700 dark:text-orange-400"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 hover:text-violet-700 dark:text-violet-400"
                 title="Testar link no navegador"
               >
                 <ExternalLink className="h-3 w-3" />

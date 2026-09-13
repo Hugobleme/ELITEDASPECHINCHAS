@@ -47,15 +47,15 @@ export function PushNotificationBanner() {
     <div className="fixed bottom-4 right-4 z-40 max-w-md w-[calc(100vw-2rem)] animate-in slide-in-from-bottom-5 fade-in duration-300">
       <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-xl p-4 sm:p-5 shadow-card dark:border-slate-800 dark:bg-slate-900/95">
         {/* Glow de fundo */}
-        <div className="pointer-events-none absolute right-0 top-0 -mr-10 -mt-10 h-32 w-32 rounded-full bg-orange-500/10 blur-2xl" />
+        <div className="pointer-events-none absolute right-0 top-0 -mr-10 -mt-10 h-32 w-32 rounded-full bg-violet-500/15 blur-2xl" />
 
         <div className="flex items-start gap-3.5">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 text-white shadow-glow-brand">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white shadow-glow-brand">
             <BellRing className="h-5 w-5 animate-bounce" />
           </div>
 
           <div className="flex-1 pr-6">
-            <div className="mb-0.5 flex items-center gap-1.5 text-xs font-bold text-orange-600 dark:text-orange-400">
+            <div className="mb-0.5 flex items-center gap-1.5 text-xs font-bold text-violet-600 dark:text-violet-400">
               <Sparkles className="h-3 w-3" />
               <span>SUPER ALERTA</span>
             </div>
@@ -71,7 +71,7 @@ export function PushNotificationBanner() {
                 type="button"
                 onClick={handleSubscribe}
                 disabled={isLoading}
-                className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2 text-xs font-bold text-white shadow-md shadow-orange-500/20 transition-all hover:from-orange-600 hover:to-amber-600 active:scale-95 disabled:opacity-60"
+                className="inline-flex min-h-[38px] items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-violet-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95 disabled:opacity-60"
               >
                 {isLoading ? (
                   <>

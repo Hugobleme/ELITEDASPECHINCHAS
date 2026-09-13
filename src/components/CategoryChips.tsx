@@ -62,7 +62,7 @@ export default function CategoryChips({
         type="button"
         onClick={() => scroll('left')}
         aria-label="Rolar categorias para a esquerda"
-        className="hidden md:flex absolute left-0 z-10 h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/95 text-slate-600 shadow-md backdrop-blur-md opacity-0 group-hover/chips:opacity-100 transition-opacity hover:bg-orange-50 hover:text-orange-600 dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-300 -translate-x-3 cursor-pointer"
+        className="hidden md:flex absolute left-0 z-10 h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/95 text-slate-600 shadow-md backdrop-blur-md opacity-0 group-hover/chips:opacity-100 transition-opacity hover:bg-violet-50 hover:text-violet-600 dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-300 -translate-x-3 cursor-pointer"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
@@ -87,8 +87,8 @@ export default function CategoryChips({
                 onClick={() => onSelectCategory(cat.slug)}
                 className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap min-h-[38px] ${
                   isSelected
-                    ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25 scale-[1.02]'
-                    : 'border border-slate-200/90 bg-white text-slate-700 hover:border-orange-300 hover:bg-orange-50/60 hover:text-orange-600 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-orange-500/40 dark:hover:bg-slate-800'
+                    ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-md shadow-violet-500/25 scale-[1.02]'
+                    : 'border border-slate-200/90 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50/60 hover:text-violet-600 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-violet-500/40 dark:hover:bg-slate-800'
                 }`}
               >
                 {icon}
@@ -106,8 +106,8 @@ export default function CategoryChips({
               href={href}
               className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all duration-200 whitespace-nowrap min-h-[38px] ${
                 isSelected
-                  ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25 scale-[1.02]'
-                  : 'border border-slate-200/90 bg-white text-slate-700 hover:border-orange-300 hover:bg-orange-50/60 hover:text-orange-600 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-orange-500/40 dark:hover:bg-slate-800'
+                  ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-md shadow-violet-500/25 scale-[1.02]'
+                  : 'border border-slate-200/90 bg-white text-slate-700 hover:border-violet-300 hover:bg-violet-50/60 hover:text-violet-600 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-violet-500/40 dark:hover:bg-slate-800'
               }`}
             >
               {icon}
@@ -122,7 +122,7 @@ export default function CategoryChips({
         type="button"
         onClick={() => scroll('right')}
         aria-label="Rolar categorias para a direita"
-        className="hidden md:flex absolute right-0 z-10 h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/95 text-slate-600 shadow-md backdrop-blur-md opacity-0 group-hover/chips:opacity-100 transition-opacity hover:bg-orange-50 hover:text-orange-600 dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-300 translate-x-3 cursor-pointer"
+        className="hidden md:flex absolute right-0 z-10 h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/95 text-slate-600 shadow-md backdrop-blur-md opacity-0 group-hover/chips:opacity-100 transition-opacity hover:bg-violet-50 hover:text-violet-600 dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-300 translate-x-3 cursor-pointer"
       >
         <ChevronRight className="h-4 w-4" />
       </button>

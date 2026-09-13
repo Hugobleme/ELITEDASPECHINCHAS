@@ -37,12 +37,12 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
         <div className="flex items-center justify-between gap-2 sm:gap-3">
           {/* Logo */}
           <Link href="/" className="group flex items-center gap-2 sm:gap-2.5 shrink-0">
-            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-600 via-orange-500 to-amber-400 text-white shadow-md shadow-orange-500/25 transition-transform duration-200 group-hover:scale-105">
+            <div className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-md shadow-violet-500/25 transition-transform duration-200 group-hover:scale-105">
               <Flame className="h-5 w-5 sm:h-6 sm:w-6 fill-white stroke-white" />
             </div>
             <div className="flex flex-col">
               <span className="text-base sm:text-xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-                ELITEDAS<span className="text-orange-500">PECHINCHAS</span>
+                ELITEDAS<span className="bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">PECHINCHAS</span>
               </span>
               <span className="hidden text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:block">
                 Promoções e cupons verificados
@@ -61,7 +61,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
                 placeholder="Buscar produtos, marcas, celulares..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-100/90 py-2.5 pl-10 pr-10 text-sm font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-orange-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-orange-500/15 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-orange-500 dark:focus:bg-slate-900"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-100/90 py-2.5 pl-10 pr-10 text-sm font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-violet-500/15 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-violet-500 dark:focus:bg-slate-900"
               />
               <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               {searchQuery && (
@@ -98,7 +98,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
               href="/alertas"
               title="Meus Alertas de Preço"
               aria-label="Meus Alertas de Preço"
-              className="p-2 rounded-xl text-slate-500 hover:text-orange-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-orange-400 dark:hover:bg-slate-850 transition-colors min-w-[38px] min-h-[38px] flex items-center justify-center"
+              className="p-2 rounded-xl text-slate-500 hover:text-violet-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-violet-400 dark:hover:bg-slate-850 transition-colors min-w-[38px] min-h-[38px] flex items-center justify-center"
             >
               <Bell className="w-5 h-5" />
             </Link>
@@ -120,7 +120,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
                 placeholder="Buscar produtos, marcas, celulares..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-100/90 py-2.5 pl-10 pr-10 text-base font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-orange-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-orange-500/15 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-orange-500 dark:focus:bg-slate-900"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-100/90 py-2.5 pl-10 pr-10 text-base font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-violet-500/15 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-violet-500 dark:focus:bg-slate-900"
               />
               <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               {searchQuery && (

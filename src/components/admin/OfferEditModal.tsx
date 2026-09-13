@@ -65,7 +65,7 @@ export default function OfferEditModal({
       <div className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:rounded-3xl sm:p-7">
         <div className="flex shrink-0 items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600 dark:bg-orange-950 dark:text-orange-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-400">
               <Sparkles className="h-4 w-4" />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">Editar Promoção</h3>
@@ -91,7 +91,7 @@ export default function OfferEditModal({
               rows={3}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-orange-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+              className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-medium text-slate-900 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
               required
             />
           </div>
@@ -107,7 +107,7 @@ export default function OfferEditModal({
                 step="0.01"
                 value={priceOriginal}
                 onChange={(e) => setPriceOriginal(parseFloat(e.target.value) || 0)}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-900 focus:border-violet-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 required
               />
             </div>
@@ -121,7 +121,7 @@ export default function OfferEditModal({
                 step="0.01"
                 value={priceCurrent}
                 onChange={(e) => setPriceCurrent(parseFloat(e.target.value) || 0)}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-900 focus:border-violet-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 required
               />
             </div>
@@ -149,7 +149,7 @@ export default function OfferEditModal({
                 type="text"
                 value={store}
                 onChange={(e) => setStore(e.target.value)}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-900 focus:border-violet-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 required
               />
             </div>
@@ -162,7 +162,7 @@ export default function OfferEditModal({
                 type="text"
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+                className="mt-1.5 w-full rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-xs font-medium text-slate-900 focus:border-violet-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
                 required
               />
             </div>
@@ -181,7 +181,7 @@ export default function OfferEditModal({
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-orange-500 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-500/20 hover:bg-orange-600 active:scale-95 disabled:opacity-50"
+              className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-violet-500/25 hover:from-violet-500 hover:to-fuchsia-500 active:scale-95 disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
               <span>{isSaving ? 'Salvando...' : 'Salvar Alterações'}</span>

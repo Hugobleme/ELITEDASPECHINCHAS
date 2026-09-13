@@ -56,7 +56,7 @@ export default function FavoritosPage() {
           <button
             type="button"
             onClick={() => openAuthModal('login')}
-            className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm shadow-md shadow-orange-500/25 transition-all cursor-pointer active:scale-95"
+            className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-bold text-sm shadow-md shadow-violet-500/25 transition-all cursor-pointer active:scale-95"
           >
             <LogIn className="w-4 h-4" />
             <span>Fazer Login ou Cadastrar</span>
@@ -87,7 +87,7 @@ export default function FavoritosPage() {
           </p>
           <Link
             href="/"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-orange-500/20 active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-violet-500/25 active:scale-95 cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
             <span>Explorar Promoções do Dia</span>

@@ -65,7 +65,7 @@ export default function AdminMetricsPage() {
             onClick={() => setRange('7d')}
             className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
               range === '7d'
-                ? 'bg-orange-500 text-white shadow-sm'
+                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
             }`}
           >
@@ -76,7 +76,7 @@ export default function AdminMetricsPage() {
             onClick={() => setRange('30d')}
             className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
               range === '30d'
-                ? 'bg-orange-500 text-white shadow-sm'
+                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm'
                 : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
             }`}
           >
@@ -92,7 +92,7 @@ export default function AdminMetricsPage() {
       <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
         <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <MousePointerClick className="h-5 w-5 text-orange-500" />
+            <MousePointerClick className="h-5 w-5 text-violet-500" />
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
               Top Ofertas Mais Clicadas (Mais Populares)
             </h3>
@@ -115,7 +115,7 @@ export default function AdminMetricsPage() {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
               {metrics.top_clicked_offers.map((offer, index) => (
                 <tr key={offer.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                  <td className="py-3 pl-2 font-extrabold text-orange-600 dark:text-orange-400">
+                  <td className="py-3 pl-2 font-extrabold text-violet-600 dark:text-violet-400">
                     #{index + 1}
                   </td>
                   <td className="py-3">
@@ -144,7 +144,7 @@ export default function AdminMetricsPage() {
                       href={offer.affiliate_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 hover:underline dark:text-orange-400"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-violet-600 hover:underline dark:text-violet-400"
                     >
                       <span>Abrir</span>
                       <ExternalLink className="h-3 w-3" />

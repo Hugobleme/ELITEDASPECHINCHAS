@@ -25,7 +25,7 @@ export default function BulkActionBar({
   return (
     <div className="fixed bottom-6 left-1/2 z-40 flex max-w-[calc(100vw-1rem)] -translate-x-1/2 items-center gap-1.5 rounded-2xl border border-slate-700 bg-slate-900/95 px-2.5 py-2 text-white shadow-2xl backdrop-blur-md xs:gap-2.5 xs:px-4 xs:py-2.5 dark:border-slate-700 dark:bg-slate-950/95">
       <div className="flex shrink-0 items-center gap-1.5 border-r border-slate-700 pr-2 text-xs font-semibold xs:gap-2">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-xs font-black text-white">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-500 text-xs font-black text-white">
           {selectedCount}
         </span>
         <span className="hidden sm:inline">selecionada{selectedCount > 1 ? 's' : ''}</span>
@@ -49,7 +49,7 @@ export default function BulkActionBar({
           type="button"
           onClick={onPublishAll}
           disabled={isLoading}
-          className="inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-xl bg-orange-500 px-2.5 py-2 text-xs font-bold text-white transition-all hover:bg-orange-600 active:scale-95 disabled:opacity-50 xs:px-3.5"
+          className="inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-2 text-xs font-bold text-white transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95 disabled:opacity-50 xs:px-3.5"
           title="Publicar todas imediatamente na vitrine"
         >
           <Send className="h-3.5 w-3.5 shrink-0" />

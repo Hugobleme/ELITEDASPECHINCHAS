@@ -68,16 +68,16 @@ export default function OfferGrid({
             type="button"
             onClick={onFetchNextPage}
             disabled={isFetchingNextPage}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50/50 hover:text-orange-600 active:scale-95 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-orange-500/40 dark:hover:bg-slate-800"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-800 shadow-sm transition-all hover:border-violet-300 hover:bg-violet-50/50 hover:text-violet-600 active:scale-95 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-violet-500/40 dark:hover:bg-slate-800 dark:hover:text-violet-400"
           >
             {isFetchingNextPage ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin text-orange-500" />
+                <Loader2 className="h-4 w-4 animate-spin text-violet-500" />
                 <span>Carregando mais ofertas...</span>
               </>
             ) : (
               <>
-                <ArrowDown className="h-4 w-4 text-orange-500" />
+                <ArrowDown className="h-4 w-4 text-violet-500" />
                 <span>Carregar mais ofertas</span>
               </>
             )}

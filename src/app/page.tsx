@@ -64,18 +64,18 @@ export default function HomePage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-      {/* Hero Banner Inspirado em Plataformas Modernas */}
-      <div className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-orange-600 via-orange-500 to-amber-500 p-5 sm:p-8 md:p-10 text-white shadow-xl shadow-orange-500/15">
-        {/* Glow de fundo sutil */}
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-black/10 blur-3xl" />
+      {/* Hero Banner Inspirado em Plataformas Modernas — Violeta Elétrico & Magenta Neon */}
+      <div className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-violet-950/70 via-zinc-900 to-zinc-950 p-6 sm:p-8 md:p-10 text-white border border-violet-500/20 shadow-2xl shadow-violet-500/10">
+        {/* Glows de fundo neon */}
+        <div className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-violet-600/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 h-72 w-72 rounded-full bg-fuchsia-600/15 blur-3xl" />
 
         <div className="relative z-10">
-          <div className="max-w-2xl space-y-2 sm:space-y-2.5">
+          <div className="max-w-2xl space-y-2.5">
             <h1 className="text-xl xs:text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white drop-shadow-sm">
               Descontos Reais e Cupons Verificados
             </h1>
-            <p className="text-xs font-medium text-orange-100 sm:text-sm leading-relaxed max-w-xl">
+            <p className="text-xs font-medium text-zinc-300 sm:text-sm leading-relaxed max-w-xl">
               Monitoramos os maiores e-commerces 24 horas por dia para você nunca mais pagar o preço cheio nas suas compras.
             </p>
           </div>
@@ -83,15 +83,15 @@ export default function HomePage() {
       </div>
 
       {/* Barra de Seleção de Feed: Todas vs Para Você */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200/80 dark:border-slate-800/80 pb-3.5">
-        <div className="flex w-full sm:w-auto p-1 rounded-2xl bg-slate-100/90 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200/80 dark:border-zinc-800/80 pb-3.5">
+        <div className="flex w-full sm:w-auto p-1 rounded-2xl bg-slate-100/90 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800">
           <button
             type="button"
             onClick={() => setActiveTab('all')}
             className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               !isForYou
-                ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-md shadow-violet-500/25'
+                : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Flame className="w-4 h-4" />
@@ -105,8 +105,8 @@ export default function HomePage() {
             }}
             className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
               isForYou
-                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/25'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                ? 'bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white shadow-md shadow-fuchsia-500/25'
+                : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Sparkles className="w-4 h-4" />
@@ -146,18 +146,18 @@ export default function HomePage() {
         {/* Content Area */}
         <div className="flex-1 space-y-6">
           {/* Controls Bar: Total counter + Mobile Filter Button + Sort */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-card dark:border-slate-800 dark:bg-slate-900/90">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-card dark:border-zinc-800 dark:bg-[#121217]">
             <div className="flex items-center gap-2.5">
               {/* Botão de Filtros no Mobile */}
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(true)}
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 lg:hidden dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200 cursor-pointer"
+                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 lg:hidden dark:border-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 cursor-pointer"
               >
-                <SlidersHorizontal className="h-4 w-4 text-orange-500" />
+                <SlidersHorizontal className="h-4 w-4 text-violet-500" />
                 <span>Filtros</span>
                 {hasActiveFilters && (
-                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-orange-500 text-[10px] font-black text-white">
+                  <span className="flex h-4 w-4 items-center justify-center rounded-full bg-violet-600 text-[10px] font-black text-white">
                     •
                   </span>
                 )}

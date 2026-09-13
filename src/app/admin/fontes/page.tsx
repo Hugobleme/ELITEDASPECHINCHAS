@@ -98,7 +98,7 @@ export default function AdminSourcesPage() {
       {/* Requisitos para adicionar nova fonte */}
       <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
         <div className="flex items-center gap-2">
-          <Info className="h-4 w-4 text-orange-500" />
+          <Info className="h-4 w-4 text-violet-500" />
           <h4 className="text-sm font-bold text-slate-900 dark:text-white">
             Como adicionar novos grupos-fonte?
           </h4>

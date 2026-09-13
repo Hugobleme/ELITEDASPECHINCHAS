@@ -5,21 +5,21 @@
 @layer base {
   :root {
     --background: #f8fafc;
-    --foreground: #0f172a;
+    --foreground: #09090b;
     --card: #ffffff;
-    --card-foreground: #0f172a;
-    --border: #e2e8f0;
-    --primary: #f97316;
+    --card-foreground: #09090b;
+    --border: #e4e4e7;
+    --primary: #7c3aed;
     --primary-foreground: #ffffff;
   }
 
   .dark {
-    --background: #080d1a;
-    --foreground: #f8fafc;
-    --card: #0f172a;
-    --card-foreground: #f8fafc;
-    --border: #1e293b;
-    --primary: #f97316;
+    --background: #09090c;
+    --foreground: #f4f4f5;
+    --card: #121217;
+    --card-foreground: #f4f4f5;
+    --border: #27272a;
+    --primary: #8b5cf6;
     --primary-foreground: #ffffff;
   }
 
@@ -34,7 +34,7 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 antialiased selection:bg-orange-500 selection:text-white dark:bg-[#080d1a] dark:text-slate-100;
+    @apply bg-slate-50 text-zinc-900 antialiased selection:bg-violet-600 selection:text-white dark:bg-[#09090c] dark:text-zinc-100;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     -webkit-tap-highlight-color: transparent;
   }

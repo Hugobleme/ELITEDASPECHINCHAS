@@ -78,17 +78,17 @@ export function PriceAlertModal() {
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200"
       onClick={closeAlertModal}
     >
       <div
-        className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden flex flex-col max-h-[calc(100dvh-2rem)]"
+        className="relative w-full max-w-lg bg-white dark:bg-[#121217] rounded-3xl shadow-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[calc(100dvh-2rem)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 dark:border-zinc-800/80 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-orange-500/10 dark:bg-orange-500/20 text-orange-500 flex items-center justify-center shadow-sm shrink-0">
+            <div className="w-10 h-10 rounded-2xl bg-violet-500/10 dark:bg-violet-500/20 text-violet-500 flex items-center justify-center shadow-sm shrink-0">
               <Bell className="w-5 h-5 fill-current" />
             </div>
             <div>
@@ -144,7 +144,7 @@ export function PriceAlertModal() {
                     placeholder="Ex: PlayStation 5, AirPods Pro, Air Fryer..."
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none dark:text-white"
+                    className="w-full pl-9 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none dark:text-white"
                   />
                 </div>
                 <p className="text-[11px] font-medium text-slate-400 mt-1">
@@ -161,7 +161,7 @@ export function PriceAlertModal() {
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full px-3 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none dark:text-white"
+                    className="w-full px-3 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none dark:text-white"
                   >
                     <option value="">Todas as categorias</option>
                     {categories.map((c) => (
@@ -179,7 +179,7 @@ export function PriceAlertModal() {
                   <select
                     value={store}
                     onChange={(e) => setStore(e.target.value)}
-                    className="w-full px-3 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none dark:text-white"
+                    className="w-full px-3 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none dark:text-white"
                   >
                     <option value="">Todas as lojas</option>
                     {stores.map((s) => (
@@ -195,10 +195,10 @@ export function PriceAlertModal() {
               <div className="pt-2">
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-                    <Sliders className="w-3.5 h-3.5 text-orange-500" />
+                    <Sliders className="w-3.5 h-3.5 text-violet-500" />
                     Desconto mínimo para alertar:
                   </label>
-                  <span className="px-2.5 py-0.5 rounded-lg bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300 font-black text-xs">
+                  <span className="px-2.5 py-0.5 rounded-lg bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300 font-black text-xs">
                     {targetDiscount}% OFF ou mais
                   </span>
                 </div>
@@ -209,7 +209,7 @@ export function PriceAlertModal() {
                   step="5"
                   value={targetDiscount}
                   onChange={(e) => setTargetDiscount(Number(e.target.value))}
-                  className="w-full h-2 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-orange-500"
+                  className="w-full h-2 bg-slate-200 dark:bg-zinc-700 rounded-lg appearance-none cursor-pointer accent-violet-600"
                 />
                 <div className="flex justify-between text-[10px] font-semibold text-slate-400 dark:text-slate-500 mt-1.5">
                   <span>5% (Qualquer desconto)</span>
@@ -219,7 +219,7 @@ export function PriceAlertModal() {
               </div>
 
               {/* Botões */}
-              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-100 dark:border-zinc-800">
                 <button
                   type="button"
                   onClick={closeAlertModal}
@@ -230,7 +230,7 @@ export function PriceAlertModal() {
                 <button
                   type="submit"
                   disabled={createAlertMutation.isPending}
-                  className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-95 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-orange-500/25 flex items-center gap-2 cursor-pointer disabled:opacity-60"
+                  className="px-5 py-2.5 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 active:scale-95 text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-violet-500/25 flex items-center gap-2 cursor-pointer disabled:opacity-60"
                 >
                   {createAlertMutation.isPending ? (
                     <>

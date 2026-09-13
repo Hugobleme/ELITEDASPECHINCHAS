@@ -51,7 +51,7 @@ export default function SourceToggle({ source, onToggle, isLoading = false }: So
             aria-checked={is_active}
             disabled={isLoading}
             onClick={() => onToggle(id, is_active)}
-            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-orange-500/20 disabled:opacity-50 ${
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-violet-500/20 disabled:opacity-50 ${
               is_active ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'
             }`}
           >

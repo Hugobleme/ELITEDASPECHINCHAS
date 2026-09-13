@@ -40,11 +40,11 @@ export default function Footer() {
           {/* Coluna 1: Sobre */}
           <div className="space-y-4 md:col-span-2">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 text-white shadow-glow-brand">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-md shadow-violet-500/25">
                 <Flame className="h-5 w-5 fill-white stroke-white" />
               </div>
               <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-                ELITEDAS<span className="text-orange-500">PECHINCHAS</span>
+                ELITEDAS<span className="bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">PECHINCHAS</span>
               </span>
             </div>
             <p className="max-w-md text-xs leading-relaxed text-slate-500 dark:text-slate-400">
@@ -64,27 +64,27 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs font-medium">
               <li>
-                <Link href="/loja/amazon" className="transition-colors hover:text-orange-500">
+                <Link href="/loja/amazon" className="transition-colors hover:text-violet-500">
                   Ofertas Amazon
                 </Link>
               </li>
               <li>
-                <Link href="/loja/mercado-livre" className="transition-colors hover:text-orange-500">
+                <Link href="/loja/mercado-livre" className="transition-colors hover:text-violet-500">
                   Mercado Livre
                 </Link>
               </li>
               <li>
-                <Link href="/loja/kabum" className="transition-colors hover:text-orange-500">
+                <Link href="/loja/kabum" className="transition-colors hover:text-violet-500">
                   Kabum Gamer
                 </Link>
               </li>
               <li>
-                <Link href="/loja/magalu" className="transition-colors hover:text-orange-500">
+                <Link href="/loja/magalu" className="transition-colors hover:text-violet-500">
                   Magazine Luiza
                 </Link>
               </li>
               <li>
-                <Link href="/loja/shopee" className="transition-colors hover:text-orange-500">
+                <Link href="/loja/shopee" className="transition-colors hover:text-violet-500">
                   Shopee Oficial
                 </Link>
               </li>
@@ -98,27 +98,27 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs font-medium">
               <li>
-                <Link href="/categoria/eletronicos" className="transition-colors hover:text-orange-500">
+                <Link href="/categoria/eletronicos" className="transition-colors hover:text-violet-500">
                   Eletrônicos & Celulares
                 </Link>
               </li>
               <li>
-                <Link href="/categoria/informatica" className="transition-colors hover:text-orange-500">
+                <Link href="/categoria/informatica" className="transition-colors hover:text-violet-500">
                   Informática & Hardware
                 </Link>
               </li>
               <li>
-                <Link href="/categoria/games" className="transition-colors hover:text-orange-500">
+                <Link href="/categoria/games" className="transition-colors hover:text-violet-500">
                   Games & Consoles
                 </Link>
               </li>
               <li>
-                <Link href="/categoria/casa-e-cozinha" className="transition-colors hover:text-orange-500">
+                <Link href="/categoria/casa-e-cozinha" className="transition-colors hover:text-violet-500">
                   Casa & Eletrodomésticos
                 </Link>
               </li>
               <li>
-                <Link href="/categoria/tv-e-audio" className="transition-colors hover:text-orange-500">
+                <Link href="/categoria/tv-e-audio" className="transition-colors hover:text-violet-500">
                   Smart TVs & Áudio
                 </Link>
               </li>
@@ -129,7 +129,7 @@ export default function Footer() {
         {/* Transparency Notice */}
         <div className="mt-10 rounded-2xl border border-slate-200/80 bg-white/60 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
           <div className="flex items-start sm:items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
-            <ShieldCheck className="h-4 w-4 shrink-0 text-orange-500 mt-0.5 sm:mt-0" />
+            <ShieldCheck className="h-4 w-4 shrink-0 text-violet-500 mt-0.5 sm:mt-0" />
             <p className="leading-relaxed">
               <strong className="text-slate-700 dark:text-slate-300">Transparência & Afiliados:</strong> Este site contém links de afiliados. Quando você clica e realiza uma compra através de nossas indicações, podemos receber uma pequena comissão das lojas parceiras sem absolutamente nenhum custo extra para você. Os preços exibidos dependem da disponibilidade dos lojistas.
             </p>

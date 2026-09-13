@@ -24,8 +24,8 @@ export default function AlertasPage() {
       <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200/80 pb-6 dark:border-slate-800/80">
         <div>
           <div className="flex items-center gap-2.5 mb-1.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-500/10 text-orange-500 dark:bg-orange-500/20 shadow-sm">
-              <Bell className="h-5 w-5 fill-orange-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-500 dark:bg-violet-500/20 shadow-sm">
+              <Bell className="h-5 w-5 fill-violet-500" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
               Meus Alertas de Preço
@@ -40,7 +40,7 @@ export default function AlertasPage() {
           <button
             type="button"
             onClick={() => openAlertModal()}
-            className="w-full sm:w-fit inline-flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs sm:text-sm font-bold shadow-md shadow-orange-500/25 transition-all cursor-pointer active:scale-95"
+            className="w-full sm:w-fit inline-flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-violet-500/25 transition-all cursor-pointer active:scale-95"
           >
             <Plus className="w-4 h-4" />
             <span>Criar Novo Alerta</span>
@@ -51,7 +51,7 @@ export default function AlertasPage() {
       {/* Não Autenticado */}
       {!isAuthenticated && !isAuthLoading && (
         <div className="mx-auto max-w-md my-12 p-8 text-center rounded-3xl border border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900/90 shadow-card">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 dark:bg-orange-950/40 text-orange-500 shadow-inner">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-50 dark:bg-violet-950/40 text-violet-500 shadow-inner">
             <Bell className="h-8 w-8 fill-current" />
           </div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
@@ -63,7 +63,7 @@ export default function AlertasPage() {
           <button
             type="button"
             onClick={() => openAuthModal('login')}
-            className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm shadow-md shadow-orange-500/25 transition-all cursor-pointer active:scale-95"
+            className="w-full inline-flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-bold text-sm shadow-md shadow-violet-500/25 transition-all cursor-pointer active:scale-95"
           >
             <LogIn className="w-4 h-4" />
             <span>Fazer Login ou Cadastrar</span>
@@ -98,7 +98,7 @@ export default function AlertasPage() {
           <button
             type="button"
             onClick={() => openAlertModal()}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-orange-500/20 active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-violet-500/25 active:scale-95 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Criar Meu Primeiro Alerta</span>
@@ -112,12 +112,12 @@ export default function AlertasPage() {
           {alerts.map((alert) => (
             <div
               key={alert.id}
-              className="group relative flex flex-col justify-between p-5 rounded-2xl border border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900/95 shadow-card hover:border-orange-300 dark:hover:border-orange-500/40 transition-all"
+              className="group relative flex flex-col justify-between p-5 rounded-2xl border border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900/95 shadow-card hover:border-violet-300 dark:hover:border-violet-500/40 transition-all"
             >
               <div>
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-orange-500/10 text-orange-500 dark:bg-orange-500/20 font-bold text-xs">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-500/10 text-violet-500 dark:bg-violet-500/20 font-bold text-xs">
                       <Bell className="w-4 h-4 fill-current" />
                     </span>
                     <h3 className="font-black text-slate-900 dark:text-white text-base">
@@ -138,7 +138,7 @@ export default function AlertasPage() {
 
                 {/* Filtros do Alerta */}
                 <div className="flex flex-wrap items-center gap-2 mt-2">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-xs font-bold border border-red-200/60 dark:border-red-900/40">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-fuchsia-50 dark:bg-fuchsia-950/40 text-fuchsia-700 dark:text-fuchsia-300 text-xs font-bold border border-fuchsia-200/60 dark:border-fuchsia-900/40">
                     <Percent className="w-3 h-3" />
                     {alert.target_discount}% OFF ou mais
                   </span>

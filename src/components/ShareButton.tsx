@@ -76,7 +76,7 @@ export default function ShareButton({ title, className = '' }: ShareButtonProps)
         className={`inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 active:scale-95 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 ${className}`}
         title="Compartilhar no WhatsApp, Telegram ou copiar link"
       >
-        <Share2 className="h-4 w-4 text-orange-500" />
+        <Share2 className="h-4 w-4 text-violet-500" />
         <span>Compartilhar</span>
       </button>
 

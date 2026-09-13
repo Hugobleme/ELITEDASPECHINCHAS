@@ -49,18 +49,18 @@ function AffiliateButtonComponent({
 
   const variantStyles = {
     primary:
-      'bg-gradient-to-r from-orange-500 via-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-md shadow-orange-500/25 hover:shadow-xl hover:shadow-orange-500/35 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
+      'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-md shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/35 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
     card:
-      'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-sm shadow-orange-500/20 hover:shadow-md hover:shadow-orange-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
+      'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-sm shadow-violet-500/20 hover:shadow-md hover:shadow-violet-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
     secondary:
-      'border-2 border-orange-500/80 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-950/30 active:scale-[0.98]',
+      'border-2 border-violet-500/80 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/30 active:scale-[0.98]',
   };
 
   return (
     <button
       type="button"
       onClick={handleClick}
-      className={`inline-flex items-center justify-center transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500/40 ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
+      className={`inline-flex items-center justify-center transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500/40 ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
       title={defaultLabel}
     >
       {clicked ? (

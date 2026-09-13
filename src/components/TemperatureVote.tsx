@@ -66,7 +66,7 @@ export default function TemperatureVote({
           animating ? 'scale-110' : 'scale-100'
         } ${
           isHot
-            ? 'bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400'
+            ? 'bg-fuchsia-50 text-fuchsia-600 dark:bg-fuchsia-950/40 dark:text-fuchsia-400'
             : 'bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400'
         } ${className}`}
         title={`Temperatura da oferta: ${temperature}°`}
@@ -101,7 +101,7 @@ export default function TemperatureVote({
           animating ? 'scale-110' : 'scale-100'
         } ${
           isHot
-            ? 'text-orange-600 dark:text-orange-400'
+            ? 'text-fuchsia-600 dark:text-fuchsia-400'
             : 'text-sky-600 dark:text-sky-400'
         }`}
       >
@@ -118,8 +118,8 @@ export default function TemperatureVote({
         title="Oferta muito quente!"
         className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all ${
           userVote === 'hot'
-            ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/30'
-            : 'text-slate-400 hover:bg-slate-100 hover:text-orange-500 dark:hover:bg-slate-800'
+            ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/30'
+            : 'text-slate-400 hover:bg-slate-100 hover:text-fuchsia-500 dark:hover:bg-slate-800'
         }`}
       >
         <Flame className="h-4 w-4 fill-current" />

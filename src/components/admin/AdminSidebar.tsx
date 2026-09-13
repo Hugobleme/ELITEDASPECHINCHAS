@@ -53,14 +53,14 @@ export default function AdminSidebar() {
       <div className="space-y-6">
         {/* Logo Admin */}
         <div className="flex items-center gap-2 px-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-orange-600 to-amber-500 text-white shadow-md shadow-orange-500/30">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-md shadow-violet-500/30">
             <Flame className="h-5 w-5 fill-white stroke-white" />
           </div>
           <div>
             <span className="text-base font-black tracking-tight text-slate-900 dark:text-white">
-              ELITEDAS<span className="text-orange-500">PECHINCHAS</span>
+              ELITEDAS<span className="text-violet-500">PECHINCHAS</span>
             </span>
-            <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+            <div className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">
               <ShieldCheck className="h-3 w-3" />
               <span>Painel de Curadoria</span>
             </div>
@@ -94,7 +94,7 @@ export default function AdminSidebar() {
                 href={item.href}
                 className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all ${
                   isActive
-                    ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/20'
+                    ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-violet-500/25'
                     : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900'
                 }`}
               >
@@ -107,8 +107,8 @@ export default function AdminSidebar() {
                   <span
                     className={`rounded-full px-2 py-0.5 text-[10px] font-black ${
                       isActive
-                        ? 'bg-white text-orange-600'
-                        : 'bg-orange-100 text-orange-600 dark:bg-orange-950 dark:text-orange-400'
+                        ? 'bg-white text-violet-600'
+                        : 'bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-400'
                     }`}
                   >
                     {item.badge}
@@ -129,7 +129,7 @@ export default function AdminSidebar() {
           className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
         >
           <div className="flex items-center gap-2">
-            <Zap className="h-3.5 w-3.5 text-orange-500" />
+            <Zap className="h-3.5 w-3.5 text-violet-500" />
             <span>Ver Vitrine Pública</span>
           </div>
           <ExternalLink className="h-3.5 w-3.5 text-slate-400" />

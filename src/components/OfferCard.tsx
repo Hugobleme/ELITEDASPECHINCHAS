@@ -33,16 +33,16 @@ function OfferCardComponent({ offer }: OfferCardProps) {
   } = offer;
 
   return (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/85 bg-white shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:border-orange-400/40 hover:shadow-card-hover dark:border-slate-800/80 dark:bg-slate-900/95 dark:hover:border-orange-500/40 dark:hover:shadow-card-hover-dark">
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/85 bg-white shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-400/40 hover:shadow-card-hover dark:border-zinc-800/80 dark:bg-[#121217] dark:hover:border-violet-500/50 dark:hover:shadow-card-hover-dark">
       {/* Top Header: Store, Temperature & Relative Time */}
-      <div className="relative flex items-center justify-between gap-1.5 border-b border-slate-100/90 px-3.5 py-2.5 dark:border-slate-800/60">
+      <div className="relative flex items-center justify-between gap-1.5 border-b border-slate-100/90 px-3.5 py-2.5 dark:border-zinc-800/60">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800/90 dark:text-slate-300 truncate max-w-[115px]">
+          <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-zinc-800/90 dark:text-zinc-300 truncate max-w-[115px]">
             {store}
           </span>
           <TemperatureVote offerId={id} initialTemperature={temperature || 120} size="sm" />
         </div>
-        <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500 shrink-0">
+        <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-zinc-500 shrink-0">
           <Clock className="h-3 w-3" />
           {formatRelativeDate(published_at)}
         </span>
@@ -51,18 +51,18 @@ function OfferCardComponent({ offer }: OfferCardProps) {
       {/* Product Image + Discount Badge */}
       <Link
         href={`/oferta/${id}`}
-        className="relative block aspect-[4/3] w-full overflow-hidden bg-white p-4 transition-colors dark:bg-slate-925"
+        className="relative block aspect-[4/3] w-full overflow-hidden bg-white p-4 transition-colors dark:bg-[#0d0d12]"
       >
         {/* Desconto Chamativo no canto */}
         {discount_pct > 0 && (
-          <div className="absolute left-3 top-3 z-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-red-600 to-rose-600 px-2.5 py-1 text-xs font-black tracking-wide text-white shadow-md shadow-red-500/25">
+          <div className="absolute left-3 top-3 z-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-rose-600 px-2.5 py-1 text-xs font-black tracking-wide text-white shadow-md shadow-fuchsia-500/30">
             {formatDiscount(discount_pct)}
           </div>
         )}
 
         {/* Botão de Favoritar flutuante */}
         <div className="absolute right-3 top-3 z-20">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-md transition-all hover:scale-110 hover:bg-white dark:bg-slate-800/90 dark:hover:bg-slate-800">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-md transition-all hover:scale-110 hover:bg-white dark:bg-zinc-800/90 dark:hover:bg-zinc-800">
             <FavoriteButton offerId={id} size="sm" />
           </div>
         </div>
@@ -84,7 +84,7 @@ function OfferCardComponent({ offer }: OfferCardProps) {
           {/* Title */}
           <Link href={`/oferta/${id}`}>
             <h3
-              className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 transition-colors group-hover:text-orange-600 dark:text-slate-100 dark:group-hover:text-orange-400"
+              className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 transition-colors group-hover:text-violet-600 dark:text-zinc-100 dark:group-hover:text-violet-400"
               title={title}
             >
               {title}

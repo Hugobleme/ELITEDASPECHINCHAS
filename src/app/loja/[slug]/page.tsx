@@ -26,7 +26,7 @@ export default function StorePage({ params }: StorePageProps) {
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
       {/* Breadcrumbs */}
       <nav className="mb-6 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-        <Link href="/" className="hover:text-orange-600 dark:hover:text-orange-400">
+        <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400">
           Início
         </Link>
         <ChevronRight className="h-3 w-3 text-slate-400" />
@@ -35,15 +35,15 @@ export default function StorePage({ params }: StorePageProps) {
 
       {/* Banner da Loja */}
       <div className="relative mb-8 overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-850 p-5 sm:p-8 text-white shadow-card">
-        <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-orange-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-violet-500/15 blur-3xl" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 text-white shadow-glow-brand">
+            <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white shadow-glow-brand">
               <Store className="h-5 w-5 sm:h-6 sm:w-6 stroke-[2.5]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center rounded-full bg-orange-500/20 px-2.5 py-0.5 text-[11px] font-bold text-orange-400">
+                <span className="inline-flex items-center rounded-full bg-violet-500/20 px-2.5 py-0.5 text-[11px] font-bold text-violet-300">
                   Loja Parceira Verificada
                 </span>
               </div>

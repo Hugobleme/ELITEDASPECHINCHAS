@@ -76,7 +76,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/admin/ofertas"
-              className="inline-flex items-center gap-2 rounded-2xl bg-orange-500 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-orange-500/20 transition-all hover:bg-orange-600 hover:scale-105"
+              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-violet-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:scale-105"
             >
               <Inbox className="h-4 w-4" />
               <span>Revisar Fila ({pendingCount})</span>
@@ -93,7 +93,7 @@ export default function AdminDashboardPage() {
           value={metricsLoading ? '...' : pendingCount}
           subtitle="Aguardando curadoria"
           icon={<Inbox className="h-5 w-5" />}
-          colorScheme="orange"
+          colorScheme="purple"
           href="/admin/ofertas"
         />
 
@@ -131,18 +131,18 @@ export default function AdminDashboardPage() {
         <div className="space-y-4 lg:col-span-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-orange-500" />
+              <Sparkles className="h-5 w-5 text-violet-500" />
               <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Fila de Curadoria Recente
               </h3>
-              <span className="rounded-md bg-orange-100 px-2 py-0.5 text-xs font-black text-orange-600 dark:bg-orange-950 dark:text-orange-400">
+              <span className="rounded-md bg-violet-100 px-2 py-0.5 text-xs font-black text-violet-600 dark:bg-violet-950 dark:text-violet-400">
                 {pendingCount}
               </span>
             </div>
 
             <Link
               href="/admin/ofertas"
-              className="inline-flex items-center gap-1 text-xs font-bold text-orange-600 hover:text-orange-700 dark:text-orange-400"
+              className="inline-flex items-center gap-1 text-xs font-bold text-violet-600 hover:text-violet-700 dark:text-violet-400"
             >
               <span>Ver todas</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -192,7 +192,7 @@ export default function AdminDashboardPage() {
           {/* Top Lojas */}
           <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-slate-800">
-              <Store className="h-4 w-4 text-orange-500" />
+              <Store className="h-4 w-4 text-violet-500" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
                 Top Lojas em Volume
               </h4>
@@ -207,7 +207,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                       <div
-                        className="h-full rounded-full bg-orange-500"
+                        className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
                         style={{ width: `${Math.min(100, (item.count / 60) * 100)}%` }}
                       />
                     </div>
