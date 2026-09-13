@@ -68,16 +68,16 @@ export function UserAuthModal() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-md animate-in fade-in duration-200">
       <div 
-        className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden"
+        className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden flex flex-col max-h-[calc(100dvh-2rem)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header com Abas */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
           <div className="flex space-x-4">
             <button
               type="button"
               onClick={() => { openAuthModal('login'); setError(null); }}
-              className={`text-base font-bold transition-all pb-1.5 border-b-2 cursor-pointer ${
+              className={`text-sm sm:text-base font-bold transition-all pb-1.5 border-b-2 cursor-pointer ${
                 authModalTab === 'login'
                   ? 'border-orange-500 text-orange-600 dark:text-orange-400'
                   : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -88,7 +88,7 @@ export function UserAuthModal() {
             <button
               type="button"
               onClick={() => { openAuthModal('register'); setError(null); }}
-              className={`text-base font-bold transition-all pb-1.5 border-b-2 cursor-pointer ${
+              className={`text-sm sm:text-base font-bold transition-all pb-1.5 border-b-2 cursor-pointer ${
                 authModalTab === 'register'
                   ? 'border-orange-500 text-orange-600 dark:text-orange-400'
                   : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -107,8 +107,8 @@ export function UserAuthModal() {
           </button>
         </div>
 
-        {/* Corpo do Modal */}
-        <div className="p-6">
+        {/* Corpo do Modal com Scroll Suave */}
+        <div className="p-5 sm:p-6 overflow-y-auto flex-1">
           <div className="text-center mb-6">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200/60 dark:border-orange-900/40 mb-2">
               <Sparkles className="w-3.5 h-3.5" />

@@ -221,14 +221,18 @@ export default function FilterSidebar({
           />
 
           {/* Drawer Panel */}
-          <div className="relative ml-auto flex h-full w-full max-w-xs flex-col overflow-y-auto bg-white p-6 shadow-2xl dark:bg-slate-900 animate-in slide-in-from-right duration-200">
-            {content}
+          <div className="relative ml-auto flex h-full w-full max-w-xs sm:max-w-sm flex-col bg-white shadow-2xl dark:bg-slate-900 animate-in slide-in-from-right duration-200">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-5 sm:p-6">
+              {content}
+            </div>
 
-            <div className="mt-8 border-t border-slate-200 pt-4 dark:border-slate-800">
+            {/* Pinned Bottom CTA with safe-area padding */}
+            <div className="sticky bottom-0 z-10 border-t border-slate-200/80 bg-white/95 backdrop-blur-md p-4 pb-safe dark:border-slate-800 dark:bg-slate-900/95">
               <button
                 type="button"
                 onClick={onCloseMobile}
-                className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 py-3 text-center text-sm font-bold text-white shadow-md shadow-orange-500/20 hover:from-orange-600 hover:to-amber-600"
+                className="w-full rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 py-3 text-center text-sm font-bold text-white shadow-md shadow-orange-500/20 hover:from-orange-600 hover:to-amber-600 active:scale-95 cursor-pointer"
               >
                 Ver Ofertas
               </button>

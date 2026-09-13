@@ -56,11 +56,21 @@ export default function CategoryChips({
   };
 
   return (
-    <div className="relative flex items-center py-2">
+    <div className="relative flex items-center py-2 group/chips">
+      {/* Botão Scroll Esquerda (Desktop) */}
+      <button
+        type="button"
+        onClick={() => scroll('left')}
+        aria-label="Rolar categorias para a esquerda"
+        className="hidden md:flex absolute left-0 z-10 h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/95 text-slate-600 shadow-md backdrop-blur-md opacity-0 group-hover/chips:opacity-100 transition-opacity hover:bg-orange-50 hover:text-orange-600 dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-300 -translate-x-3 cursor-pointer"
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+
       {/* Scrollable Container */}
       <div
         ref={scrollRef}
-        className="no-scrollbar flex w-full items-center gap-2 overflow-x-auto scroll-smooth py-0.5"
+        className="no-scrollbar flex w-full items-center gap-2 overflow-x-auto scroll-smooth py-1 px-0.5"
       >
         {fullCategories.map((cat) => {
           const isSelected =
@@ -75,7 +85,7 @@ export default function CategoryChips({
                 key={cat.slug}
                 type="button"
                 onClick={() => onSelectCategory(cat.slug)}
-                className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all duration-200 cursor-pointer ${
+                className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap min-h-[38px] ${
                   isSelected
                     ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25 scale-[1.02]'
                     : 'border border-slate-200/90 bg-white text-slate-700 hover:border-orange-300 hover:bg-orange-50/60 hover:text-orange-600 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-orange-500/40 dark:hover:bg-slate-800'
@@ -94,7 +104,7 @@ export default function CategoryChips({
             <Link
               key={cat.slug}
               href={href}
-              className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all duration-200 ${
+              className={`flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all duration-200 whitespace-nowrap min-h-[38px] ${
                 isSelected
                   ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25 scale-[1.02]'
                   : 'border border-slate-200/90 bg-white text-slate-700 hover:border-orange-300 hover:bg-orange-50/60 hover:text-orange-600 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-300 dark:hover:border-orange-500/40 dark:hover:bg-slate-800'
@@ -106,6 +116,16 @@ export default function CategoryChips({
           );
         })}
       </div>
+
+      {/* Botão Scroll Direita (Desktop) */}
+      <button
+        type="button"
+        onClick={() => scroll('right')}
+        aria-label="Rolar categorias para a direita"
+        className="hidden md:flex absolute right-0 z-10 h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-white/95 text-slate-600 shadow-md backdrop-blur-md opacity-0 group-hover/chips:opacity-100 transition-opacity hover:bg-orange-50 hover:text-orange-600 dark:border-slate-800 dark:bg-slate-900/95 dark:text-slate-300 translate-x-3 cursor-pointer"
+      >
+        <ChevronRight className="h-4 w-4" />
+      </button>
     </div>
   );
 }

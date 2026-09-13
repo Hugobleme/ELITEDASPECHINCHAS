@@ -34,12 +34,12 @@ export default function StorePage({ params }: StorePageProps) {
       </nav>
 
       {/* Banner da Loja */}
-      <div className="relative mb-8 overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-850 p-6 text-white shadow-card sm:p-8">
+      <div className="relative mb-8 overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-850 p-5 sm:p-8 text-white shadow-card">
         <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-orange-500/15 blur-3xl" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 text-white shadow-glow-brand">
-              <Store className="h-6 w-6 stroke-[2.5]" />
+            <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 text-white shadow-glow-brand">
+              <Store className="h-5 w-5 sm:h-6 sm:w-6 stroke-[2.5]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -47,7 +47,7 @@ export default function StorePage({ params }: StorePageProps) {
                   Loja Parceira Verificada
                 </span>
               </div>
-              <h1 className="text-2xl font-black sm:text-3xl mt-0.5 tracking-tight">Ofertas na {storeName}</h1>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-black mt-0.5 tracking-tight">Ofertas na {storeName}</h1>
               <p className="text-xs text-slate-400 sm:text-sm mt-0.5">
                 Promoções selecionadas e links oficiais da {storeName}
               </p>

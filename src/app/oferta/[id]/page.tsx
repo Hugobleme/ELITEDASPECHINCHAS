@@ -99,7 +99,7 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 pb-24 sm:pb-8">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 pb-32 sm:pb-8">
       {/* Schema.org Structured Data */}
       <script
         type="application/ld+json"
@@ -249,10 +249,10 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
       </div>
 
       {/* Sticky Bottom Bar on Mobile */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 p-3 px-4 shadow-2xl flex items-center justify-between gap-3">
-        <div>
-          <span className="block text-[10px] font-bold text-slate-400 uppercase">Preço</span>
-          <span className="text-lg font-black text-emerald-600 dark:text-emerald-400">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 p-3.5 px-4 pb-safe shadow-2xl flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <span className="block text-[10px] font-bold text-slate-400 uppercase">Preço com Desconto</span>
+          <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">
             {formatBRL(offer.price_current)}
           </span>
         </div>
@@ -260,9 +260,10 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
           offerId={offer.id}
           affiliateLink={offer.affiliate_link}
           storeName={offer.store}
-          size="sm"
+          size="md"
           variant="primary"
           label={`Pegar na ${offer.store}`}
+          className="shrink-0 min-h-[42px]"
         />
       </div>
 

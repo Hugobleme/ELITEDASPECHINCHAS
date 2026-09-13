@@ -31,7 +31,7 @@ export default function OfferGrid({
   // Estado de Carregamento Inicial
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {Array.from({ length: 8 }).map((_, idx) => (
           <OfferCardSkeleton key={idx} />
         ))}
@@ -53,7 +53,7 @@ export default function OfferGrid({
   return (
     <div className="space-y-8">
       {/* Grid Responsiva */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {offers.map((offer) => (
           <OfferCard key={offer.id} offer={offer} />
         ))}
@@ -61,12 +61,12 @@ export default function OfferGrid({
 
       {/* Botão de Carregar Mais / Infinite Scroll Loader */}
       {hasNextPage && (
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center pt-4 px-2 sm:px-0">
           <button
             type="button"
             onClick={onFetchNextPage}
             disabled={isFetchingNextPage}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-bold text-slate-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50/50 hover:text-orange-600 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-orange-500/40 dark:hover:bg-slate-800"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-800 shadow-sm transition-all hover:border-orange-300 hover:bg-orange-50/50 hover:text-orange-600 active:scale-95 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-orange-500/40 dark:hover:bg-slate-800"
           >
             {isFetchingNextPage ? (
               <>

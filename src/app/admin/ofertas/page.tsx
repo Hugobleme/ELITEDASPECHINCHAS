@@ -155,84 +155,86 @@ export default function AdminOffersPage() {
       </div>
 
       {/* Barra de Filtros e Busca */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between dark:border-slate-800 dark:bg-slate-900/90">
+        <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
           {/* Busca por título */}
-          <div className="relative min-w-[220px]">
+          <div className="relative min-w-0 flex-1 sm:min-w-[200px]">
             <input
               type="text"
               placeholder="Filtrar por produto ou loja..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-xs font-medium focus:border-orange-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-xs font-medium focus:border-orange-500 focus:bg-white focus:outline-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-100"
             />
             <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
           </div>
 
-          {/* Filtro por Loja */}
-          <select
-            value={selectedStore}
-            onChange={(e) => setSelectedStore(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
-          >
-            <option value="">Todas as Lojas</option>
-            {stores.map((s) => (
-              <option key={s.slug} value={s.name}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Filtro por Fonte Telegram */}
-          <select
-            value={selectedSource}
-            onChange={(e) => setSelectedSource(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
-          >
-            <option value="">Todos os Canais Telegram</option>
-            {sources.map((src) => (
-              <option key={src.id} value={src.name}>
-                {src.name}
-              </option>
-            ))}
-          </select>
-
-          {/* Slider de Desconto Mínimo */}
-          <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-800 dark:bg-slate-950">
-            <Percent className="h-3.5 w-3.5 text-orange-500" />
-            <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
-              Min: {minDiscount}%
-            </span>
-            <input
-              type="range"
-              min="0"
-              max="70"
-              step="5"
-              value={minDiscount}
-              onChange={(e) => setMinDiscount(Number(e.target.value))}
-              className="h-1.5 w-16 cursor-pointer accent-orange-500"
-            />
-          </div>
-
-          {(selectedStore || selectedSource || minDiscount > 0 || searchQuery) && (
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="flex items-center gap-1 text-xs font-semibold text-orange-600 hover:text-orange-700 dark:text-orange-400"
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Filtro por Loja */}
+            <select
+              value={selectedStore}
+              onChange={(e) => setSelectedStore(e.target.value)}
+              className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 sm:flex-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
             >
-              <RotateCcw className="h-3 w-3" />
-              <span>Limpar filtros</span>
-            </button>
-          )}
+              <option value="">Todas as Lojas</option>
+              {stores.map((s) => (
+                <option key={s.slug} value={s.name}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Filtro por Fonte Telegram */}
+            <select
+              value={selectedSource}
+              onChange={(e) => setSelectedSource(e.target.value)}
+              className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 sm:flex-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
+            >
+              <option value="">Todos os Canais</option>
+              {sources.map((src) => (
+                <option key={src.id} value={src.name}>
+                  {src.name}
+                </option>
+              ))}
+            </select>
+
+            {/* Slider de Desconto Mínimo */}
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-950">
+              <Percent className="h-3.5 w-3.5 text-orange-500" />
+              <span className="text-[11px] font-bold text-slate-600 dark:text-slate-300">
+                Min: {minDiscount}%
+              </span>
+              <input
+                type="range"
+                min="0"
+                max="70"
+                step="5"
+                value={minDiscount}
+                onChange={(e) => setMinDiscount(Number(e.target.value))}
+                className="h-1.5 w-16 cursor-pointer accent-orange-500"
+              />
+            </div>
+
+            {(selectedStore || selectedSource || minDiscount > 0 || searchQuery) && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="flex items-center gap-1 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-orange-600 hover:bg-orange-50 hover:text-orange-700 dark:text-orange-400 dark:hover:bg-orange-950/40"
+              >
+                <RotateCcw className="h-3 w-3" />
+                <span>Limpar filtros</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Seleção em lote */}
         {offers.length > 0 && (
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center justify-between gap-2 border-t border-slate-100 pt-3 md:border-t-0 md:pt-0 dark:border-slate-800">
             <button
               type="button"
               onClick={handleSelectAll}
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 active:scale-95 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
             >
               {selectedIds.length === offers.length ? 'Desmarcar Todas' : 'Selecionar Todas'}
             </button>

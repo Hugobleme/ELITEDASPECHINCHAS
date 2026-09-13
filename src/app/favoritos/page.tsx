@@ -66,7 +66,7 @@ export default function FavoritosPage() {
 
       {/* Loading */}
       {(isAuthLoading || (isAuthenticated && isFavsLoading)) && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <OfferCardSkeleton key={i} />
           ))}
@@ -75,7 +75,7 @@ export default function FavoritosPage() {
 
       {/* Vazio (Logado mas sem favoritos) */}
       {isAuthenticated && !isFavsLoading && validOffers.length === 0 && (
-        <div className="mx-auto max-w-md my-12 p-8 text-center rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 bg-white/60 dark:bg-slate-900/40">
+        <div className="mx-auto max-w-md my-12 p-6 sm:p-8 text-center rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 bg-white/60 dark:bg-slate-900/40">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400">
             <Heart className="h-8 w-8" />
           </div>
@@ -87,7 +87,7 @@ export default function FavoritosPage() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs transition-all shadow-md shadow-orange-500/20 cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-orange-500/20 active:scale-95 cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
             <span>Explorar Promoções do Dia</span>
@@ -98,7 +98,7 @@ export default function FavoritosPage() {
 
       {/* Lista de Favoritos */}
       {isAuthenticated && !isFavsLoading && validOffers.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {validOffers.map((offer) => (
             <OfferCard key={offer.id} offer={offer} />
           ))}

@@ -27,7 +27,7 @@ export default function Footer() {
             href="https://t.me"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-5 py-2.5 text-xs font-black text-white shadow-md shadow-sky-500/20 transition-all hover:bg-sky-600 active:scale-95"
+            className="inline-flex w-full min-h-[42px] items-center justify-center gap-2 rounded-xl bg-sky-500 px-5 py-2.5 text-xs font-black text-white shadow-md shadow-sky-500/20 transition-all hover:bg-sky-600 active:scale-95 sm:w-auto"
           >
             <Bell className="h-4 w-4" />
             <span>Entrar no Grupo VIP</span>

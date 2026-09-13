@@ -35,14 +35,14 @@ export default function OfferCard({ offer }: OfferCardProps) {
   return (
     <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/85 bg-white shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:border-orange-400/40 hover:shadow-card-hover dark:border-slate-800/80 dark:bg-slate-900/95 dark:hover:border-orange-500/40 dark:hover:shadow-card-hover-dark">
       {/* Top Header: Store, Temperature & Relative Time */}
-      <div className="relative flex items-center justify-between border-b border-slate-100/90 px-3.5 py-2.5 dark:border-slate-800/60">
-        <div className="flex items-center gap-1.5">
-          <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800/90 dark:text-slate-300">
+      <div className="relative flex items-center justify-between gap-1.5 border-b border-slate-100/90 px-3.5 py-2.5 dark:border-slate-800/60">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-slate-800/90 dark:text-slate-300 truncate max-w-[115px]">
             {store}
           </span>
           <TemperatureVote offerId={id} initialTemperature={temperature || 120} size="sm" />
         </div>
-        <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+        <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400 dark:text-slate-500 shrink-0">
           <Clock className="h-3 w-3" />
           {formatRelativeDate(published_at)}
         </span>
@@ -129,7 +129,7 @@ export default function OfferCard({ offer }: OfferCardProps) {
         <div className="mt-4 grid grid-cols-2 gap-2 pt-1 border-t border-slate-100/90 dark:border-slate-800/60">
           <Link
             href={`/oferta/${id}`}
-            className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700/80"
+            className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-100 min-h-[38px] active:scale-95 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700/80"
           >
             <span>Detalhes</span>
             <ChevronRight className="h-3 w-3 opacity-60" />
@@ -141,7 +141,7 @@ export default function OfferCard({ offer }: OfferCardProps) {
             variant="card"
             size="sm"
             label="Pegar"
-            className="w-full"
+            className="w-full min-h-[38px]"
           />
         </div>
       </div>

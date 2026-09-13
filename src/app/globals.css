@@ -27,11 +27,25 @@
     border-color: var(--border);
   }
 
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
   body {
     @apply bg-slate-50 text-slate-900 antialiased selection:bg-orange-500 selection:text-white dark:bg-[#080d1a] dark:text-slate-100;
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     -webkit-tap-highlight-color: transparent;
   }
+}
+
+/* Safe Area Inset Helpers for Modern Mobile Devices */
+.pb-safe {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
+}
+.pt-safe {
+  padding-top: max(0.75rem, env(safe-area-inset-top, 0px));
 }
 
 /* Custom Sleek Scrollbar */
