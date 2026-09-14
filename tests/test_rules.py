@@ -70,7 +70,7 @@ def test_evaluate_rules_discount_threshold(db_session):
         "category": "informatica",
         "original_link": "https://amazon.com",
     }
-    approved, reason, status = evaluate_rules(parsed_bad, db_session)
+    approved, reason, status = evaluate_rules(parsed_bad, db_session, source_name="TEST_SOURCE")
     assert approved is False
     assert status == "rejected"
     assert "abaixo do piso mínimo" in reason
@@ -85,7 +85,7 @@ def test_evaluate_rules_discount_threshold(db_session):
         "category": "informatica",
         "original_link": "https://amazon.com",
     }
-    approved, reason, status = evaluate_rules(parsed_good, db_session)
+    approved, reason, status = evaluate_rules(parsed_good, db_session, source_name="TEST_SOURCE")
     assert approved is True
     assert status == "pending"
 
@@ -186,4 +186,44 @@ def test_evaluate_rules_unauthorized_source(db_session):
     approved, reason, status = evaluate_rules(parsed, db_session, source_name="@canal_estranho_spam")
     assert approved is False
     assert status == "rejected"
-    assert "Fonte não autorizada" in reason
+    assert "não autorizada" in reason
+
+
+def test_evaluate_rules_missing_source_name(db_session):
+    """Rejeita mensagens sem source_name no fluxo real."""
+    parsed = {
+        "title": "Smartwatch Amazfit",
+        "price_current": 299.0,
+        "price_original": 500.0,
+        "discount_pct": 40,
+        "store": "Amazon",
+        "category": "eletronicos",
+        "original_link": "https://amazon.com.br/dp/123",
+    }
+    # Sem passar source_name (None)
+    approved, reason, status = evaluate_rules(parsed, db_session, source_name=None)
+    assert approved is False
+    assert status == "rejected"
+    assert "Origem (source_name) ausente" in reason
+
+    # Com source_name em branco
+    approved, reason, status = evaluate_rules(parsed, db_session, source_name="   ")
+    assert approved is False
+    assert status == "rejected"
+    assert "Origem (source_name) ausente" in reason
+
+
+def test_evaluate_rules_allow_internal_test_exception(db_session):
+    """Permite ausência de source_name apenas quando explicitamente marcado como teste interno."""
+    parsed = {
+        "title": "Smartwatch Amazfit",
+        "price_current": 299.0,
+        "price_original": 500.0,
+        "discount_pct": 40,
+        "store": "Amazon",
+        "category": "eletronicos",
+        "original_link": "https://amazon.com.br/dp/123",
+    }
+    approved, reason, status = evaluate_rules(parsed, db_session, source_name=None, allow_internal_test=True)
+    assert approved is True
+    assert status == "pending"  # Curadoria humana padrão (AUTO_APPROVE_ENABLED=False)

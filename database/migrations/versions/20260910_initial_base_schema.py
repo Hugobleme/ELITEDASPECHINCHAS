@@ -41,7 +41,7 @@ def upgrade() -> None:
         sa.Column("original_link", sa.Text(), nullable=True),
         sa.Column("affiliate_link", sa.Text(), nullable=False),
         sa.Column("coupon_code", sa.String(64), nullable=True),
-        sa.Column("telegram_msg_id", sa.Integer(), nullable=True),
+        sa.Column("telegram_msg_id", sa.BigInteger(), nullable=True),
         sa.Column("source_name", sa.String(100), nullable=True),
         sa.Column("status", sa.String(50), server_default="pending", nullable=False),
         sa.Column("published_at", sa.DateTime(), nullable=True),

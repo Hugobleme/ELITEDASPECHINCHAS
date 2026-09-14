@@ -56,17 +56,6 @@ export default function AdminLoginPage() {
             </p>
           </div>
 
-          {/* Dica de Credenciais Padrão para Testes */}
-          <div className="mt-6 rounded-2xl border border-violet-200/80 bg-violet-50/80 p-3.5 text-xs text-violet-900 dark:border-violet-900/40 dark:bg-violet-950/30 dark:text-violet-300">
-            <div className="flex items-center gap-1.5 font-bold">
-              <CheckCircle2 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-              <span>Acesso Rápido para Demonstração:</span>
-            </div>
-            <div className="mt-1.5 flex justify-between font-mono text-[11px] text-slate-700 dark:text-slate-300">
-              <span>Usuário: <strong>admin</strong></span>
-              <span>Senha: <strong>admin123</strong></span>
-            </div>
-          </div>
 
           {/* Mensagem de Erro */}
           {error && (

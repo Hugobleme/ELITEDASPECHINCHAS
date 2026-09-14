@@ -94,31 +94,40 @@ def check_rate_limit(
     return True
 
 
-def is_source_authorized(db: Session, source_name: Optional[str]) -> bool:
+def is_source_authorized(
+    db: Session,
+    source_name: Optional[str],
+    allow_internal_test: bool = False,
+) -> bool:
     """
     Verifica se o canal ou grupo de origem está cadastrado e ativo no banco ou na configuração.
+    Exige obrigatoriamente source_name válido, exceto se explicitamente marcado como allow_internal_test.
     """
-    if not source_name:
-        return True  # Se não especificado (ex: ingestão direta interna), permite
+    if not source_name or not str(source_name).strip():
+        if allow_internal_test:
+            return True
+        return False
+
+    clean_name = str(source_name).strip()
+
+    # Fontes de teste internas explicitamente identificadas
+    if clean_name in ("TEST_SOURCE", "@teste_promocoes", "test_source"):
+        return True
 
     from config import SOURCE_CHANNELS
     from database.models import Source
 
-    # Fontes de teste permitidas
-    if source_name in ("TEST_SOURCE", "@teste_promocoes", "test_source"):
-        return True
-
-    # Validação via configuração de canais
-    if source_name in SOURCE_CHANNELS:
+    # Validação via configuração de canais (config.SOURCE_CHANNELS)
+    if clean_name in SOURCE_CHANNELS:
         return True
 
     # Validação via tabela sources no banco
     try:
-        clean_name = source_name.lstrip("@").lower()
+        normalized_lookup = clean_name.lstrip("@").lower()
         src = (
             db.query(Source)
             .filter(
-                (Source.channel_username.ilike(f"%{clean_name}%")) | (Source.name.ilike(f"%{clean_name}%")),
+                (Source.channel_username.ilike(f"%{normalized_lookup}%")) | (Source.name.ilike(f"%{normalized_lookup}%")),
                 Source.is_active == True,
             )
             .first()
@@ -145,6 +154,7 @@ def evaluate_rules(
     db: Session,
     telegram_msg_id: Optional[int] = None,
     source_name: Optional[str] = None,
+    allow_internal_test: bool = False,
 ) -> Tuple[bool, str, str]:
     """
     Avalia a oferta através de todas as regras de curadoria e integridade.
@@ -180,9 +190,9 @@ def evaluate_rules(
         logger.warning(f"[Rules Rejeição] {reason}")
         return False, reason, "rejected"
 
-    # 5. Validação de Fonte Autorizada
-    if source_name is not None and not is_source_authorized(db, source_name):
-        reason = f"Fonte não autorizada: '{source_name}'"
+    # 5. Validação de Fonte Autorizada (Obrigatória no fluxo real)
+    if not is_source_authorized(db, source_name, allow_internal_test=allow_internal_test):
+        reason = f"Origem (source_name) ausente ou não autorizada: '{source_name or 'NÃO INFORMADA'}'"
         logger.warning(f"[Rules Rejeição] {reason}")
         return False, reason, "rejected"
 
