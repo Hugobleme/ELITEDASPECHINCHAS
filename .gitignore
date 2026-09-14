@@ -48,3 +48,7 @@ ENV/
 *.session
 *.session-journal
 
+# local databases
+*.db
+*.sqlite
+*.sqlite3
