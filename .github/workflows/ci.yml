@@ -74,7 +74,7 @@ jobs:
           fi
 
           echo "=== 4. Verificando ausência de chaves privadas ==="
-          if grep -rq -E "BEGIN [A-Z0-9 ]*PRIVATE KEY" . --exclude-dir={.git,node_modules,.next}; then
+          if grep -rq -E -- "-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----" . --exclude-dir={.git,node_modules,.next}; then
             echo "FALHA DE SEGURANÇA: Chave privada detectada no código!" >&2
             exit 1
           fi

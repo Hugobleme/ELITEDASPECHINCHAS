@@ -331,7 +331,7 @@ O projeto conta com uma pipeline automatizada via **GitHub Actions** (`.github/w
 1. **Auditoria de Qualidade e Segurança**:
    - `git diff --check` para verificar formatação e espaçamentos.
    - Bloqueio de arquivos de ambiente reais (`.env`, `.env.local`).
-   - Bloqueio de sessões Telethon (`*.session`) e chaves privadas (`BEGIN PRIVATE KEY`).
+   - Bloqueio de sessões Telethon (`*.session`) e chaves privadas confidenciais (PEM/RSA).
    - Bloqueio de senhas expostas ou credenciais administrativas hardcoded.
    - Nenhuma credencial de produção é utilizada ou exposta nos logs.
 2. **Validação Estrita de Migrations Alembic no PostgreSQL**:
