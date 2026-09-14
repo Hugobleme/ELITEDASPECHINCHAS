@@ -71,7 +71,7 @@ def verify_database():
         if table not in tables:
             print(f"[-] ERRO: Tabela obrigatória '{table}' ausente!", file=sys.stderr)
             sys.exit(1)
-        print(f"  ✓ Tabela '{table}' presente")
+        print(f"  [OK] Tabela '{table}' presente")
 
     # 3. Verifica offers.telegram_msg_id é BIGINT
     offer_cols = {c["name"]: str(c["type"]).upper() for c in inspector.get_columns("offers")}
@@ -81,7 +81,7 @@ def verify_database():
     if "BIGINT" not in offer_cols["telegram_msg_id"]:
         print(f"[-] ERRO: offers.telegram_msg_id não é BIGINT (tipo: {offer_cols['telegram_msg_id']})!", file=sys.stderr)
         sys.exit(1)
-    print(f"  ✓ offers.telegram_msg_id validado como BIGINT ({offer_cols['telegram_msg_id']})")
+    print(f"  [OK] offers.telegram_msg_id validado como BIGINT ({offer_cols['telegram_msg_id']})")
 
     # 4. Verifica Foreign Keys e Indexes
     fk_favorites = inspector.get_foreign_keys("favorites")
@@ -89,20 +89,20 @@ def verify_database():
     if "users" not in referred_in_favs or "offers" not in referred_in_favs:
         print(f"[-] ERRO: Foreign keys de favorites incorretas: {referred_in_favs}", file=sys.stderr)
         sys.exit(1)
-    print("  ✓ Foreign keys de favorites verificadas (users, offers)")
+    print("  [OK] Foreign keys de favorites verificadas (users, offers)")
 
     fk_alerts = inspector.get_foreign_keys("price_alerts")
     referred_in_alerts = [fk["referred_table"] for fk in fk_alerts]
     if "users" not in referred_in_alerts:
         print(f"[-] ERRO: Foreign keys de price_alerts incorretas: {referred_in_alerts}", file=sys.stderr)
         sys.exit(1)
-    print("  ✓ Foreign keys de price_alerts verificadas (users)")
+    print("  [OK] Foreign keys de price_alerts verificadas (users)")
 
     indexes_offers = inspector.get_indexes("offers")
     if not indexes_offers:
         print("[-] ERRO: Nenhum índice encontrado na tabela offers!", file=sys.stderr)
         sys.exit(1)
-    print(f"  ✓ {len(indexes_offers)} índices encontrados e validados em offers")
+    print(f"  [OK] {len(indexes_offers)} índices encontrados e validados em offers")
 
     # 5. Executa alembic downgrade base
     print("\n[+] 2. Executando 'alembic downgrade base'...")
@@ -117,7 +117,7 @@ def verify_database():
         if table in tables_down:
             print(f"[-] ERRO: Tabela '{table}' não foi removida no downgrade base!", file=sys.stderr)
             sys.exit(1)
-    print("  ✓ Todas as 9 tabelas de domínio foram removidas com sucesso no downgrade")
+    print("  [OK] Todas as 9 tabelas de domínio foram removidas com sucesso no downgrade")
 
     # 6. Executa novamente alembic upgrade head
     print("\n[+] 3. Re-executando 'alembic upgrade head'...")
@@ -131,7 +131,7 @@ def verify_database():
         if table not in tables_final:
             print(f"[-] ERRO: Tabela '{table}' ausente após re-upgrade head!", file=sys.stderr)
             sys.exit(1)
-    print("  ✓ Todas as 9 tabelas restauradas perfeitamente no re-upgrade head")
+    print("  [OK] Todas as 9 tabelas restauradas perfeitamente no re-upgrade head")
 
     print("\n[SUCCESS] Todas as validações de migrations PostgreSQL passaram com 100% de sucesso!")
     engine.dispose()
