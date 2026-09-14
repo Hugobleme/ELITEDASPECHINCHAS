@@ -44,3 +44,7 @@ htmlcov/
 venv/
 ENV/
 
+# telethon sessions
+*.session
+*.session-journal
+

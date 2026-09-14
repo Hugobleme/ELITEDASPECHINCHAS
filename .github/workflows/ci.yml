@@ -1,0 +1,158 @@
+name: CI / CD & PostgreSQL Validation
+
+on:
+  push:
+    branches:
+      - main
+      - feature/ci-postgresql
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Build, Test & Security Validation
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: elitedaspechinchas_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      ENVIRONMENT: test
+      CI: "true"
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/elitedaspechinchas_test
+      TEST_POSTGRES_URL: postgresql://postgres:postgres@localhost:5432/elitedaspechinchas_test
+      REDIS_URL: redis://localhost:6379/0
+      JWT_SECRET: ci-only-test-secret-not-for-production
+      SECRET_KEY: ci-only-test-secret-not-for-production
+      TEST_INGEST_KEY: ci-only-test-ingest-key
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+      NEXT_PUBLIC_USE_MOCK: "false"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fase 7 — Auditoria de Qualidade e Segurança
+        run: |
+          echo "=== 1. Verificando git diff --check ==="
+          git diff --check
+
+          echo "=== 2. Verificando ausência de arquivos .env e .env.local ==="
+          if [ -f .env ] || [ -f .env.local ]; then
+            echo "FALHA DE SEGURANÇA: Arquivo de ambiente real (.env / .env.local) detectado!" >&2
+            exit 1
+          fi
+
+          echo "=== 3. Verificando ausência de arquivos de sessão Telethon (.session) ==="
+          SESSION_COUNT=$(find . -name "*.session" -not -path "./.git/*" -not -path "./node_modules/*" | wc -l)
+          if [ "$SESSION_COUNT" -gt 0 ]; then
+            echo "FALHA DE SEGURANÇA: Arquivos de sessão Telethon encontrados no repositório!" >&2
+            exit 1
+          fi
+
+          echo "=== 4. Verificando ausência de chaves privadas ==="
+          if grep -rq -E "BEGIN [A-Z0-9 ]*PRIVATE KEY" . --exclude-dir={.git,node_modules,.next}; then
+            echo "FALHA DE SEGURANÇA: Chave privada detectada no código!" >&2
+            exit 1
+          fi
+
+          echo "=== 5. Verificando ausência de senhas conhecidas ou credenciais administrativas expostas ==="
+          FORBIDDEN_WORDS=("admin123" "NEXT_PUBLIC_ADMIN_PASSWORD")
+          for word in "${FORBIDDEN_WORDS[@]}"; do
+            if grep -rq "$word" . --exclude-dir={.git,node_modules,.next,.pytest_cache} --exclude=".github/workflows/ci.yml"; then
+              echo "FALHA DE SEGURANÇA: Credencial ou padrão proibido detectado no repositório!" >&2
+              exit 1
+            fi
+          done
+
+          echo "=== Auditoria de segurança aprovada: nenhum segredo ou credencial exposta ==="
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+
+      - name: Aguardar Serviços (PostgreSQL 16 e Redis 7)
+        run: |
+          echo "Aguardando disponibilidade dos serviços de teste..."
+          python -c "
+          import time, psycopg2, redis
+          pg_ready = False
+          for i in range(20):
+              try:
+                  conn = psycopg2.connect('$DATABASE_URL')
+                  conn.close()
+                  pg_ready = True
+                  print('PostgreSQL 16 operacional!')
+                  break
+              except Exception as e:
+                  time.sleep(1)
+          if not pg_ready:
+              raise SystemExit('ERRO: PostgreSQL não respondeu a tempo.')
+
+          redis_ready = False
+          r = redis.Redis.from_url('$REDIS_URL')
+          for i in range(20):
+              try:
+                  if r.ping():
+                      redis_ready = True
+                      print('Redis 7 operacional!')
+                      break
+              except Exception as e:
+                  time.sleep(1)
+          if not redis_ready:
+              raise SystemExit('ERRO: Redis não respondeu a tempo.')
+          "
+
+      - name: Fase 4 — Validação Estrita de Migrations Alembic no PostgreSQL
+        run: python scripts/verify_migrations.py
+
+      - name: Fase 5 — Execução dos Testes Automatizados Python (pytest)
+        run: python -m pytest -v -rs --durations=10
+
+      - name: Fase 6 — Verificação de Tipos TypeScript
+        run: npx tsc --noEmit
+
+      - name: Fase 6 — Build Next.js
+        run: npm run build
+
+      - name: Fase 6 — Lint Next.js
+        run: npm run lint
