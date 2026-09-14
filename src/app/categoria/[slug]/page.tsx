@@ -19,14 +19,58 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   };
 }
 
+const CATEGORY_DESCRIPTIONS: Record<string, string> = {
+  eletronicos: 'Smartphones, smartwatches, fones bluetooth e gadgets com os melhores descontos do dia.',
+  informatica: 'Notebooks, monitores, peças de hardware e periféricos para seu setup de trabalho ou estudos.',
+  games: 'Consoles PlayStation, Xbox, Nintendo Switch, jogos e acessórios gamers com preço reduzido.',
+  'casa-e-cozinha': 'Air fryers, eletrodomésticos, panelas e utilidades para transformar seu lar economizando.',
+  'tv-e-audio': 'Smart TVs 4K, soundbars, caixas de som e fones com som de alta fidelidade e preço baixo.',
+  'moda-e-calcados': 'Roupas, tênis de corrida, calçados casuais e acessórios das marcas mais desejadas.',
+  'beleza-e-saude': 'Perfumes importados, dermocosméticos, cuidados pessoais e suplementação.',
+};
+
 export default function CategoryPage({ params }: CategoryPageProps) {
   const categoryName = formatSlugToName(params.slug);
+  const description =
+    CATEGORY_DESCRIPTIONS[params.slug.toLowerCase()] ||
+    `Descontos verificados, cupons e preços baixos em produtos selecionados da categoria ${categoryName.toLowerCase()}.`;
+
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Início',
+        item: 'https://elitedaspechinchas.com.br/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Categorias',
+        item: 'https://elitedaspechinchas.com.br/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: categoryName,
+        item: `https://elitedaspechinchas.com.br/categoria/${params.slug}`,
+      },
+    ],
+  };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 space-y-6">
+      {/* Schema.org Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+
       {/* Breadcrumbs */}
-      <nav className="mb-6 flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-        <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400">
+      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+        <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
           Início
         </Link>
         <ChevronRight className="h-3 w-3 text-slate-400" />
@@ -34,7 +78,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       </nav>
 
       {/* Banner da Categoria */}
-      <div className="relative mb-8 overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-850 p-5 sm:p-8 text-white shadow-card">
+      <div className="relative overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-850 p-6 sm:p-8 text-white shadow-card">
         <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-violet-500/15 blur-3xl" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
@@ -48,8 +92,8 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                 </span>
               </div>
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-black mt-0.5 tracking-tight">Ofertas de {categoryName}</h1>
-              <p className="text-xs text-slate-400 sm:text-sm mt-0.5">
-                Descontos verificados e preços baixos em {categoryName.toLowerCase()}
+              <p className="text-xs text-slate-400 sm:text-sm mt-0.5 max-w-xl leading-relaxed">
+                {description}
               </p>
             </div>
           </div>

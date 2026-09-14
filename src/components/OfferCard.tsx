@@ -131,7 +131,8 @@ function OfferCardComponent({ offer }: OfferCardProps) {
         <div className="mt-4 grid grid-cols-2 gap-2 pt-1 border-t border-slate-100/90 dark:border-slate-800/60">
           <Link
             href={`/oferta/${id}`}
-            className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-100 min-h-[38px] active:scale-95 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700/80"
+            aria-label={`Ver detalhes de ${title}`}
+            className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-100 min-h-[42px] active:scale-95 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700/80"
           >
             <span>Detalhes</span>
             <ChevronRight className="h-3 w-3 opacity-60" />
@@ -143,7 +144,7 @@ function OfferCardComponent({ offer }: OfferCardProps) {
             variant="card"
             size="sm"
             label="Pegar"
-            className="w-full min-h-[38px]"
+            className="w-full min-h-[42px]"
           />
         </div>
       </div>

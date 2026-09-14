@@ -129,7 +129,7 @@ export async function getOffers(
 export async function getOfferById(id: string): Promise<Offer | null> {
   const isMockExplicit = process.env.NEXT_PUBLIC_USE_MOCK === 'true';
 
-  if (API_BASE_URL) {
+  if (API_BASE_URL && !isMockExplicit) {
     try {
       const res = await fetchWithTimeout(`${API_BASE_URL}/offers/${id}`);
       if (res.ok) {
@@ -139,19 +139,17 @@ export async function getOfferById(id: string): Promise<Offer | null> {
         }
         return null;
       }
+      // Se a API retornou 404, tenta verificar se o ID pertence aos dados mockados
       if (res.status === 404) {
+        const mockMatch = mockStore.offers.find((o) => o.id === id);
+        if (mockMatch && mockMatch.status === 'published') {
+          return mockMatch;
+        }
         return null;
       }
-      if (!isMockExplicit) {
-        throw new Error(`Erro ao buscar oferta (Status ${res.status})`);
-      }
-    } catch (networkErr) {
-      if (!isMockExplicit) {
-        throw networkErr instanceof Error ? networkErr : new Error(String(networkErr));
-      }
+    } catch {
+      // Backend offline ou inacessível, prossegue para mockStore
     }
-  } else if (!isMockExplicit) {
-    throw new Error('NEXT_PUBLIC_API_URL não configurado.');
   }
 
   const found = mockStore.offers.find((o) => o.id === id);

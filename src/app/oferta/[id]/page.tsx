@@ -19,6 +19,9 @@ import {
   Sparkles,
   Truck,
   CheckCircle2,
+  ExternalLink,
+  Info,
+  CreditCard,
 } from 'lucide-react';
 
 interface OfferPageProps {
@@ -79,7 +82,7 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
 
   const savings = formatSavings(offer.price_original, offer.price_current);
 
-  const jsonLd = {
+  const productJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: offer.title,
@@ -98,16 +101,45 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
     },
   };
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Início',
+        item: 'https://elitedaspechinchas.com.br/',
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: offer.category.replace(/-/g, ' '),
+        item: `https://elitedaspechinchas.com.br/categoria/${offer.category}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: offer.title,
+        item: `https://elitedaspechinchas.com.br/oferta/${offer.id}`,
+      },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 pb-32 sm:pb-8">
       {/* Schema.org Structured Data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       {/* Breadcrumb de Navegação */}
-      <nav className="mb-6 flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
+      <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
         <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
           Início
         </Link>
@@ -205,14 +237,15 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
                 </div>
 
                 {offer.installments && (
-                  <p className="mt-1.5 text-xs font-bold text-slate-600 dark:text-slate-300">
-                    ou {offer.installments}
+                  <p className="mt-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                    <CreditCard className="h-3.5 w-3.5 text-slate-400" />
+                    <span>ou {offer.installments}</span>
                   </p>
                 )}
 
                 <div className="mt-3 flex items-center gap-1.5 text-[11px] font-medium text-slate-500 dark:text-slate-400 border-t border-emerald-100/80 dark:border-emerald-950/40 pt-2.5">
                   <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-                  <span>Preço e estoque verificados na curadoria. Sujeito à alteração pela loja.</span>
+                  <span>Preço e estoque verificados pela curadoria da Elite das Pechinchas.</span>
                 </div>
               </div>
 
@@ -225,7 +258,7 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
               <div className="flex items-center gap-2.5 rounded-2xl bg-slate-50 p-3.5 text-xs text-slate-600 dark:bg-slate-800/60 dark:text-slate-300 border border-slate-100 dark:border-slate-800/80">
                 <ShieldCheck className="h-5 w-5 text-emerald-500 shrink-0" />
                 <span>
-                  Link direto e seguro. Você será redirecionado para a página oficial da loja <strong>{offer.store}</strong>.
+                  Link direto e oficial. Ao clicar em comprar você será redirecionado para a página segura da <strong>{offer.store}</strong>.
                 </span>
               </div>
             </div>
@@ -238,18 +271,41 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
                 storeName={offer.store}
                 size="lg"
                 variant="primary"
-                label={`Pegar Promoção na ${offer.store}`}
-                className="w-full text-base"
+                label={`Comprar Agora na ${offer.store}`}
+                className="w-full text-base min-h-[48px]"
               />
 
               <OfferDetailActions offer={offer} />
             </div>
           </div>
         </div>
+
+        {/* Detalhes Adicionais e Descrição do Produto */}
+        <div className="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800/80 space-y-4">
+          <div className="flex items-center gap-2 text-slate-900 dark:text-white">
+            <Info className="h-5 w-5 text-violet-500" />
+            <h2 className="text-lg font-black tracking-tight">Sobre esta Oferta</h2>
+          </div>
+          <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm text-slate-600 dark:text-zinc-300 leading-relaxed space-y-2">
+            <p>
+              Esta oportunidade foi localizada e verificada na <strong>{offer.store}</strong> na categoria de{' '}
+              <strong className="capitalize">{offer.category.replace(/-/g, ' ')}</strong>. Desconto de{' '}
+              <strong>{offer.discount_pct}%</strong> em relação ao valor de tabela ({formatBRL(offer.price_original)}).
+            </p>
+            {offer.coupon_code && (
+              <p>
+                Utilize o cupom promocional <strong>{offer.coupon_code}</strong> na tela de checkout para garantir o desconto especial indicado.
+              </p>
+            )}
+            <p className="text-slate-400 dark:text-zinc-500 text-xs">
+              * Nota: Os preços e estoques são de inteira responsabilidade da loja parceira ({offer.store}) e podem sofrer alterações a qualquer momento sem aviso prévio.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Sticky Bottom Bar on Mobile */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 p-3.5 px-4 pb-safe shadow-2xl flex items-center justify-between gap-3">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 p-3 px-4 pb-safe shadow-2xl flex items-center justify-between gap-3">
         <div className="min-w-0">
           <span className="block text-[10px] font-bold text-slate-400 uppercase">Preço com Desconto</span>
           <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">
@@ -263,7 +319,7 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
           size="md"
           variant="primary"
           label={`Pegar na ${offer.store}`}
-          className="shrink-0 min-h-[42px]"
+          className="shrink-0 min-h-[44px]"
         />
       </div>
 
