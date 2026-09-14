@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feature/ci-postgresql
+      - "feature/**"
   pull_request:
     branches:
       - main

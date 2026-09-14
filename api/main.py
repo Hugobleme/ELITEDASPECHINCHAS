@@ -1,11 +1,12 @@
 import os
 import logging
 from datetime import datetime, timezone
-from fastapi import FastAPI, HTTPException, Request, status
+from fastapi import FastAPI, HTTPException, Request, status, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from sqlalchemy.orm import Session
 
-from database.connection import engine, Base
+from database.connection import engine, Base, get_db
 from api.routes.auth import router as auth_router
 from api.routes.preferences import router as preferences_router
 from api.routes.favorites import router as favorites_router
@@ -38,15 +39,20 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # ==========================================
 # Configuração de CORS
 # ==========================================
-CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+raw_cors = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+CORS_ORIGINS = [origin.strip() for origin in raw_cors.split(",") if origin.strip()]
+CORS_ORIGIN_REGEX = os.getenv("CORS_ORIGIN_REGEX")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[origin.strip() for origin in CORS_ORIGINS if origin.strip()],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+cors_kwargs = {
+    "allow_origins": CORS_ORIGINS,
+    "allow_credentials": True,
+    "allow_methods": ["*"],
+    "allow_headers": ["*"],
+}
+if CORS_ORIGIN_REGEX:
+    cors_kwargs["allow_origin_regex"] = CORS_ORIGIN_REGEX
+
+app.add_middleware(CORSMiddleware, **cors_kwargs)
 
 
 # ==========================================
@@ -87,7 +93,7 @@ app.include_router(feed_router)
 
 
 # ==========================================
-# Health Check Endpoint
+# Health Check & Readiness Endpoints
 # ==========================================
 @app.get("/health", tags=["Health Check"])
 def health_check():
@@ -95,4 +101,66 @@ def health_check():
         "status": "healthy",
         "service": "Elite das Pechinchas Backend",
         "timestamp": datetime.now(timezone.utc),
+    }
+
+
+@app.get("/ready", tags=["Health Check"])
+def readiness_check(db: Session = Depends(get_db)):
+    """
+    Endpoint de prontidão (Readiness Probe) para Staging e Produção.
+    Verifica a conectividade do banco de dados relacional e do cache/broker Redis.
+    Retorna 200 OK quando o backend está operacional para receber tráfego.
+    """
+    checks = {
+        "status": "ready",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "database": "unknown",
+        "redis": "unknown",
+    }
+
+    # 1. Verificação do Banco de Dados
+    try:
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))
+        checks["database"] = "connected"
+    except Exception as db_exc:
+        logger.error(f"[Readiness] Falha de conexão com o banco de dados: {db_exc}")
+        checks["database"] = "error"
+        checks["status"] = "unhealthy"
+
+    # 2. Verificação do Redis
+    redis_url = os.getenv("REDIS_URL")
+    if redis_url:
+        try:
+            import redis
+            r = redis.Redis.from_url(redis_url, socket_timeout=2.0)
+            if r.ping():
+                checks["redis"] = "connected"
+            else:
+                checks["redis"] = "unresponsive"
+                checks["status"] = "unhealthy"
+        except Exception as redis_exc:
+            logger.warning(f"[Readiness] Falha de conexão com o Redis: {redis_exc}")
+            checks["redis"] = "error"
+            checks["status"] = "unhealthy"
+    else:
+        checks["redis"] = "not_configured"
+
+    if checks["status"] != "ready":
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail=checks,
+        )
+
+    return checks
+
+
+@app.get("/push/vapid-public-key", tags=["Notificações Web Push"])
+def get_public_vapid_key():
+    """
+    Retorna a chave pública VAPID para registro no navegador.
+    Segredos privados nunca são expostos.
+    """
+    return {
+        "vapid_public_key": os.getenv("VAPID_PUBLIC_KEY", "")
     }
