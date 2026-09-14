@@ -58,7 +58,7 @@ export default function SearchResultsClient() {
           <>
             <ChevronRight className="h-3 w-3 text-slate-400 shrink-0" />
             <span className="italic text-slate-600 dark:text-slate-300 truncate max-w-[160px] xs:max-w-[220px] sm:max-w-md">
-              "{query}"
+              &ldquo;{query}&rdquo;
             </span>
           </>
         )}
@@ -79,7 +79,7 @@ export default function SearchResultsClient() {
                 </span>
               </div>
               <h1 className="text-xl font-black sm:text-2xl mt-0.5 tracking-tight">
-                Resultados para: <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-purple-300 to-fuchsia-400">"{query}"</span>
+                Resultados para: <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 via-purple-300 to-fuchsia-400">&ldquo;{query}&rdquo;</span>
               </h1>
               <p className="text-xs text-slate-400 sm:text-sm mt-0.5">
                 {isLoading ? 'Localizando pechinchas...' : `${allOffers.length} ${allOffers.length === 1 ? 'oferta verificada encontrada' : 'ofertas verificadas encontradas'}`}

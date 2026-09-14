@@ -316,3 +316,44 @@ Foram implementados testes unitários e de integração cobrindo:
 | `GET` | `/feed` | Sim | Feed personalizado baseado nas preferências |
 | `GET` | `/offers` | Não | Vitrine pública com filtros e paginação |
 | `POST` | `/admin/offers/{id}/publish` | Sim | Publica oferta e dispara Celery `match_and_notify` |
+
+---
+
+## 🔄 Integração Contínua (CI/CD) & Validação de Migrations
+
+O projeto conta com uma pipeline automatizada via **GitHub Actions** (`.github/workflows/ci.yml`) executada em todos os Pull Requests e pushes para a branch `main`.
+
+### Serviços Descartáveis de Teste (Service Containers)
+- **PostgreSQL 16** (`postgres:16`): banco relacional efêmero e isolado para testes (`elitedaspechinchas_test`). Nenhum banco ou migration de produção é afetado.
+- **Redis 7** (`redis:7-alpine`): broker de mensagens e backend Celery descartável para testes.
+
+### Etapas Validadas pelo Pipeline
+1. **Auditoria de Qualidade e Segurança**:
+   - `git diff --check` para verificar formatação e espaçamentos.
+   - Bloqueio de arquivos de ambiente reais (`.env`, `.env.local`).
+   - Bloqueio de sessões Telethon (`*.session`) e chaves privadas (`BEGIN PRIVATE KEY`).
+   - Bloqueio de senhas expostas ou credenciais administrativas hardcoded.
+   - Nenhuma credencial de produção é utilizada ou exposta nos logs.
+2. **Validação Estrita de Migrations Alembic no PostgreSQL**:
+   - Execução de `alembic upgrade head` em banco limpo.
+   - Verificação de todas as 9 tabelas obrigatórias (`offers`, `sources`, `affiliate_rules`, `users`, `user_preferences`, `favorites`, `price_alerts`, `push_subscriptions`, `notifications`).
+   - Validação da coluna `offers.telegram_msg_id` como tipo `BIGINT`.
+   - Validação de chaves estrangeiras e índices.
+   - Execução de `alembic downgrade base` e confirmação de remoção completa.
+   - Re-execução de `alembic upgrade head` e confirmação de restauração de integridade.
+3. **Testes Automatizados de Backend**:
+   - `python -m pytest -v` executando todos os testes unitários e de integração contra o PostgreSQL e Redis descartáveis.
+4. **Validação Frontend & Build**:
+   - Verificação estrita de tipagem TypeScript via `npx tsc --noEmit`.
+   - Build de produção Next.js via `npm run build` (sem mock e sem dependência de API ativa em build time).
+   - Linting via `npm run lint` (`next lint`).
+
+### Como Executar a Validação de Migrations Localmente
+Caso possua o Docker rodando localmente:
+```bash
+# Subir PostgreSQL de teste
+docker run -d --name pg-test -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=elitedaspechinchas_test -p 5432:5432 postgres:16-alpine
+
+# Executar script de validação de migrações
+TEST_POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/elitedaspechinchas_test python scripts/verify_migrations.py
+```
