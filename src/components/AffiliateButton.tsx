@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ExternalLink, ShoppingCart, Check, Loader2 } from 'lucide-react';
+import { ExternalLink, ShoppingCart, Check } from 'lucide-react';
 import { useTrackClick } from '@/hooks/useTrackClick';
 
 interface AffiliateButtonProps {
@@ -29,7 +29,6 @@ function AffiliateButtonComponent({
   const [clicked, setClicked] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
     setClicked(true);
     handleAffiliateClick(offerId, affiliateLink);
 
@@ -42,9 +41,9 @@ function AffiliateButtonComponent({
     label || (storeName ? `Pegar na ${storeName}` : 'Pegar Promoção');
 
   const sizeStyles = {
-    sm: 'py-2 px-3.5 text-xs gap-1.5 font-bold rounded-xl',
-    md: 'py-2.5 px-4 text-sm gap-2 font-bold rounded-xl',
-    lg: 'py-3.5 px-6 text-base gap-2.5 font-black rounded-2xl shadow-lg',
+    sm: 'min-h-[38px] py-2 px-3.5 text-xs gap-1.5 font-bold rounded-xl',
+    md: 'min-h-[44px] py-2.5 px-4 text-sm gap-2 font-bold rounded-xl',
+    lg: 'min-h-[48px] py-3.5 px-6 text-base gap-2.5 font-black rounded-2xl shadow-lg',
   };
 
   const variantStyles = {
@@ -57,10 +56,13 @@ function AffiliateButtonComponent({
   };
 
   return (
-    <button
-      type="button"
+    <a
+      href={affiliateLink || '#'}
+      target="_blank"
+      rel="noopener noreferrer"
       onClick={handleClick}
-      className={`inline-flex items-center justify-center transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500/40 ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
+      aria-label={`${defaultLabel} (Abre em nova aba)`}
+      className={`inline-flex items-center justify-center transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500/40 select-none ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
       title={defaultLabel}
     >
       {clicked ? (
@@ -79,7 +81,7 @@ function AffiliateButtonComponent({
           <span>{defaultLabel}</span>
         </>
       )}
-    </button>
+    </a>
   );
 }
 
