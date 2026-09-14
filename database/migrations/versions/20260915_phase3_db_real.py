@@ -1,6 +1,6 @@
 """Etapa 3: Criacao das tabelas de lojas, categorias, cupons e mensagens processadas
 
-Revision ID: 20260915_phase3_stores_categories_coupons
+Revision ID: 20260915_phase3_db_real
 Revises: 20260912_phase3_user_layer
 Create Date: 2026-09-15 00:00:00.000000
 
@@ -9,7 +9,7 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
-revision: str = "20260915_phase3_stores_categories_coupons"
+revision: str = "20260915_phase3_db_real"
 down_revision: Union[str, None] = "20260912_phase3_user_layer"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
