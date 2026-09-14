@@ -108,3 +108,31 @@ class TestOfferIngestRequest(BaseModel):
     original_link: Optional[str] = None
     coupon_code: Optional[str] = None
     source_name: Optional[str] = Field("TEST_SOURCE", description="Nome da fonte para validação")
+
+
+class CouponCreate(BaseModel):
+    code: str = Field(..., min_length=2)
+    store: str = Field(..., min_length=2)
+    store_slug: Optional[str] = None
+    discount_text: str = Field(..., min_length=2)
+    description: Optional[str] = None
+    category: str = "todas"
+    valid_until: str = "Indeterminado"
+    affiliate_link: Optional[str] = None
+    is_verified: bool = True
+    is_active: bool = True
+
+
+class CategoryCreate(BaseModel):
+    name: str = Field(..., min_length=2)
+    slug: str = Field(..., min_length=2)
+    description: Optional[str] = None
+
+
+class StoreCreate(BaseModel):
+    name: str = Field(..., min_length=2)
+    slug: str = Field(..., min_length=2)
+    logo_url: Optional[str] = None
+    website_url: Optional[str] = None
+    is_trusted: bool = True
+

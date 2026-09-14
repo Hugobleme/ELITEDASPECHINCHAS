@@ -57,6 +57,10 @@ def verify_database():
         "price_alerts",
         "push_subscriptions",
         "notifications",
+        "stores",
+        "categories",
+        "coupons",
+        "processed_messages",
     ]
 
     # 1. Executa alembic upgrade head
@@ -117,7 +121,7 @@ def verify_database():
         if table in tables_down:
             print(f"[-] ERRO: Tabela '{table}' não foi removida no downgrade base!", file=sys.stderr)
             sys.exit(1)
-    print("  [OK] Todas as 9 tabelas de domínio foram removidas com sucesso no downgrade")
+    print("  [OK] Todas as 13 tabelas de domínio foram removidas com sucesso no downgrade")
 
     # 6. Executa novamente alembic upgrade head
     print("\n[+] 3. Re-executando 'alembic upgrade head'...")
@@ -131,7 +135,7 @@ def verify_database():
         if table not in tables_final:
             print(f"[-] ERRO: Tabela '{table}' ausente após re-upgrade head!", file=sys.stderr)
             sys.exit(1)
-    print("  [OK] Todas as 9 tabelas restauradas perfeitamente no re-upgrade head")
+    print("  [OK] Todas as 13 tabelas restauradas perfeitamente no re-upgrade head")
 
     print("\n[SUCCESS] Todas as validações de migrations PostgreSQL passaram com 100% de sucesso!")
     engine.dispose()

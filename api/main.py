@@ -19,9 +19,15 @@ from api.routes.admin import router as admin_router
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Cria tabelas caso ainda não criadas (conveniente para desenvolvimento)
+# Validação e inicialização resiliente do banco de dados
 try:
-    Base.metadata.create_all(bind=engine)
+    from database.connection import check_db_connection
+    is_connected, msg = check_db_connection(max_retries=2, retry_delay=1.0)
+    if is_connected:
+        logger.info(f"✅ [Database] Conexão com banco de dados verificada com sucesso na inicialização.")
+        Base.metadata.create_all(bind=engine)
+    else:
+        logger.warning(f"⚠️ [Database] Alerta de conexão na inicialização: {msg}")
 except Exception as exc:
     logger.warning(f"[Database] Não foi possível conectar ao banco de dados na inicialização: {exc}")
 
