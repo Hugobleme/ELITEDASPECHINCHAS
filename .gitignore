@@ -55,3 +55,4 @@ ENV/
 
 # simulation artifacts
 simulated_publications.json
+scratch/

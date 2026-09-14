@@ -34,8 +34,8 @@ export const CONFIG = {
 
   // Configurações de Requisições HTTP
   HTTP: {
-    DEFAULT_TIMEOUT_MS: 4000,
-    EXTENDED_TIMEOUT_MS: 8000,
+    DEFAULT_TIMEOUT_MS: 10000,
+    EXTENDED_TIMEOUT_MS: 15000,
   },
 
   // Paginação e limites padrão

@@ -2,6 +2,7 @@
 Rotas públicas e administrativas de ofertas, cupons, categorias, lojas, busca e tracking.
 """
 import os
+import uuid
 import logging
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
@@ -10,16 +11,19 @@ from sqlalchemy.orm import Session
 from sqlalchemy import desc, func
 
 from database.connection import get_db
-from database.models import Offer
+from database.models import Offer, Coupon, Category, Store
 from api.schemas.offer import (
     OfferRead,
     OffersPaginatedResponse,
     OfferCreate,
     OfferUpdate,
     CouponRead,
+    CouponCreate,
     CouponsPaginatedResponse,
     CategoryDetail,
+    CategoryCreate,
     StoreDetail,
+    StoreCreate,
     TestOfferIngestRequest,
 )
 from api.services.mock_data import (
@@ -56,7 +60,7 @@ def list_offers(
     """
     Retorna ofertas publicadas na vitrine pública com filtros, ordenação e paginação.
     """
-    query = db.query(Offer).filter(Offer.status == "published")
+    query = db.query(Offer).filter(Offer.status == "published", Offer.is_active == True)
 
     if store and store.lower() != "todas":
         query = query.filter(Offer.store.ilike(f"%{store}%"))
@@ -102,7 +106,7 @@ def get_offer_details(offer_id: str, db: Session = Depends(get_db)):
     """Busca detalhes de uma oferta publicada pelo ID."""
     offer = (
         db.query(Offer)
-        .filter(Offer.id == offer_id, Offer.status == "published")
+        .filter(Offer.id == offer_id, Offer.status == "published", Offer.is_active == True)
         .first()
     )
     if not offer:
@@ -176,12 +180,13 @@ def update_offer(offer_id: str, payload: OfferUpdate, db: Session = Depends(get_
 
 @router.delete("/offers/{offer_id}", status_code=status.HTTP_200_OK)
 def delete_offer(offer_id: str, db: Session = Depends(get_db)):
-    """Remove uma oferta pelo ID."""
+    """Remove uma oferta pelo ID (soft delete via is_active=False)."""
     offer = db.query(Offer).filter(Offer.id == offer_id).first()
     if not offer:
         raise HTTPException(status_code=404, detail="Oferta não encontrada.")
 
-    db.delete(offer)
+    offer.is_active = False
+    offer.status = "deleted"
     db.commit()
     return {"status": "success", "deleted_id": offer_id}
 
@@ -209,6 +214,7 @@ def search_offers(
         db.query(Offer)
         .filter(
             Offer.status == "published",
+            Offer.is_active == True,
             (Offer.title.ilike(s) | Offer.store.ilike(s) | Offer.category.ilike(s)),
         )
     )
@@ -257,9 +263,39 @@ def list_coupons(
 ):
     """
     Retorna cupons de desconto ativos com filtros de loja, categoria e busca textual.
-    Utiliza cupons registrados em ofertas ou a base de cupons verificados de referência.
+    Consulta o banco de dados e utiliza fallback estruturado caso a tabela esteja vazia.
     """
-    # Base de dados mockada integrada
+    query = db.query(Coupon).filter(Coupon.is_active == True)
+
+    if store and store.lower() != "todas":
+        st = store.lower()
+        query = query.filter(Coupon.store.ilike(f"%{st}%") | Coupon.store_slug.ilike(f"%{st}%"))
+
+    if category and category.lower() != "todas":
+        query = query.filter(Coupon.category.ilike(category) | Coupon.category.ilike("todas"))
+
+    if search:
+        s = f"%{search.strip()}%"
+        query = query.filter(
+            Coupon.code.ilike(s)
+            | Coupon.store.ilike(s)
+            | Coupon.description.ilike(s)
+            | Coupon.discount_text.ilike(s)
+        )
+
+    db_total = query.count()
+    if db_total > 0:
+        offset = (page - 1) * limit
+        items = query.order_by(desc(Coupon.created_at)).offset(offset).limit(limit).all()
+        return {
+            "items": items,
+            "total": db_total,
+            "page": page,
+            "limit": limit,
+            "has_more": offset + limit < db_total,
+        }
+
+    # Fallback para base mockada integrada
     results = list(PYTHON_MOCK_COUPONS)
 
     if store and store.lower() != "todas":
@@ -294,12 +330,54 @@ def list_coupons(
 
 
 @router.get("/coupons/{coupon_id}", response_model=CouponRead)
-def get_coupon_by_id(coupon_id: str):
-    """Busca cupom específico pelo identificador."""
+def get_coupon_by_id(coupon_id: str, db: Session = Depends(get_db)):
+    """Busca cupom específico pelo identificador ou código."""
+    cp = db.query(Coupon).filter(
+        (Coupon.id == coupon_id) | (Coupon.code.ilike(coupon_id)),
+        Coupon.is_active == True,
+    ).first()
+    if cp:
+        return cp
+
     for c in PYTHON_MOCK_COUPONS:
         if c["id"] == coupon_id or c["code"].lower() == coupon_id.lower():
             return c
     raise HTTPException(status_code=404, detail="Cupom não encontrado.")
+
+
+@router.post("/coupons", response_model=CouponRead, status_code=status.HTTP_201_CREATED)
+def create_coupon(payload: CouponCreate, db: Session = Depends(get_db)):
+    """Cria um novo cupom de desconto no banco de dados."""
+    coupon_id = f"c-{uuid.uuid4().hex[:8]}"
+    store_slug = payload.store_slug or payload.store.lower().replace(" ", "-")
+    cp = Coupon(
+        id=coupon_id,
+        code=payload.code.upper(),
+        store=payload.store,
+        store_slug=store_slug,
+        discount_text=payload.discount_text,
+        description=payload.description,
+        category=payload.category,
+        valid_until=payload.valid_until,
+        affiliate_link=payload.affiliate_link,
+        is_verified=payload.is_verified,
+        is_active=payload.is_active,
+    )
+    db.add(cp)
+    db.commit()
+    db.refresh(cp)
+    return cp
+
+
+@router.delete("/coupons/{coupon_id}", status_code=status.HTTP_200_OK)
+def delete_coupon(coupon_id: str, db: Session = Depends(get_db)):
+    """Desativa um cupom pelo ID (soft delete via is_active=False)."""
+    cp = db.query(Coupon).filter(Coupon.id == coupon_id).first()
+    if not cp:
+        raise HTTPException(status_code=404, detail="Cupom não encontrado.")
+    cp.is_active = False
+    db.commit()
+    return {"status": "success", "deleted_id": coupon_id}
 
 
 # ==============================================================================
@@ -309,9 +387,26 @@ def get_coupon_by_id(coupon_id: str):
 @router.get("/categories", response_model=List[CategoryDetail])
 def get_categories(db: Session = Depends(get_db)):
     """Retorna lista de categorias com contagem de ofertas publicadas."""
+    db_cats = db.query(Category).all()
+    if db_cats:
+        res = []
+        for cat in db_cats:
+            count = (
+                db.query(func.count(Offer.id))
+                .filter(Offer.status == "published", Offer.is_active == True, Offer.category.ilike(cat.slug))
+                .scalar() or 0
+            )
+            res.append({
+                "name": cat.name,
+                "slug": cat.slug,
+                "count": count,
+                "description": cat.description,
+            })
+        return res
+
     db_results = (
         db.query(Offer.category, func.count(Offer.id))
-        .filter(Offer.status == "published")
+        .filter(Offer.status == "published", Offer.is_active == True)
         .group_by(Offer.category)
         .all()
     )
@@ -326,29 +421,77 @@ def get_categories(db: Session = Depends(get_db)):
 def get_category_by_slug(slug: str, db: Session = Depends(get_db)):
     """Busca categoria detalhada pelo slug."""
     clean_slug = slug.strip().lower()
-    for cat in PYTHON_MOCK_CATEGORIES:
-        if cat["slug"] == clean_slug:
+    cat = db.query(Category).filter(Category.slug == clean_slug).first()
+    if cat:
+        count = (
+            db.query(func.count(Offer.id))
+            .filter(Offer.status == "published", Offer.is_active == True, Offer.category.ilike(clean_slug))
+            .scalar() or 0
+        )
+        return {
+            "name": cat.name,
+            "slug": cat.slug,
+            "count": count,
+            "description": cat.description,
+        }
+
+    for c in PYTHON_MOCK_CATEGORIES:
+        if c["slug"] == clean_slug:
             count = (
                 db.query(func.count(Offer.id))
-                .filter(Offer.status == "published", Offer.category.ilike(clean_slug))
+                .filter(Offer.status == "published", Offer.is_active == True, Offer.category.ilike(clean_slug))
                 .scalar()
-                or cat["count"]
+                or c["count"]
             )
             return {
-                "name": cat["name"],
-                "slug": cat["slug"],
+                "name": c["name"],
+                "slug": c["slug"],
                 "count": count,
-                "description": cat.get("description"),
+                "description": c.get("description"),
             }
     raise HTTPException(status_code=404, detail=f"Categoria '{slug}' não encontrada.")
+
+
+@router.post("/categories", response_model=CategoryDetail, status_code=status.HTTP_201_CREATED)
+def create_category(payload: CategoryCreate, db: Session = Depends(get_db)):
+    """Cadastra uma nova categoria no banco de dados."""
+    existing = db.query(Category).filter(Category.slug == payload.slug.lower()).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Categoria com este slug já existe.")
+    cat = Category(
+        name=payload.name,
+        slug=payload.slug.lower(),
+        description=payload.description,
+    )
+    db.add(cat)
+    db.commit()
+    db.refresh(cat)
+    return {"name": cat.name, "slug": cat.slug, "count": 0, "description": cat.description}
 
 
 @router.get("/stores", response_model=List[StoreDetail])
 def get_stores(db: Session = Depends(get_db)):
     """Retorna lista de lojas parceiras com contagem de ofertas publicadas."""
+    db_stores = db.query(Store).filter(Store.is_trusted == True).all()
+    if db_stores:
+        res = []
+        for st in db_stores:
+            count = (
+                db.query(func.count(Offer.id))
+                .filter(Offer.status == "published", Offer.is_active == True, Offer.store.ilike(f"%{st.name}%"))
+                .scalar() or 0
+            )
+            res.append({
+                "name": st.name,
+                "slug": st.slug,
+                "count": count,
+                "url": st.website_url,
+            })
+        return res
+
     db_results = (
         db.query(Offer.store, func.count(Offer.id))
-        .filter(Offer.status == "published")
+        .filter(Offer.status == "published", Offer.is_active == True)
         .group_by(Offer.store)
         .all()
     )
@@ -366,21 +509,54 @@ def get_stores(db: Session = Depends(get_db)):
 def get_store_by_slug(slug: str, db: Session = Depends(get_db)):
     """Busca loja parceira detalhada pelo slug."""
     clean_slug = slug.strip().lower()
-    for st in PYTHON_MOCK_STORES:
-        if st["slug"] == clean_slug or st["name"].lower().replace(" ", "-") == clean_slug:
+    st = db.query(Store).filter(Store.slug == clean_slug).first()
+    if st:
+        count = (
+            db.query(func.count(Offer.id))
+            .filter(Offer.status == "published", Offer.is_active == True, Offer.store.ilike(f"%{st.name}%"))
+            .scalar() or 0
+        )
+        return {
+            "name": st.name,
+            "slug": st.slug,
+            "count": count,
+            "url": st.website_url,
+        }
+
+    for item in PYTHON_MOCK_STORES:
+        if item["slug"] == clean_slug or item["name"].lower().replace(" ", "-") == clean_slug:
             count = (
                 db.query(func.count(Offer.id))
-                .filter(Offer.status == "published", Offer.store.ilike(f"%{st['name']}%"))
+                .filter(Offer.status == "published", Offer.is_active == True, Offer.store.ilike(f"%{item['name']}%"))
                 .scalar()
-                or st["count"]
+                or item["count"]
             )
             return {
-                "name": st["name"],
-                "slug": st["slug"],
+                "name": item["name"],
+                "slug": item["slug"],
                 "count": count,
-                "url": st.get("url"),
+                "url": item.get("url"),
             }
     raise HTTPException(status_code=404, detail=f"Loja '{slug}' não encontrada.")
+
+
+@router.post("/stores", response_model=StoreDetail, status_code=status.HTTP_201_CREATED)
+def create_store(payload: StoreCreate, db: Session = Depends(get_db)):
+    """Cadastra uma nova loja parceira no banco de dados."""
+    existing = db.query(Store).filter(Store.slug == payload.slug.lower()).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Loja com este slug já existe.")
+    st = Store(
+        name=payload.name,
+        slug=payload.slug.lower(),
+        logo_url=payload.logo_url,
+        website_url=payload.website_url,
+        is_trusted=payload.is_trusted,
+    )
+    db.add(st)
+    db.commit()
+    db.refresh(st)
+    return {"name": st.name, "slug": st.slug, "count": 0, "url": st.website_url}
 
 
 # ==============================================================================

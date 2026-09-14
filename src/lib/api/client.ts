@@ -21,25 +21,36 @@ export function getStoredToken(key: string, legacyKey?: string): string | null {
 }
 
 /**
- * Utilitário de fetch com timeout configurável e abort controller.
+ * Utilitário de fetch com timeout configurável (10s padrão), abort controller e retry para falhas transitórias de rede.
  */
 export async function fetchWithTimeout(
   url: string,
   options: RequestInit = {},
-  timeoutMs: number = CONFIG.HTTP.DEFAULT_TIMEOUT_MS
+  timeoutMs: number = CONFIG.HTTP.DEFAULT_TIMEOUT_MS,
+  retries: number = 2
 ): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  let lastError: any;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
-    return response;
-  } finally {
-    clearTimeout(timeoutId);
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+      });
+      return response;
+    } catch (err: any) {
+      lastError = err;
+      if (attempt < retries) {
+        // Intervalo incremental curto antes do próximo retry
+        await new Promise((resolve) => setTimeout(resolve, (attempt + 1) * 300));
+      }
+    } finally {
+      clearTimeout(timeoutId);
+    }
   }
+  throw lastError;
 }
 
 /**

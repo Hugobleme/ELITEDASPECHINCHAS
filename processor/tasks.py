@@ -4,11 +4,11 @@ from typing import Dict, Any, Optional, List
 from sqlalchemy.orm import Session
 
 from database.connection import SessionLocal
-from database.models import Offer
+from database.models import Offer, ProcessedMessage, Store, Category
 from processor.celery_app import celery_app
 from processor.parser import parse_telegram_message
 from processor.affiliate import generate_affiliate_link
-from processor.rules import evaluate_rules
+from processor.rules import evaluate_rules, generate_offer_hash
 from processor.notify import match_and_notify
 from bot.formatter import format_telegram_card_html
 from bot.publisher import publish_to_telegram
@@ -26,6 +26,7 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
     3. Converte a URL original para o link de afiliado oficial correspondente à loja.
     4. Persiste a oferta no banco de dados com status 'pending' ou 'published'.
     5. Se for publicada, agenda publicação no canal oficial e dispara alertas Web Push.
+    6. Registra trilha de auditoria em ProcessedMessage.
     """
     text = raw_data.get("text", "")
     telegram_msg_id = raw_data.get("telegram_msg_id")
@@ -54,6 +55,20 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
 
         if not is_approved:
             logger.info(f"[Tasks] Oferta rejeitada pelas regras: {reason}")
+            try:
+                proc_msg = ProcessedMessage(
+                    telegram_message_id=int(telegram_msg_id) if telegram_msg_id else 0,
+                    source_name=source_name,
+                    status="rejected",
+                    reason=reason,
+                    raw_text=text[:1000] if text else None,
+                )
+                db.add(proc_msg)
+                db.commit()
+            except Exception as proc_err:
+                logger.warning(f"[Tasks] Falha ao registrar ProcessedMessage de rejeição: {proc_err}")
+                db.rollback()
+
             return {
                 "status": "rejected",
                 "reason": reason,
@@ -68,15 +83,30 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
             db=db,
         )
 
-        # 4. Persistência no Banco de Dados
+        # 4. Busca por Store e Category vinculadas
+        store_obj = None
+        category_obj = None
+        if parsed.get("store"):
+            store_obj = db.query(Store).filter(
+                (Store.name.ilike(parsed["store"])) | (Store.slug == parsed["store"].lower())
+            ).first()
+        if parsed.get("category"):
+            category_obj = db.query(Category).filter(
+                (Category.name.ilike(parsed["category"])) | (Category.slug == parsed["category"].lower())
+            ).first()
+
+        # 5. Persistência no Banco de Dados
         now_utc = datetime.now(timezone.utc)
         new_offer = Offer(
             title=parsed["title"],
+            description=parsed.get("title"),
             price_current=parsed["price_current"],
             price_original=parsed["price_original"],
             discount_pct=parsed["discount_pct"],
             store=parsed["store"],
+            store_id=store_obj.id if store_obj else None,
             category=parsed["category"],
+            category_id=category_obj.id if category_obj else None,
             image_url=parsed["image_url"],
             original_link=parsed["original_link"],
             affiliate_link=affiliate_link,
@@ -84,8 +114,10 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
             telegram_msg_id=telegram_msg_id,
             source_name=source_name,
             status=initial_status,
+            is_active=True,
             published_at=now_utc if initial_status == "published" else None,
             created_at=now_utc,
+            updated_at=now_utc,
         )
 
         db.add(new_offer)
@@ -93,12 +125,28 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
         db.refresh(new_offer)
 
         offer_id = str(new_offer.id)
+
+        # Trilha de auditoria em ProcessedMessage
+        try:
+            proc_msg = ProcessedMessage(
+                telegram_message_id=int(telegram_msg_id) if telegram_msg_id else 0,
+                source_name=source_name,
+                offer_id=new_offer.id,
+                status="success",
+                raw_text=text[:1000] if text else None,
+            )
+            db.add(proc_msg)
+            db.commit()
+        except Exception as proc_err:
+            logger.warning(f"[Tasks] Falha ao registrar ProcessedMessage de sucesso: {proc_err}")
+            db.rollback()
+
         logger.info(
             f"✅ [Tasks] Oferta salva no banco com ID {offer_id} | Status: '{initial_status}' | "
             f"Loja: {new_offer.store} | Desconto: {new_offer.discount_pct}% | Score: {parsed.get('quality_score', 0)}"
         )
 
-        # 5. Fluxo de Publicação Automática (se status='published')
+        # 6. Fluxo de Publicação Automática (se status='published')
         if initial_status == "published":
             logger.info(f"[Tasks] Disparando publicação automática para oferta {offer_id}")
             try:
@@ -130,6 +178,18 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
     except Exception as exc:
         db.rollback()
         logger.error(f"[Tasks] Erro fatal no processamento da mensagem: {exc}", exc_info=True)
+        try:
+            failed_msg = ProcessedMessage(
+                telegram_message_id=int(telegram_msg_id) if telegram_msg_id else 0,
+                source_name=source_name,
+                status="failed",
+                reason=str(exc)[:500],
+                raw_text=text[:1000] if text else None,
+            )
+            db.add(failed_msg)
+            db.commit()
+        except Exception:
+            db.rollback()
         raise self.retry(exc=exc)
     finally:
         db.close()
@@ -250,7 +310,7 @@ def task_batch_process(self, batch: List[Dict[str, Any]]) -> Dict[str, Any]:
 def task_cleanup_expired(self, max_age_days: int = 30) -> Dict[str, Any]:
     """
     Limpeza periódica de ofertas antigas ou expiradas.
-    Marca como 'expired' ofertas publicadas com mais de max_age_days dias.
+    Marca como 'expired' e is_active=False para ofertas publicadas com mais de max_age_days dias.
     """
     db: Session = SessionLocal()
     try:
@@ -267,6 +327,7 @@ def task_cleanup_expired(self, max_age_days: int = 30) -> Dict[str, Any]:
         count = len(expired_offers)
         for off in expired_offers:
             off.status = "expired"
+            off.is_active = False
 
         db.commit()
         logger.info(f"[Cleanup Task] {count} ofertas marcadas como 'expired' (mais de {max_age_days} dias).")
@@ -275,5 +336,51 @@ def task_cleanup_expired(self, max_age_days: int = 30) -> Dict[str, Any]:
         db.rollback()
         logger.error(f"[Cleanup Task] Falha na limpeza de expiradas: {exc}")
         return {"status": "error", "message": str(exc)}
+    finally:
+        db.close()
+
+
+@celery_app.task(name="task_deduplicate", bind=True)
+def task_deduplicate(self, original_link: str, title: str = "", price: float = 0.0) -> Dict[str, Any]:
+    """
+    Verifica se uma oferta já foi cadastrada recentemente no banco de dados
+    pela URL original ou pelo hash do produto.
+    """
+    db: Session = SessionLocal()
+    try:
+        # 1. Checagem por link original
+        if original_link:
+            existing_by_link = db.query(Offer).filter(
+                Offer.original_link == original_link,
+                Offer.is_active == True,
+            ).first()
+            if existing_by_link:
+                return {
+                    "is_duplicate": True,
+                    "existing_id": str(existing_by_link.id),
+                    "reason": "URL original já cadastrada",
+                }
+
+        # 2. Checagem por similaridade de título e preço nas últimas 24h
+        if title and price > 0:
+            target_hash = generate_offer_hash(title, price)
+            cutoff_24h = datetime.now(timezone.utc) - timedelta(hours=24)
+            recent_offers = db.query(Offer).filter(
+                Offer.created_at >= cutoff_24h,
+                Offer.is_active == True,
+            ).all()
+
+            for off in recent_offers:
+                if generate_offer_hash(off.title, off.price_current) == target_hash:
+                    return {
+                        "is_duplicate": True,
+                        "existing_id": str(off.id),
+                        "reason": "Produto e preço idênticos postados nas últimas 24h",
+                    }
+
+        return {"is_duplicate": False, "existing_id": None}
+    except Exception as exc:
+        logger.error(f"[Deduplicate Task] Erro na verificação: {exc}")
+        return {"is_duplicate": False, "error": str(exc)}
     finally:
         db.close()
