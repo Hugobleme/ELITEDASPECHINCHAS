@@ -227,3 +227,119 @@ def test_evaluate_rules_allow_internal_test_exception(db_session):
     approved, reason, status = evaluate_rules(parsed, db_session, source_name=None, allow_internal_test=True)
     assert approved is True
     assert status == "pending"  # Curadoria humana padrão (AUTO_APPROVE_ENABLED=False)
+
+
+def test_calculate_quality_score():
+    from processor.rules import calculate_quality_score
+    top_offer = {
+        "title": "Smartphone Samsung Galaxy S24 Ultra 512GB Titanium Gray",
+        "price_current": 4899.0,
+        "price_original": 7999.0,
+        "discount_pct": 38,
+        "store": "Samsung",
+        "coupon_code": "GALAXY10",
+        "image_url": "https://images.samsung.com/galaxy.jpg",
+    }
+    score = calculate_quality_score(top_offer)
+    assert score >= 70
+
+    weak_offer = {
+        "title": "Cabo",
+        "price_current": 5.0,
+        "discount_pct": 0,
+        "store": "desconhecida",
+        "coupon_code": None,
+        "image_url": None,
+    }
+    assert calculate_quality_score(weak_offer) <= 30
+
+
+def test_evaluate_rules_price_limits(db_session):
+    """Rejeita ofertas com preço abaixo do mínimo ou acima do máximo configurado."""
+    # Abaixo do mínimo (ex: R$ 5,00 quando mínimo é R$ 10,00)
+    low_offer = {
+        "title": "Caneta Esferográfica",
+        "price_current": 5.0,
+        "price_original": 10.0,
+        "discount_pct": 50,
+        "store": "Amazon",
+        "original_link": "https://amazon.com.br/dp/123",
+    }
+    approved, reason, status = evaluate_rules(low_offer, db_session, allow_internal_test=True)
+    assert approved is False
+    assert "abaixo do valor mínimo" in reason
+
+    # Acima do máximo (ex: R$ 8.000,00 quando máximo é R$ 5.000,00)
+    high_offer = {
+        "title": "MacBook Pro M3 Max 64GB",
+        "price_current": 8999.0,
+        "price_original": 12000.0,
+        "discount_pct": 25,
+        "store": "Amazon",
+        "original_link": "https://amazon.com.br/dp/123",
+    }
+    approved, reason, status = evaluate_rules(high_offer, db_session, allow_internal_test=True)
+    assert approved is False
+    assert "acima do limite máximo" in reason
+
+
+def test_evaluate_rules_blocked_keywords_and_categories(db_session):
+    """Rejeita ofertas com produtos proibidos, réplicas, apostas ou categorias bloqueadas."""
+    # Réplica / Falso
+    replica_offer = {
+        "title": "Tênis Nike Air Jordan Réplica Primeira Linha",
+        "price_current": 199.0,
+        "price_original": 400.0,
+        "discount_pct": 50,
+        "store": "Shopee",
+        "original_link": "https://shopee.com.br/p/123",
+    }
+    approved, reason, status = evaluate_rules(replica_offer, db_session, allow_internal_test=True)
+    assert approved is False
+    assert "palavra-chave bloqueada" in reason
+
+    # Categoria bloqueada
+    adult_offer = {
+        "title": "Item Especial Adulto Proibido",
+        "price_current": 120.0,
+        "price_original": 200.0,
+        "discount_pct": 40,
+        "store": "Shopee",
+        "category": "adulto",
+        "original_link": "https://shopee.com.br/p/456",
+    }
+    approved, reason, status = evaluate_rules(adult_offer, db_session, allow_internal_test=True)
+    assert approved is False
+    assert "Categoria bloqueada" in reason
+
+
+def test_evaluate_rules_suspicious_links(db_session):
+    """Rejeita links que utilizam encurtadores não autorizados ou suspeitos."""
+    susp_offer = {
+        "title": "Fone Bluetooth TWS Barato",
+        "price_current": 80.0,
+        "price_original": 150.0,
+        "discount_pct": 46,
+        "store": "Amazon",
+        "original_link": "https://iplogger.org/2abcde",
+    }
+    approved, reason, status = evaluate_rules(susp_offer, db_session, allow_internal_test=True)
+    assert approved is False
+    assert "encurtador não autorizado ou suspeito" in reason
+
+
+def test_evaluate_rules_expired_coupon(db_session):
+    """Rejeita oferta quando o cupom explícito já expirou no calendário."""
+    expired_offer = {
+        "title": "Mochila Executiva Antifurto",
+        "price_current": 120.0,
+        "price_original": 200.0,
+        "discount_pct": 40,
+        "store": "Amazon",
+        "coupon_code": "ANTIGO50",
+        "coupon_validity": "01/01/2020",
+        "original_link": "https://amazon.com.br/dp/mochila",
+    }
+    approved, reason, status = evaluate_rules(expired_offer, db_session, allow_internal_test=True)
+    assert approved is False
+    assert "Cupom expirado" in reason
