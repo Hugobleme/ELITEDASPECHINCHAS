@@ -37,11 +37,18 @@ app = FastAPI(
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 # ==========================================
-# Configuração de CORS
+# Configuração de CORS Segura
 # ==========================================
 raw_cors = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
 CORS_ORIGINS = [origin.strip() for origin in raw_cors.split(",") if origin.strip()]
 CORS_ORIGIN_REGEX = os.getenv("CORS_ORIGIN_REGEX")
+
+# Em staging: se não configurado explicitamente, aplica regex restritiva apenas para subdomínios seguros da Vercel
+if not CORS_ORIGIN_REGEX and os.getenv("ENVIRONMENT") == "staging":
+    CORS_ORIGIN_REGEX = r"^https:\/\/[a-zA-Z0-9_-]+\.vercel\.app$"
+elif CORS_ORIGIN_REGEX and CORS_ORIGIN_REGEX.strip() in [".*", ".*?", "^.*$", ".*vercel.*"]:
+    # Sanitiza regex insegura que permitiria qualquer origem arbitrária
+    CORS_ORIGIN_REGEX = r"^https:\/\/[a-zA-Z0-9_-]+\.vercel\.app$"
 
 cors_kwargs = {
     "allow_origins": CORS_ORIGINS,
@@ -100,7 +107,7 @@ def health_check():
     return {
         "status": "healthy",
         "service": "Elite das Pechinchas Backend",
-        "timestamp": datetime.now(timezone.utc),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
 

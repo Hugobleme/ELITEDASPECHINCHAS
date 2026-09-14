@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { subscribeUserPush } from '@/lib/api';
 import { useUserAuth } from '@/contexts/UserAuthContext';
+import { CONFIG } from '@/lib/config';
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
@@ -54,9 +55,23 @@ export function usePushNotifications() {
       }
 
       const reg = await navigator.serviceWorker.ready;
-      const vapidPublicKey =
-        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ||
-        'BExamplePublicKey_ReplaceWithGeneratedVapidKeyInProductionEnv1234567890';
+      let vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      if (!vapidPublicKey || vapidPublicKey.startsWith('BExample')) {
+        try {
+          const res = await fetch(`${CONFIG.API_BASE_URL}/push/vapid-public-key`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.vapid_public_key) {
+              vapidPublicKey = data.vapid_public_key;
+            }
+          }
+        } catch {
+          // fallback transparente para valor padrão
+        }
+      }
+      if (!vapidPublicKey) {
+        vapidPublicKey = CONFIG.VAPID_PUBLIC_KEY;
+      }
 
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
