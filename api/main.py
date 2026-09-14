@@ -90,6 +90,7 @@ async def rate_limit_auth_middleware(request: Request, call_next):
 # Registro de Roteadores Modulares
 # ==========================================
 app.include_router(offers_router)
+app.include_router(offers_router, prefix="/api")
 app.include_router(admin_router)
 app.include_router(auth_router)
 app.include_router(preferences_router)

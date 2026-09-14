@@ -1,13 +1,22 @@
 import re
 import urllib.parse
 import logging
-from typing import Optional
+from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
 
 from database.models import AffiliateRule
 from config import DEFAULT_AFFILIATE_TAGS, AFFILIATE_PARAM_NAMES
 
 logger = logging.getLogger(__name__)
+
+# Parâmetros UTM e de campanha que devem ser preservados se presentes
+PRESERVED_UTM_PARAMS = [
+    "utm_source",
+    "utm_medium",
+    "utm_campaign",
+    "utm_term",
+    "utm_content",
+]
 
 
 def extract_amazon_asin(url: str) -> Optional[str]:
@@ -28,6 +37,43 @@ def extract_amazon_asin(url: str) -> Optional[str]:
     return None
 
 
+def extract_mercadolivre_id(url: str) -> Optional[str]:
+    """
+    Extrai o identificador de anúncio do Mercado Livre (ex: MLB-1234567890 ou MLB1234567890).
+    """
+    patterns = [
+        r"(MLB-?\d{8,12})",
+        r"/p/(MLB\d{6,12})",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, url, re.IGNORECASE)
+        if match:
+            raw_id = match.group(1).upper()
+            return raw_id if "-" in raw_id else f"MLB-{raw_id.replace('MLB', '')}"
+    return None
+
+
+def copy_preserved_params(source_url: str, target_url: str) -> str:
+    """
+    Copia parâmetros UTM e rastreadores originais da URL de origem para a nova URL de afiliado.
+    """
+    try:
+        src_parsed = urllib.parse.urlparse(source_url)
+        src_qs = urllib.parse.parse_qs(src_parsed.query)
+
+        tgt_parsed = urllib.parse.urlparse(target_url)
+        tgt_qs = urllib.parse.parse_qs(tgt_parsed.query)
+
+        for param in PRESERVED_UTM_PARAMS:
+            if param in src_qs and param not in tgt_qs:
+                tgt_qs[param] = src_qs[param]
+
+        new_query = urllib.parse.urlencode(tgt_qs, doseq=True)
+        return urllib.parse.urlunparse(tgt_parsed._replace(query=new_query))
+    except Exception:
+        return target_url
+
+
 def get_affiliate_tag_for_store(store: str, db: Optional[Session] = None) -> Optional[str]:
     """
     Recupera a tag de afiliado no banco (AffiliateRule) ou por variável de ambiente.
@@ -36,30 +82,38 @@ def get_affiliate_tag_for_store(store: str, db: Optional[Session] = None) -> Opt
     if not store:
         return None
 
+    store_clean = store.strip()
+
     if db:
         try:
-            rule = db.query(AffiliateRule).filter(AffiliateRule.store.ilike(store.strip())).first()
+            rule = db.query(AffiliateRule).filter(AffiliateRule.store.ilike(store_clean)).first()
             if rule and rule.affiliate_tag and rule.affiliate_tag.strip():
                 return rule.affiliate_tag.strip()
         except Exception as e:
             logger.warning(f"[Affiliate] Erro ao consultar regra no banco para loja {store}: {e}")
 
-    tag = DEFAULT_AFFILIATE_TAGS.get(store)
+    # Busca nas tags padrão do config.py
+    tag = DEFAULT_AFFILIATE_TAGS.get(store_clean)
     if tag and str(tag).strip():
         return str(tag).strip()
+
+    # Busca case-insensitive no dicionário
+    for k, v in DEFAULT_AFFILIATE_TAGS.items():
+        if k.lower() == store_clean.lower() and v and str(v).strip():
+            return str(v).strip()
 
     return None
 
 
 def replace_amazon_link(url: str, tag: str) -> str:
     """
-    Gera link limpo de associado Amazon direto com ASIN.
+    Gera link limpo de associado Amazon direto com ASIN ou injeta parâmetro tag.
     """
     asin = extract_amazon_asin(url)
     if asin:
-        return f"https://www.amazon.com.br/dp/{asin}?tag={tag}"
+        base_url = f"https://www.amazon.com.br/dp/{asin}?tag={tag}"
+        return copy_preserved_params(url, base_url)
 
-    # Se não conseguir isolar o ASIN, substitui ou injeta o parâmetro tag na URL
     parsed = urllib.parse.urlparse(url)
     query_params = urllib.parse.parse_qs(parsed.query)
     query_params["tag"] = [tag]
@@ -69,13 +123,13 @@ def replace_amazon_link(url: str, tag: str) -> str:
 
 def replace_mercadolivre_link(url: str, tag: str) -> str:
     """
-    Injeta tag de afiliado do Mercado Livre limpando parâmetros de outros afiliados.
+    Injeta tag de afiliado do Mercado Livre limpando parâmetros de terceiros.
     """
     parsed = urllib.parse.urlparse(url)
     query_params = urllib.parse.parse_qs(parsed.query)
-    
-    # Remove tags antigas
-    for key in ["p", "tag", "matt_tool", "matt_word"]:
+
+    # Remove identificadores antigos de afiliados terceiros
+    for key in ["p", "tag", "matt_tool", "matt_word", "tracking_id"]:
         query_params.pop(key, None)
 
     query_params["tag"] = [tag]
@@ -85,23 +139,28 @@ def replace_mercadolivre_link(url: str, tag: str) -> str:
 
 def replace_magalu_link(url: str, tag: str) -> str:
     """
-    Substitui link da Magazine Luiza para a vitrine do parceiro magalu.
+    Substitui link da Magazine Luiza direcionando para vitrine oficial do parceiro.
     """
-    # Se já for magazinevoce, substitui o parceiro na rota
+    parsed = urllib.parse.urlparse(url)
+    path = parsed.path
+
     if "magazinevoce.com.br" in url:
-        return re.sub(r"magazinevoce\.com\.br/[^/]+/", f"magazinevoce.com.br/{tag}/", url)
+        new_url = re.sub(r"magazinevoce\.com\.br/[^/]+/", f"magazinevoce.com.br/{tag}/", url)
+        return copy_preserved_params(url, new_url)
 
-    # Se for magazineluiza.com.br, direciona para magazinevoce com o tag do parceiro
     if "magazineluiza.com.br" in url:
-        path = urllib.parse.urlparse(url).path
-        return f"https://www.magazinevoce.com.br/{tag}{path}"
+        new_url = f"https://www.magazinevoce.com.br/{tag}{path}"
+        return copy_preserved_params(url, new_url)
 
-    return url
+    query_params = urllib.parse.parse_qs(parsed.query)
+    query_params["parceiro"] = [tag]
+    new_query = urllib.parse.urlencode(query_params, doseq=True)
+    return urllib.parse.urlunparse(parsed._replace(query=new_query))
 
 
 def replace_generic_link(url: str, param_name: str, tag: str) -> str:
     """
-    Injeta o parâmetro de afiliado em qualquer URL genérica.
+    Injeta o parâmetro de afiliado em qualquer URL genérica preservando o restante da query.
     """
     parsed = urllib.parse.urlparse(url)
     query_params = urllib.parse.parse_qs(parsed.query)
@@ -117,8 +176,8 @@ def generate_affiliate_link(
 ) -> str:
     """
     Função principal para troca automática do link original pelo link de afiliado oficial.
-    Se a tag de afiliado não estiver configurada, mantém o link original como fallback seguro
-    e emite aviso de integração pendente, sem inventar tags ou quebrar a navegação.
+    Se a tag não estiver configurada, mantém o link original como fallback seguro.
+    Gera logs de auditoria detalhados para cada substituição.
     """
     if not original_link or not original_link.startswith("http"):
         return original_link or ""
@@ -128,35 +187,37 @@ def generate_affiliate_link(
         if not tag:
             logger.warning(
                 f"[Affiliate Pendente] Tag de afiliado para a loja '{store}' não configurada no ambiente. "
-                f"Mantendo link original como fallback seguro."
+                f"Mantendo link original como fallback seguro: {original_link}"
             )
             return original_link
 
         store_lower = store.lower()
+        affiliate_url = original_link
 
         if "amazon" in store_lower:
-            return replace_amazon_link(original_link, tag)
+            affiliate_url = replace_amazon_link(original_link, tag)
+        elif "mercado livre" in store_lower or "mercadolivre" in store_lower:
+            affiliate_url = replace_mercadolivre_link(original_link, tag)
+        elif "magazine" in store_lower or "magalu" in store_lower:
+            affiliate_url = replace_magalu_link(original_link, tag)
+        elif "kabum" in store_lower:
+            affiliate_url = replace_generic_link(original_link, "tag", tag)
+        elif "shopee" in store_lower:
+            affiliate_url = replace_generic_link(original_link, "af_siteid", tag)
+        elif "aliexpress" in store_lower:
+            affiliate_url = replace_generic_link(original_link, "aff_fcid", tag)
+        elif "casas bahia" in store_lower or "casasbahia" in store_lower:
+            affiliate_url = replace_generic_link(original_link, "parceiro", tag)
+        else:
+            param_name = AFFILIATE_PARAM_NAMES.get(store, "tag")
+            affiliate_url = replace_generic_link(original_link, param_name, tag)
 
-        if "mercado livre" in store_lower or "mercadolivre" in store_lower:
-            return replace_mercadolivre_link(original_link, tag)
-
-        if "magazine" in store_lower or "magalu" in store_lower:
-            return replace_magalu_link(original_link, tag)
-
-        if "kabum" in store_lower:
-            return replace_generic_link(original_link, "tag", tag)
-
-        if "shopee" in store_lower:
-            return replace_generic_link(original_link, "af_siteid", tag)
-
-        if "aliexpress" in store_lower:
-            return replace_generic_link(original_link, "aff_fcid", tag)
-
-        # Se houver regra configurada no dicionário genérico
-        param_name = AFFILIATE_PARAM_NAMES.get(store, "tag")
-        return replace_generic_link(original_link, param_name, tag)
+        logger.info(
+            f"[Affiliate Audit] Link substituído para '{store}': "
+            f"Original='{original_link}' -> Afiliado='{affiliate_url}'"
+        )
+        return affiliate_url
 
     except Exception as e:
-        logger.error(f"[Affiliate] Falha na troca de link para {store} ({original_link}): {e}")
-        # Em caso de erro na reescrita, preserva o link original
+        logger.error(f"[Affiliate Erro] Falha na conversão de link para {store} ({original_link}): {e}")
         return original_link

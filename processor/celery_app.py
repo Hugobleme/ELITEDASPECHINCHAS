@@ -18,4 +18,12 @@ celery_app.conf.update(
     enable_utc=True,
     task_track_started=True,
     task_time_limit=300,
+    task_routes={
+        "publish_offer_to_channel": {"queue": "high_priority"},
+        "task_publish_offer": {"queue": "high_priority"},
+        "process_telegram_message": {"queue": "default"},
+        "task_process_message": {"queue": "default"},
+        "task_batch_process": {"queue": "default"},
+        "task_cleanup_expired": {"queue": "low_priority"},
+    },
 )

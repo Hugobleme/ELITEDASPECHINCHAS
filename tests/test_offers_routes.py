@@ -298,3 +298,120 @@ def test_test_ingest_offer_security(client, monkeypatch):
     monkeypatch.setenv("TEST_INGEST_KEY", "secret_dev_key")
     res_test_env = client.post("/offers/test-ingest", json=payload, headers={"X-Test-Key": "secret_dev_key"})
     assert res_test_env.status_code == 201
+
+
+def test_coupons_endpoints(client):
+    """Testa listagem de cupons com filtros e busca por ID."""
+    # Listagem completa
+    res = client.get("/coupons")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["total"] >= 1
+    assert "items" in data
+
+    # Filtro por loja
+    res_store = client.get("/coupons?store=Amazon")
+    assert res_store.status_code == 200
+    for c in res_store.json()["items"]:
+        assert "amazon" in c["store"].lower() or "amazon" in c.get("store_slug", "").lower()
+
+    # Busca por código
+    res_search = client.get("/coupons?search=MELI10")
+    assert res_search.status_code == 200
+    assert len(res_search.json()["items"]) >= 1
+
+    # Busca por ID existente
+    first_id = data["items"][0]["id"]
+    res_id = client.get(f"/coupons/{first_id}")
+    assert res_id.status_code == 200
+    assert res_id.json()["id"] == first_id
+
+    # Busca por ID inexistente
+    res_404 = client.get("/coupons/cupom-fantasma-999")
+    assert res_404.status_code == 404
+
+
+def test_categories_and_stores_by_slug(client):
+    """Testa busca de categoria e loja por slug."""
+    # Categoria existente
+    res_cat = client.get("/categories/smartphones")
+    assert res_cat.status_code == 200
+    assert res_cat.json()["slug"] == "smartphones"
+
+    # Categoria inexistente
+    res_cat_404 = client.get("/categories/categoria-que-nao-existe")
+    assert res_cat_404.status_code == 404
+
+    # Loja existente
+    res_store = client.get("/stores/amazon")
+    assert res_store.status_code == 200
+    assert res_store.json()["name"] == "Amazon"
+
+    # Loja inexistente
+    res_store_404 = client.get("/stores/loja-inexistente-xyz")
+    assert res_store_404.status_code == 404
+
+
+def test_search_offers_endpoint(client, sample_offer):
+    """Testa endpoint de busca full-text."""
+    # Busca com match no título
+    res_match = client.get(f"/search?q={sample_offer.title.split()[0]}")
+    assert res_match.status_code == 200
+    assert res_match.json()["total"] >= 1
+
+    # Busca sem match
+    res_nomatch = client.get("/search?q=TermoAbsurdoNaoExistente999")
+    assert res_nomatch.status_code == 200
+    assert res_nomatch.json()["total"] == 0
+
+
+def test_offer_crud_endpoints(client):
+    """Testa criação, atualização e exclusão de ofertas."""
+    # 1. POST /offers
+    create_payload = {
+        "title": "Teclado Mecânico Gamer Redragon Kumara",
+        "price_current": 180.0,
+        "price_original": 250.0,
+        "store": "Amazon",
+        "category": "informatica",
+        "original_link": "https://www.amazon.com.br/dp/B08XYZ1234",
+    }
+    res_create = client.post("/offers", json=create_payload)
+    assert res_create.status_code == 201
+    offer_data = res_create.json()
+    new_id = offer_data["id"]
+    assert offer_data["title"] == create_payload["title"]
+    assert offer_data["discount_pct"] == 28
+    assert "tag=" in offer_data["affiliate_link"] or "amazon.com.br" in offer_data["affiliate_link"]
+
+    # 2. PUT /offers/{id}
+    update_payload = {
+        "title": "Teclado Mecânico Gamer Redragon Kumara RGB",
+        "price_current": 160.0,
+    }
+    res_update = client.put(f"/offers/{new_id}", json=update_payload)
+    assert res_update.status_code == 200
+    assert res_update.json()["title"] == update_payload["title"]
+    assert res_update.json()["price_current"] == 160.0
+
+    # 3. DELETE /offers/{id}
+    res_delete = client.delete(f"/offers/{new_id}")
+    assert res_delete.status_code == 200
+    assert res_delete.json()["deleted_id"] == new_id
+
+    # 4. Confirma exclusão com 404
+    res_get_deleted = client.get(f"/offers/{new_id}")
+    assert res_get_deleted.status_code == 404
+
+
+def test_api_prefix_routing(client, sample_offer):
+    """Garante que tanto /offers quanto /api/offers e /api/coupons respondam 200 OK."""
+    res_root = client.get("/offers")
+    res_api = client.get("/api/offers")
+    assert res_root.status_code == 200
+    assert res_api.status_code == 200
+
+    res_root_coupons = client.get("/coupons")
+    res_api_coupons = client.get("/api/coupons")
+    assert res_root_coupons.status_code == 200
+    assert res_api_coupons.status_code == 200

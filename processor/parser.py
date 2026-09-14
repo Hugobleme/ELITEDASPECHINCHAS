@@ -1,9 +1,54 @@
 import re
 import urllib.parse
 import unicodedata
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
+from pydantic import BaseModel, Field
 
-# Mapeamento de domínios para nomes padronizados de lojas
+
+# ==============================================================================
+# Modelos Pydantic Padronizados
+# ==============================================================================
+class ParsedOffer(BaseModel):
+    """
+    Estrutura de dados tipada e padronizada para ofertas extraídas de mensagens.
+    """
+    title: str = ""
+    price_current: float = 0.0
+    price_original: float = 0.0
+    discount_pct: int = 0
+    store: str = ""
+    category: str = "eletronicos"
+    image_url: Optional[str] = None
+    original_link: Optional[str] = None
+    coupon_code: Optional[str] = None
+    coupon_validity: Optional[str] = None
+    items_count: int = 1
+    raw_text: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Converte para dicionário compatível com o pipeline existente."""
+        return {
+            "title": self.title,
+            "price_current": self.price_current,
+            "price_original": self.price_original,
+            "discount_pct": self.discount_pct,
+            "store": self.store,
+            "category": self.category,
+            "image_url": self.image_url,
+            "original_link": self.original_link,
+            "coupon_code": self.coupon_code,
+            "coupon_validity": self.coupon_validity,
+            "items_count": self.items_count,
+        }
+
+    def is_valid(self) -> bool:
+        """Verifica se os campos essenciais mínimos foram extraídos com sucesso."""
+        return bool(self.title and self.price_current > 0 and self.original_link)
+
+
+# ==============================================================================
+# Mapeamentos de Domínio e Categorias
+# ==============================================================================
 DOMAIN_STORE_MAP = {
     "amazon.com.br": "Amazon",
     "amazon.com": "Amazon",
@@ -22,43 +67,59 @@ DOMAIN_STORE_MAP = {
     "casasbahia.com.br": "Casas Bahia",
     "samsung.com": "Samsung",
     "samsung.com.br": "Samsung",
+    "fastshop.com.br": "Fast Shop",
+    "pichau.com.br": "Pichau",
+    "terabyteshop.com.br": "Terabyte",
 }
 
-# Heurística de categorização por palavras-chave
+STORE_TEXT_KEYWORDS = {
+    "Amazon": ["amazon", "amzn", "prime day", "echo dot", "kindle", "fire stick"],
+    "Mercado Livre": ["mercado livre", "mercadolivre", "ml", "full", "meli"],
+    "Magazine Luiza": ["magazine luiza", "magalu", "magazine voce", "magazineluiza"],
+    "Kabum": ["kabum", "ninja kabum"],
+    "Shopee": ["shopee", "shp.ee"],
+    "AliExpress": ["aliexpress", "ali express"],
+    "Casas Bahia": ["casas bahia", "casasbahia", "dedicacao total"],
+    "Samsung": ["samsung", "galaxy store"],
+    "Fast Shop": ["fast shop", "fastshop"],
+    "Pichau": ["pichau"],
+    "Terabyte": ["terabyte", "terabyteshop"],
+}
+
 CATEGORY_KEYWORDS = {
     "smartphones": [
         "celular", "smartphone", "iphone", "galaxy", "xiaomi", "redmi", "poco",
-        "motorola", "moto g", "moto edge", "zenfone"
-    ],
-    "games": [
-        "playstation", "ps5", "ps4", "xbox", "series s", "series x", "nintendo",
-        "switch", "joy-con", "dualsense", "game", "jogo", "console"
-    ],
-    "tv-e-audio": [
-        "tv", "smart tv", "oled", "qled", "soundbar", "fone", "headphone",
-        "headset", "earbuds", "airpods", "jbl", "caixa de som"
+        "motorola", "moto g", "moto edge", "zenfone", "galaxy s", "galaxy a"
     ],
     "informatica": [
         "notebook", "laptop", "monitor", "teclado", "mouse", "placa de video",
         "rtx", "geforce", "radeon", "processador", "ryzen", "core i", "ssd", "ram",
-        "memoria ram", "fonte", "gabinete", "impressora"
+        "memoria ram", "fonte", "gabinete", "impressora", "computador", "pc gamer"
     ],
+    "games": [
+        "playstation", "ps5", "ps4", "xbox", "series s", "series x", "nintendo",
+        "switch", "joy-con", "dualsense", "game", "jogo", "console", "steam deck"
+    ],
+    "tv-e-audio": [
+        "tv", "smart tv", "oled", "qled", "soundbar", "fone", "headphone",
+        "headset", "earbuds", "airpods", "jbl", "caixa de som", "bluetooth speaker"
+    ],
+
     "casa-e-cozinha": [
         "air fryer", "fritadeira", "aspirador", "robo aspirador", "cafeteira",
         "nespresso", "geladeira", "micro-ondas", "fogao", "liquidificador",
-        "batedeira", "panela eletrica"
+        "batedeira", "panela eletrica", "lavadora", "maquina de lavar", "ar condicionado"
     ],
     "moda": [
         "tenis", "sapato", "camisa", "camiseta", "calca", "mochila", "casaco",
-        "jaqueta", "nike", "adidas", "puma", "vans", "chinelo", "bermuda"
+        "jaqueta", "nike", "adidas", "puma", "vans", "chinelo", "bermuda", "relogio"
     ],
     "eletronicos": [
-        "tablet", "ipad", "kindle", "smartwatch", "relogio", "carregador",
-        "power bank", "camera"
+        "tablet", "ipad", "kindle", "smartwatch", "relogio inteligente", "carregador",
+        "power bank", "camera", "drone", "filmadora", "bateria externa"
     ],
 }
 
-# Imagens de fallback por categoria caso a mensagem não contenha foto
 CATEGORY_DEFAULT_IMAGES = {
     "smartphones": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=600&auto=format&fit=crop&q=80",
     "games": "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=600&auto=format&fit=crop&q=80",
@@ -70,6 +131,9 @@ CATEGORY_DEFAULT_IMAGES = {
 }
 
 
+# ==============================================================================
+# Funções de Parsing e Extração
+# ==============================================================================
 
 def is_valid_url(url: Optional[str]) -> bool:
     """
@@ -96,16 +160,53 @@ def clean_text_title(raw_text: str) -> str:
     if not lines:
         return ""
 
-    # Seleciona a primeira ou segunda linha que contenha texto descritivo
+    # Ignora linhas que são puramente URLs ou cabeçalhos de alerta sem produto
     first_line = lines[0]
-    # Se a primeira linha for apenas um alerta como "🚨 SUPER PROMOÇÃO 🚨", pega a segunda linha
-    if re.search(r"^(🚨|🔥|⚡|💥|😱|SUPER|OFERTA|ALERTA|MEGA|CORRE|PROMOÇÃO)", first_line, re.IGNORECASE) and len(lines) > 1:
-        if not re.search(r"(R\$|\d+%)", first_line):
-            first_line = lines[1]
+    idx = 0
+    while idx < len(lines):
+        candidate = lines[idx]
+        if candidate.startswith("http://") or candidate.startswith("https://"):
+            idx += 1
+            continue
 
-    # Remove emojis e pontuações excessivas
-    cleaned = re.sub(r"^[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒\s\-•]+", "", first_line)
-    cleaned = re.sub(r"[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒\s\-•]+$", "", cleaned)
+        # Remove emojis para inspecionar palavras da linha
+        candidate_words = re.sub(r"^[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒🏆🎉📌\s\-•*`#]+", "", candidate).strip()
+
+        # Se for cabeçalho de anúncio genérico sem produto (ex: "🔥 SUPER DESCONTO NA AMAZON!", "🚨 MENOR PREÇO HISTÓRICO!", "🚨 CORRE QUE ACABA")
+        is_alert_header = bool(
+            re.search(
+                r"^(ALERTA|SUPER|OFERTA|MEGA|CORRE|PROMOÇÃO|PROMO|ACHADO|DESCONTO|IMPERDÍVEL|RELÂMPAGO|ATENÇÃO|URGENTE|MENOR|BAIXOU|HISTÓRICO|OPORTUNIDADE|SURREAL|QUEIMA|NOVIDADE)",
+                candidate_words,
+                re.IGNORECASE,
+            )
+            or re.search(
+                r"\b(MENOR PRE[CÇ]O|PRE[CÇ]O BAIXOU|SUPER DESCONTO|OFERTA REL[AÂ]MPAGO|SUPER OFERTA|CORRE|ALERTA|PRE[CÇ]O HIST[OÓ]RICO)\b",
+                candidate_words,
+                re.IGNORECASE,
+            )
+        )
+        has_pricing = bool(re.search(r"(R\$|\d+%)", candidate))
+        words_count = len(candidate_words.split())
+
+        # Se for cabeçalho curto de alerta e houver mais linhas abaixo, pula para a próxima linha
+        if is_alert_header and not has_pricing and words_count <= 8 and (idx + 1 < len(lines)):
+            idx += 1
+            continue
+
+        first_line = candidate
+        break
+
+    # Remove emojis e pontuações excessivas do início e fim
+    cleaned = re.sub(r"^[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒🏆🎉📌\s\-•*`#]+", "", first_line)
+    # Remove chamadas promocionais coladas no início do produto (ex: "CORRE QUE TÁ BARATO! 🔥 Smart TV")
+    cleaned = re.sub(
+        r"^(CORRE QUE T[AÁ] BARATO|SUPER OFERTA|MEGA PROMO[CÇ][AÃ]O|ALERTA DE OFERTA|SUPER DESCONTO|OFERTA REL[AÂ]MPAGO)[!:\s🔥🚨⚡💥*]+",
+        "",
+        cleaned,
+        flags=re.IGNORECASE,
+    )
+    cleaned = re.sub(r"^[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒🏆🎉📌\s\-•*`#]+", "", cleaned)
+    cleaned = re.sub(r"[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒🏆🎉📌\s\-•*`#]+$", "", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
     return cleaned
@@ -114,16 +215,37 @@ def clean_text_title(raw_text: str) -> str:
 def parse_price(price_str: str) -> Optional[float]:
     """
     Converte uma string contendo representação monetária para float.
-    Exemplos: '1.299,90' -> 1299.90, '89,00' -> 89.0, '250.00' -> 250.0
+    Suporta:
+      - '1.299,90' -> 1299.90
+      - '89,00' -> 89.0
+      - '250.00' -> 250.0
+      - 'R$ 99,90' -> 99.90
+      - '99.90' -> 99.90
+      - '1299' -> 1299.0
     """
+    if not price_str or not isinstance(price_str, str):
+        return None
     try:
-        clean = price_str.strip().replace("R$", "").strip()
-        # Formato brasileiro com ponto de milhar e vírgula de centavos: 1.299,99
+        clean = price_str.strip()
+        clean = re.sub(r"[^\d\.,]", "", clean)
+        if not clean:
+            return None
+
+        # Padrão brasileiro: 1.299,90 -> remove '.' de milhar e troca ',' por '.'
         if "." in clean and "," in clean:
             clean = clean.replace(".", "").replace(",", ".")
         elif "," in clean:
             clean = clean.replace(",", ".")
-        return round(float(clean), 2)
+        elif "." in clean:
+            # Caso como '1.299' (milhar sem centavos) vs '99.90' (centavos)
+            parts = clean.split(".")
+            if len(parts) == 2 and len(parts[1]) == 3:
+                # Provável milhar: 1.299 -> 1299
+                clean = clean.replace(".", "")
+            # Caso contrário, mantém '.' como separador decimal
+
+        val = round(float(clean), 2)
+        return val if val > 0 else None
     except (ValueError, TypeError):
         return None
 
@@ -131,20 +253,30 @@ def parse_price(price_str: str) -> Optional[float]:
 def extract_prices_and_discount(text: str) -> Tuple[float, float, int]:
     """
     Identifica o preço atual, o preço original e a porcentagem de desconto.
+    Lida com variações PT-BR, frete, múltiplos valores e deduções.
     """
     price_current = 0.0
     price_original = 0.0
     discount_pct = 0
 
-    # 1. Busca por percentual de desconto explícito (ex: '40% OFF', '35% de desconto')
-    disc_match = re.search(r"(\d{1,2})%\s*(?:OFF|de desconto)", text, re.IGNORECASE)
-    if disc_match:
-        discount_pct = int(disc_match.group(1))
+    if not text:
+        return price_current, price_original, discount_pct
 
-    # 2. Busca por preço original 'De: R$ XXX'
+    # Remove trechos de frete da análise para não confundir com preço do produto (ex: "Frete R$ 15,90")
+    sanitized_text = re.sub(r"frete(?:\s*:\s*|\s+gr[áa]tis|\s+r?\$?\s*[\d\.,]+)?", " ", text, flags=re.IGNORECASE)
+
+    # 1. Busca por percentual de desconto explícito (ex: '40% OFF', '35% de desconto', '-20%')
+    disc_match = re.search(r"(?:-|de\s+)?(\d{1,2})%\s*(?:OFF|de\s+desconto|no\s+pix)?", sanitized_text, re.IGNORECASE)
+    if disc_match:
+        try:
+            discount_pct = int(disc_match.group(1))
+        except (ValueError, TypeError):
+            pass
+
+    # 2. Busca por preço original 'De: R$ XXX', 'De R$ XXX' ou 'Era: R$ XXX'
     de_match = re.search(
-        r"(?:de|de:)\s*R?\$?\s*([\d\.,]+)",
-        text,
+        r"(?:de|de:|era|era:)\s*R?\$?\s*([\d\.,]+)",
+        sanitized_text,
         re.IGNORECASE,
     )
     if de_match:
@@ -152,10 +284,10 @@ def extract_prices_and_discount(text: str) -> Tuple[float, float, int]:
         if parsed_de:
             price_original = parsed_de
 
-    # 3. Busca por preço atual 'Por: R$ XXX' ou 'R$ XXX'
+    # 3. Busca por preço atual 'Por: R$ XXX', 'Por R$ XXX', 'Apenas R$ XXX', 'Sai por R$ XXX'
     por_match = re.search(
-        r"(?:por|por:)\s*R?\$?\s*([\d\.,]+)",
-        text,
+        r"(?:por|por:|sai\s+por|apenas|apenas:)\s*R?\$?\s*([\d\.,]+)",
+        sanitized_text,
         re.IGNORECASE,
     )
     if por_match:
@@ -163,29 +295,35 @@ def extract_prices_and_discount(text: str) -> Tuple[float, float, int]:
         if parsed_por:
             price_current = parsed_por
 
-    # Se não encontrou "Por", busca qualquer valor monetário após o "De" ou isolado
+    # 4. Se não encontrou "Por", busca preços com símbolo R$ explícito
     if not price_current:
-        all_prices = re.findall(r"R\$\s*([\d\.,]+)", text, re.IGNORECASE)
-        parsed_prices = [p for p in (parse_price(x) for x in all_prices) if p and p > 1.0]
+        all_r_prices = re.findall(r"R\$\s*([\d\.,]+)", sanitized_text, re.IGNORECASE)
+        parsed_prices = [p for p in (parse_price(x) for x in all_r_prices) if p and p > 1.0]
         if parsed_prices:
-            if price_original and parsed_prices:
-                # O preço atual deve ser menor que o original
+            if price_original:
+                # O preço atual deve ser menor que o original se houver desconto
                 candidates = [p for p in parsed_prices if p < price_original]
                 price_current = candidates[0] if candidates else parsed_prices[-1]
             else:
                 price_current = parsed_prices[-1]
 
-    # Se temos preço atual e desconto %, mas não preço original:
+    # 5. Fallback para números isolados com formato de moeda (ex: "99.90" ou "99,90")
+    if not price_current:
+        isolated = re.findall(r"\b(\d{1,5}[\.,]\d{2})\b", sanitized_text)
+        parsed_isolated = [p for p in (parse_price(x) for x in isolated) if p and p > 1.0]
+        if parsed_isolated:
+            price_current = parsed_isolated[0]
+
+    # 6. Reconciliação dos preços e desconto
     if price_current > 0 and discount_pct > 0 and not price_original:
         price_original = round(price_current / (1 - (discount_pct / 100)), 2)
 
-    # Se temos ambos os preços, calcula desconto percentual real:
     if price_original > price_current > 0:
         calculated_disc = round(((price_original - price_current) / price_original) * 100)
         if not discount_pct:
             discount_pct = calculated_disc
 
-    # Fallback se não tiver preço original
+    # Se não houver preço original detectado, assume o preço atual
     if not price_original:
         price_original = price_current
 
@@ -194,8 +332,17 @@ def extract_prices_and_discount(text: str) -> Tuple[float, float, int]:
 
 def extract_first_url(text: str) -> Optional[str]:
     """
-    Extrai a primeira URL encontrada no texto.
+    Extrai a primeira URL encontrada no texto, seja formato markdown [texto](url) ou URL pura.
     """
+    if not text:
+        return None
+
+    # Verifica primeiro se há link markdown [nome](url)
+    md_match = re.search(r"\[.*?\]\((https?://[^\s\)]+)\)", text)
+    if md_match:
+        return md_match.group(1).rstrip(".,;")
+
+    # Busca URL pura
     url_pattern = r"(https?://[^\s\)\"'>]+)"
     match = re.search(url_pattern, text)
     if match:
@@ -203,10 +350,48 @@ def extract_first_url(text: str) -> Optional[str]:
     return None
 
 
+def extract_all_urls(text: str) -> List[str]:
+    """Extrai todas as URLs válidas encontradas no texto."""
+    if not text:
+        return []
+    urls = []
+    # Markdown
+    for m in re.finditer(r"\[.*?\]\((https?://[^\s\)]+)\)", text):
+        clean = m.group(1).rstrip(".,;")
+        if is_valid_url(clean) and clean not in urls:
+            urls.append(clean)
+    # Plain URLs
+    for m in re.finditer(r"(https?://[^\s\)\"'>]+)", text):
+        clean = m.group(1).rstrip(".,;")
+        if is_valid_url(clean) and clean not in urls:
+            urls.append(clean)
+    return urls
+
+
+def extract_image_url(text: str) -> Optional[str]:
+    """
+    Detecta URL direta de imagem no texto (formatos comuns de imagem ou tags markdown).
+    """
+    if not text:
+        return None
+
+    # Markdown de imagem ![alt](url)
+    md_img = re.search(r"!\[.*?\]\((https?://[^\s\)]+)\)", text)
+    if md_img:
+        return md_img.group(1)
+
+    # URL direta de imagem terminada em extensões padrão
+    img_pattern = r"(https?://[^\s\)\"'>]+\.(?:jpg|jpeg|png|webp|gif))"
+    match = re.search(img_pattern, text, re.IGNORECASE)
+    if match:
+        return match.group(1)
+
+    return None
+
+
 def detect_store(url: Optional[str], text: str = "") -> str:
     """
     Detecta a loja a partir do domínio do link ou pelo conteúdo do texto.
-    Retorna string vazia caso nenhuma loja seja identificada.
     """
     if url:
         try:
@@ -218,12 +403,13 @@ def detect_store(url: Optional[str], text: str = "") -> str:
         except Exception:
             pass
 
-    # Heurística textual se a URL não tiver domínio reconhecido
+    # Heurística textual por palavras-chave
     if text:
         text_lower = text.lower()
-        for domain, store_name in DOMAIN_STORE_MAP.items():
-            if store_name.lower() in text_lower:
-                return store_name
+        for store_name, kws in STORE_TEXT_KEYWORDS.items():
+            for kw in kws:
+                if re.search(r"\b" + re.escape(kw) + r"\b", text_lower):
+                    return store_name
 
     return ""
 
@@ -233,7 +419,6 @@ def detect_category(title: str, text: str = "") -> str:
     Identifica a categoria do produto baseado no título e descrição, com suporte a acentos.
     """
     raw_combined = f"{title} {text}".lower()
-    # Remove acentos para compatibilidade máxima (ex: tênis -> tenis, fogão -> fogao)
     normalized = unicodedata.normalize("NFKD", raw_combined).encode("ASCII", "ignore").decode("utf-8")
 
     for category, keywords in CATEGORY_KEYWORDS.items():
@@ -245,7 +430,6 @@ def detect_category(title: str, text: str = "") -> str:
     return "eletronicos"
 
 
-
 def extract_coupon(text: str) -> Optional[str]:
     """
     Extrai o código do cupom de desconto se especificado no texto.
@@ -254,7 +438,6 @@ def extract_coupon(text: str) -> Optional[str]:
     if not text:
         return None
 
-    # Verifica se a mensagem explicitamente indica falta de cupom
     if re.search(r"\b(sem\s+cupom|n[aã]o\s+precisa\s+de\s+cupom)\b", text, re.IGNORECASE):
         return None
 
@@ -263,12 +446,12 @@ def extract_coupon(text: str) -> Optional[str]:
         r"código(?:\s*promocional)?\s*[:=]\s*`?([A-Z0-9_\-]{3,20})`?",
         r"use\s+o\s+cupom\s+`?([A-Z0-9_\-]{3,20})`?",
         r"cupom\s*:\s*`?([A-Z0-9_\-]+)`?",
+        r"aplique\s+o\s+cupom\s+`?([A-Z0-9_\-]{3,20})`?",
     ]
     for pat in patterns:
         m = re.search(pat, text, re.IGNORECASE)
         if m:
             code = m.group(1).strip().upper()
-            # Ignora falsos positivos comuns
             stop_words = {
                 "DE", "R$", "OFF", "LINK", "AQUI", "NOVO", "APP", "HOJE",
                 "FISCAL", "VALIDO", "VÁLIDO", "APENAS", "DISPONIVEL", "DISPONÍVEL",
@@ -279,6 +462,31 @@ def extract_coupon(text: str) -> Optional[str]:
     return None
 
 
+def extract_coupon_validity(text: str) -> Optional[str]:
+    """
+    Extrai informações sobre a validade do cupom quando mencionada na mensagem.
+    Exemplos: 'válido até 31/12', 'expira em 25/10/2026', 'válido hoje'
+    """
+    if not text:
+        return None
+
+    validity_patterns = [
+        r"v[aá]lido\s+at[eé]\s*([\d]{1,2}/[\d]{1,2}(?:/[\d]{2,4})?)",
+        r"expira\s+em\s*([\d]{1,2}/[\d]{1,2}(?:/[\d]{2,4})?)",
+        r"at[eé]\s*([\d]{1,2}/[\d]{1,2}(?:/[\d]{2,4})?)",
+        r"v[aá]lido\s+(hoje|amanh[aã])",
+    ]
+    for pat in validity_patterns:
+        m = re.search(pat, text, re.IGNORECASE)
+        if m:
+            return m.group(1).strip()
+
+    return None
+
+
+# ==============================================================================
+# Funções Principais de Parsing
+# ==============================================================================
 
 def parse_telegram_message(
     text: str,
@@ -287,13 +495,12 @@ def parse_telegram_message(
 ) -> Dict[str, Any]:
     """
     Função principal de parsing de mensagens do Telegram.
-    Retorna dicionário pronto para validação de regras e persistência.
-    Não injeta links nem dados fictícios.
+    Retorna dicionário padronizado pronto para validação de regras e persistência.
     """
     if not text:
         text = ""
 
-    # Extração de Links válidos (sem fallback para URLs fictícias)
+    # 1. Extração de Links válidos
     original_link = None
     if entities_links and len(entities_links) > 0:
         for link in entities_links:
@@ -306,30 +513,81 @@ def parse_telegram_message(
         if is_valid_url(candidate_url):
             original_link = candidate_url.strip()
 
-    # Extração de Título
+    # 2. Título limpo
     title = clean_text_title(text)
 
-    # Extração de Preços e Desconto
+    # 3. Preços e Desconto
     price_current, price_original, discount_pct = extract_prices_and_discount(text)
 
-    # Detecção de Loja e Categoria
+    # 4. Loja e Categoria
     store = detect_store(original_link, text)
     category = detect_category(title, text)
 
-    # Extração de Cupom
+    # 5. Cupom e Validade
     coupon_code = extract_coupon(text)
+    coupon_validity = extract_coupon_validity(text)
 
-    # Imagem
-    image_url = media_url or CATEGORY_DEFAULT_IMAGES.get(category, CATEGORY_DEFAULT_IMAGES["eletronicos"])
+    # 6. Imagem
+    extracted_img = extract_image_url(text)
+    image_url = media_url or extracted_img or CATEGORY_DEFAULT_IMAGES.get(category, CATEGORY_DEFAULT_IMAGES["eletronicos"])
 
-    return {
-        "title": title,
-        "price_current": price_current,
-        "price_original": price_original,
-        "discount_pct": discount_pct,
-        "store": store,
-        "category": category,
-        "image_url": image_url,
-        "original_link": original_link,
-        "coupon_code": coupon_code,
-    }
+    # 7. Contagem de produtos na mensagem
+    all_links = extract_all_urls(text)
+    items_count = max(1, len(all_links)) if len(all_links) > 1 else 1
+
+    parsed_obj = ParsedOffer(
+        title=title,
+        price_current=price_current,
+        price_original=price_original,
+        discount_pct=discount_pct,
+        store=store,
+        category=category,
+        image_url=image_url,
+        original_link=original_link,
+        coupon_code=coupon_code,
+        coupon_validity=coupon_validity,
+        items_count=items_count,
+        raw_text=text,
+    )
+
+    return parsed_obj.to_dict()
+
+
+def parse_multi_product_message(text: str) -> List[ParsedOffer]:
+    """
+    Identifica se a mensagem contém múltiplos produtos e tenta particioná-la em ofertas individuais.
+    Retorna uma lista com uma ou mais instâncias de ParsedOffer.
+    """
+    if not text or not text.strip():
+        return []
+
+    # Se houver divisores claros por linha em lista (ex: "1.", "2." ou "•" com link em cada)
+    lines = [l.strip() for l in text.split("\n") if l.strip()]
+    blocks = []
+    current_block = []
+
+    for line in lines:
+        is_new_item = bool(re.match(r"^(?:\d+[\.\)\-]|•|[-*])\s+[A-Za-z0-9]", line))
+        if is_new_item and current_block:
+            blocks.append("\n".join(current_block))
+            current_block = [line]
+        else:
+            current_block.append(line)
+
+    if current_block:
+        blocks.append("\n".join(current_block))
+
+    # Se conseguiu particionar em múltiplos blocos com URLs próprias
+    results: List[ParsedOffer] = []
+    if len(blocks) > 1:
+        for blk in blocks:
+            p_dict = parse_telegram_message(blk)
+            if p_dict.get("original_link") and p_dict.get("price_current", 0) > 0:
+                results.append(ParsedOffer(**p_dict))
+
+    # Fallback se não for lista particionável ou se particionamento não deu certo
+    if not results:
+        p_dict = parse_telegram_message(text)
+        results.append(ParsedOffer(**p_dict))
+
+    return results

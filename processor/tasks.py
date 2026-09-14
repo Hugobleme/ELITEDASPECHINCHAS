@@ -1,6 +1,6 @@
 import logging
-from datetime import datetime
-from typing import Dict, Any, Optional
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Any, Optional, List
 from sqlalchemy.orm import Session
 
 from database.connection import SessionLocal
@@ -22,11 +22,10 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Task principal de ingestão assíncrona:
     1. Executa o parser inteligente na mensagem de origem.
-    2. Aplica o motor de regras (desconto mínimo, deduplicação 24h, rate limit).
+    2. Aplica o motor de regras (desconto mínimo, preço, link seguro, rate limit, deduplicação).
     3. Converte a URL original para o link de afiliado oficial correspondente à loja.
-    4. Persiste a oferta no PostgreSQL com status 'pending' (para curadoria na Fase 2)
-       ou 'published' (se a auto-aprovação estiver habilitada).
-    5. Se for publicada, agenda publicação no canal oficial e dispara alertas Web Push (Fase 3).
+    4. Persiste a oferta no banco de dados com status 'pending' ou 'published'.
+    5. Se for publicada, agenda publicação no canal oficial e dispara alertas Web Push.
     """
     text = raw_data.get("text", "")
     telegram_msg_id = raw_data.get("telegram_msg_id")
@@ -59,6 +58,7 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
                 "status": "rejected",
                 "reason": reason,
                 "title": parsed.get("title"),
+                "quality_score": parsed.get("quality_score", 0),
             }
 
         # 3. Substituição pelo Link de Afiliado
@@ -69,6 +69,7 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
         )
 
         # 4. Persistência no Banco de Dados
+        now_utc = datetime.now(timezone.utc)
         new_offer = Offer(
             title=parsed["title"],
             price_current=parsed["price_current"],
@@ -83,7 +84,8 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
             telegram_msg_id=telegram_msg_id,
             source_name=source_name,
             status=initial_status,
-            published_at=datetime.utcnow() if initial_status == "published" else None,
+            published_at=now_utc if initial_status == "published" else None,
+            created_at=now_utc,
         )
 
         db.add(new_offer)
@@ -93,7 +95,7 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
         offer_id = str(new_offer.id)
         logger.info(
             f"✅ [Tasks] Oferta salva no banco com ID {offer_id} | Status: '{initial_status}' | "
-            f"Loja: {new_offer.store} | Desconto: {new_offer.discount_pct}%"
+            f"Loja: {new_offer.store} | Desconto: {new_offer.discount_pct}% | Score: {parsed.get('quality_score', 0)}"
         )
 
         # 5. Fluxo de Publicação Automática (se status='published')
@@ -122,6 +124,7 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
             "title": new_offer.title,
             "affiliate_link": affiliate_link,
             "coupon_code": new_offer.coupon_code,
+            "quality_score": parsed.get("quality_score", 0),
         }
 
     except Exception as exc:
@@ -130,6 +133,12 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
         raise self.retry(exc=exc)
     finally:
         db.close()
+
+
+@celery_app.task(name="task_process_message", bind=True, max_retries=3, default_retry_delay=10)
+def task_process_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
+    """Alias padronizado para process_telegram_message."""
+    return process_telegram_message.apply((raw_data,)).get() if celery_app.conf.task_always_eager else process_telegram_message(raw_data)
 
 
 @celery_app.task(name="publish_offer_to_channel", bind=True, max_retries=3, default_retry_delay=15)
@@ -146,20 +155,19 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
             logger.error(f"[Publish Task] Oferta {offer_id} não encontrada no banco.")
             return {"status": "error", "message": f"Oferta {offer_id} inexistente"}
 
-        # Formata o card com cupom e link de afiliado
         card_data = {
             "title": offer.title,
             "price_current": offer.price_current,
             "price_original": offer.price_original,
             "discount_pct": offer.discount_pct,
             "store": offer.store,
+            "category": offer.category,
             "affiliate_link": offer.affiliate_link,
             "coupon_code": offer.coupon_code,
         }
 
         formatted_message = format_telegram_card_html(card_data)
 
-        # Envia para o Telegram via Bot API
         pub_result = publish_to_telegram(
             message=formatted_message,
             channel_id=target_channel,
@@ -167,13 +175,14 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
             parse_mode="HTML",
         )
 
-        # Atualiza status e data de publicação
         offer.status = "published"
-        offer.published_at = datetime.utcnow()
+        offer.published_at = datetime.now(timezone.utc)
         db.commit()
 
-        # Dispara alertas de preço e push (Fase 3)
-        match_and_notify.delay(offer.id)
+        try:
+            match_and_notify.delay(offer.id)
+        except Exception as notif_err:
+            logger.warning(f"[Publish Task] Notificação ignorada em fallback: {notif_err}")
 
         logger.info(f"🚀 [Publish Task] Oferta {offer.id} publicada no canal {target_channel}!")
         return {
@@ -187,5 +196,84 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
         db.rollback()
         logger.error(f"[Publish Task] Erro ao publicar oferta {offer_id}: {exc}")
         raise self.retry(exc=exc)
+    finally:
+        db.close()
+
+
+@celery_app.task(name="task_publish_offer", bind=True, max_retries=3, default_retry_delay=15)
+def task_publish_offer(self, offer_id: str, channel_id: Optional[str] = None) -> Dict[str, Any]:
+    """Alias padronizado para publish_offer_to_channel."""
+    return publish_offer_to_channel(offer_id, channel_id)
+
+
+@celery_app.task(name="task_batch_process", bind=True)
+def task_batch_process(self, batch: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Processa um lote de mensagens de uma só vez com métricas agregadas.
+    """
+    total = len(batch)
+    approved = 0
+    rejected = 0
+    errors = 0
+    results = []
+
+    logger.info(f"[Batch Tasks] Iniciando processamento de lote com {total} mensagens.")
+
+    for idx, item in enumerate(batch):
+        try:
+            res = process_telegram_message(item)
+            results.append(res)
+            if res.get("status") == "success":
+                approved += 1
+            else:
+                rejected += 1
+        except Exception as e:
+            logger.error(f"[Batch Tasks] Erro ao processar item {idx}: {e}")
+            errors += 1
+            results.append({"status": "error", "error": str(e)})
+
+    logger.info(
+        f"[Batch Tasks] Concluído: {total} total, {approved} aprovados, "
+        f"{rejected} rejeitados, {errors} erros."
+    )
+
+    return {
+        "total": total,
+        "approved": approved,
+        "rejected": rejected,
+        "errors": errors,
+        "results": results,
+    }
+
+
+@celery_app.task(name="task_cleanup_expired", bind=True)
+def task_cleanup_expired(self, max_age_days: int = 30) -> Dict[str, Any]:
+    """
+    Limpeza periódica de ofertas antigas ou expiradas.
+    Marca como 'expired' ofertas publicadas com mais de max_age_days dias.
+    """
+    db: Session = SessionLocal()
+    try:
+        cutoff = datetime.now(timezone.utc) - timedelta(days=max_age_days)
+        expired_offers = (
+            db.query(Offer)
+            .filter(
+                Offer.status == "published",
+                Offer.published_at < cutoff,
+            )
+            .all()
+        )
+
+        count = len(expired_offers)
+        for off in expired_offers:
+            off.status = "expired"
+
+        db.commit()
+        logger.info(f"[Cleanup Task] {count} ofertas marcadas como 'expired' (mais de {max_age_days} dias).")
+        return {"status": "success", "expired_count": count}
+    except Exception as exc:
+        db.rollback()
+        logger.error(f"[Cleanup Task] Falha na limpeza de expiradas: {exc}")
+        return {"status": "error", "message": str(exc)}
     finally:
         db.close()

@@ -148,3 +148,80 @@ def test_process_telegram_message_deduplication(db_session: Session, monkeypatch
     # Confirma apenas 1 registro no banco
     count = db_session.query(Offer).filter(Offer.telegram_msg_id == 99884).count()
     assert count == 1
+
+
+def test_task_batch_process(db_session: Session, monkeypatch):
+    """Testa processamento em lote via task_batch_process."""
+    monkeypatch.setattr("processor.tasks.SessionLocal", lambda: db_session)
+    from processor.tasks import task_batch_process
+
+    batch = [
+        {
+            "text": "Item 1 Mouse Gamer R$ 80,00 De R$ 120,00 https://www.amazon.com.br/dp/B001",
+            "telegram_msg_id": 11101,
+            "source_name": "TEST_SOURCE",
+        },
+        {
+            "text": "Item 2 Teclado R$ 150,00 De R$ 200,00 https://www.kabum.com.br/p/222",
+            "telegram_msg_id": 11102,
+            "source_name": "TEST_SOURCE",
+        },
+        {
+            "text": "Mensagem inválida sem link e sem preço",
+            "telegram_msg_id": 11103,
+            "source_name": "TEST_SOURCE",
+        },
+    ]
+
+    res = task_batch_process(batch)
+    assert res["total"] == 3
+    assert res["approved"] == 2
+    assert res["rejected"] == 1
+    assert len(res["results"]) == 3
+
+
+def test_task_cleanup_expired(db_session: Session, monkeypatch):
+    """Testa marcação de ofertas antigas como expiradas via task_cleanup_expired."""
+    monkeypatch.setattr("processor.tasks.SessionLocal", lambda: db_session)
+    monkeypatch.setattr(db_session, "close", lambda: None)
+    from processor.tasks import task_cleanup_expired
+    from datetime import datetime, timedelta, timezone
+
+    old_published = Offer(
+        title="Oferta Antiga 40 Dias",
+        price_current=99.0,
+        price_original=150.0,
+        discount_pct=34,
+        store="Amazon",
+        category="eletronicos",
+        image_url="https://via.com/1.jpg",
+        affiliate_link="https://amzn.to/old",
+        status="published",
+        published_at=datetime.now(timezone.utc) - timedelta(days=40),
+    )
+    new_published = Offer(
+        title="Oferta Recente 2 Dias",
+        price_current=199.0,
+        price_original=250.0,
+        discount_pct=20,
+        store="Amazon",
+        category="eletronicos",
+        image_url="https://via.com/2.jpg",
+        affiliate_link="https://amzn.to/new",
+        status="published",
+        published_at=datetime.now(timezone.utc) - timedelta(days=2),
+    )
+    db_session.add_all([old_published, new_published])
+    db_session.commit()
+
+    old_id = old_published.id
+    new_id = new_published.id
+
+    res = task_cleanup_expired(max_age_days=30)
+    assert res["status"] == "success"
+    assert res["expired_count"] >= 1
+
+    check_old = db_session.query(Offer).filter(Offer.id == old_id).first()
+    check_new = db_session.query(Offer).filter(Offer.id == new_id).first()
+    assert check_old.status == "expired"
+    assert check_new.status == "published"

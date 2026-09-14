@@ -5,9 +5,11 @@ import {
   CategoryItem,
   StoreItem,
 } from '@/types/offer';
+import { CouponItem } from '@/types/coupon';
 import { API_BASE_URL, fetchWithTimeout } from './client';
 import { mockStore } from './mock-store';
 import { MOCK_CATEGORIES, MOCK_STORES } from '@/lib/mock-data';
+import { MOCK_COUPONS } from '@/lib/mock-coupons';
 
 /**
  * Busca lista de ofertas com filtros, paginação e ordenação (Vitrine Pública).
@@ -139,7 +141,6 @@ export async function getOfferById(id: string): Promise<Offer | null> {
         }
         return null;
       }
-      // Se a API retornou 404, tenta verificar se o ID pertence aos dados mockados
       if (res.status === 404) {
         const mockMatch = mockStore.offers.find((o) => o.id === id);
         if (mockMatch && mockMatch.status === 'published') {
@@ -148,7 +149,7 @@ export async function getOfferById(id: string): Promise<Offer | null> {
         return null;
       }
     } catch {
-      // Backend offline ou inacessível, prossegue para mockStore
+      // Fallback para mockStore
     }
   }
 
@@ -157,6 +158,93 @@ export async function getOfferById(id: string): Promise<Offer | null> {
     return found;
   }
   return null;
+}
+
+/**
+ * Busca cupons de desconto ativos com filtros opcionais.
+ */
+export async function getCoupons(params: {
+  store?: string;
+  category?: string;
+  search?: string;
+  page?: number;
+  limit?: number;
+} = {}): Promise<{ items: CouponItem[]; total: number; page: number; limit: number; has_more: boolean }> {
+  const { store, category, search, page = 1, limit = 20 } = params;
+
+  if (API_BASE_URL) {
+    try {
+      const query = new URLSearchParams();
+      if (store) query.set('store', store);
+      if (category && category !== 'todas') query.set('category', category);
+      if (search) query.set('search', search);
+      query.set('page', String(page));
+      query.set('limit', String(limit));
+
+      const res = await fetchWithTimeout(`${API_BASE_URL}/coupons?${query.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        return {
+          items: data.items || [],
+          total: data.total || 0,
+          page: data.page || page,
+          limit: data.limit || limit,
+          has_more: data.has_more ?? false,
+        };
+      }
+    } catch {}
+  }
+
+  // Fallback para mock-coupons
+  let results = [...MOCK_COUPONS];
+  if (store && store !== 'todas') {
+    const stLower = store.toLowerCase();
+    results = results.filter((c) => c.store.toLowerCase().includes(stLower) || c.store_slug.toLowerCase().includes(stLower));
+  }
+  if (category && category !== 'todas') {
+    const catLower = category.toLowerCase();
+    results = results.filter((c) => c.category === catLower || c.category === 'todas');
+  }
+  if (search && search.trim()) {
+    const sLower = search.trim().toLowerCase();
+    results = results.filter(
+      (c) =>
+        c.code.toLowerCase().includes(sLower) ||
+        c.store.toLowerCase().includes(sLower) ||
+        (c.description && c.description.toLowerCase().includes(sLower))
+    );
+  }
+
+  const total = results.length;
+  const start = (page - 1) * limit;
+  const items = results.slice(start, start + limit);
+  return { items, total, page, limit, has_more: start + limit < total };
+}
+
+/**
+ * Busca cupom por ID ou código.
+ */
+export async function getCouponById(id: string): Promise<CouponItem | null> {
+  if (API_BASE_URL) {
+    try {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/coupons/${id}`);
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {}
+  }
+  const found = MOCK_COUPONS.find((c) => c.id === id || c.code.toLowerCase() === id.toLowerCase());
+  return found || null;
+}
+
+/**
+ * Busca de ofertas por query e filtros opcionais.
+ */
+export async function searchOffers(
+  queryText: string,
+  params: OffersFilterParams = {}
+): Promise<OffersResponse> {
+  return getOffers({ ...params, search: queryText });
 }
 
 /**
@@ -219,3 +307,11 @@ export async function trackOfferClick(
 }
 
 export const trackClick = trackOfferClick;
+
+// Aliases padronizados conforme especificação
+export const fetchOffers = getOffers;
+export const fetchOffer = getOfferById;
+export const fetchCoupons = getCoupons;
+export const fetchCoupon = getCouponById;
+export const fetchStores = getStores;
+export const fetchCategories = getCategories;
