@@ -1,8 +1,12 @@
+import os
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+
+# Configura ambiente como 'test' para os testes automatizados
+os.environ.setdefault("ENVIRONMENT", "test")
 
 from database.connection import Base, get_db
 from database.models import User, Offer

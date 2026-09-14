@@ -30,11 +30,11 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     text = raw_data.get("text", "")
     telegram_msg_id = raw_data.get("telegram_msg_id")
-    source_name = raw_data.get("source_name", "@canal_fonte")
+    source_name = raw_data.get("source_name")
     media_url = raw_data.get("media_url")
     entities_links = raw_data.get("entities_links", [])
 
-    logger.info(f"[Tasks] Iniciando processamento de mensagem msg_id={telegram_msg_id} da fonte {source_name}")
+    logger.info(f"[Tasks] Iniciando processamento de mensagem msg_id={telegram_msg_id} da fonte {source_name or 'NÃO INFORMADA'}")
 
     db: Session = SessionLocal()
     try:

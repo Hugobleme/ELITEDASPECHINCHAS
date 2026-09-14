@@ -243,14 +243,58 @@ def test_test_ingest_offer_flow(client, monkeypatch):
 
 
 def test_test_ingest_offer_security(client, monkeypatch):
-    """Testa bloqueio de segurança: não permite em produção e rejeita chave errada."""
-    # 1. Chave errada em dev
+    """Testa bloqueio de segurança: restrição rigorosa de ENVIRONMENT e X-Test-Key."""
+    payload = {
+        "title": "Smartphone Teste Security",
+        "price_current": 1000.0,
+        "price_original": 2000.0,
+        "discount_pct": 50,
+        "store": "Amazon",
+        "category": "smartphones",
+        "original_link": "https://www.amazon.com.br/dp/B0CX999999",
+        "source_name": "TEST_SOURCE",
+    }
+
+    # 1. ENVIRONMENT ausente -> 403
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.setenv("TEST_INGEST_KEY", "secret_dev_key")
+    res_no_env = client.post("/offers/test-ingest", json=payload, headers={"X-Test-Key": "secret_dev_key"})
+    assert res_no_env.status_code == 403
+    assert "ENVIRONMENT não configurada" in res_no_env.json()["detail"]
+
+    # 2. ENVIRONMENT=staging -> 403
+    monkeypatch.setenv("ENVIRONMENT", "staging")
+    res_staging = client.post("/offers/test-ingest", json=payload, headers={"X-Test-Key": "secret_dev_key"})
+    assert res_staging.status_code == 403
+    assert "desabilitado no ambiente 'staging'" in res_staging.json()["detail"]
+
+    # 3. ENVIRONMENT=production -> 403
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    res_prod = client.post("/offers/test-ingest", json=payload, headers={"X-Test-Key": "secret_dev_key"})
+    assert res_prod.status_code == 403
+    assert "desabilitado no ambiente 'production'" in res_prod.json()["detail"]
+
+    # 4. TEST_INGEST_KEY ausente no servidor -> 403
+    monkeypatch.setenv("ENVIRONMENT", "development")
+    monkeypatch.delenv("TEST_INGEST_KEY", raising=False)
+    res_no_server_key = client.post("/offers/test-ingest", json=payload, headers={"X-Test-Key": "secret_dev_key"})
+    assert res_no_server_key.status_code == 403
+    assert "TEST_INGEST_KEY não configurada" in res_no_server_key.json()["detail"]
+
+    # 5. X-Test-Key ausente no cabeçalho da requisição -> 401
     monkeypatch.setenv("ENVIRONMENT", "development")
     monkeypatch.setenv("TEST_INGEST_KEY", "secret_dev_key")
-    res_unauth = client.post("/offers/test-ingest", json={"title": "Teste"}, headers={"X-Test-Key": "wrong"})
-    assert res_unauth.status_code == 401
+    res_missing_header = client.post("/offers/test-ingest", json=payload)
+    assert res_missing_header.status_code == 401
+    assert "ausente ou inválida" in res_missing_header.json()["detail"]
 
-    # 2. Bloqueio em produção
-    monkeypatch.setenv("ENVIRONMENT", "production")
-    res_prod = client.post("/offers/test-ingest", json={"title": "Teste"}, headers={"X-Test-Key": "secret_dev_key"})
-    assert res_prod.status_code == 403
+    # 6. X-Test-Key com valor incorreto -> 401
+    res_wrong_key = client.post("/offers/test-ingest", json=payload, headers={"X-Test-Key": "wrong_value"})
+    assert res_wrong_key.status_code == 401
+    assert "ausente ou inválida" in res_wrong_key.json()["detail"]
+
+    # 7. Sucesso em ambiente 'test' com chave correta -> 201
+    monkeypatch.setenv("ENVIRONMENT", "test")
+    monkeypatch.setenv("TEST_INGEST_KEY", "secret_dev_key")
+    res_test_env = client.post("/offers/test-ingest", json=payload, headers={"X-Test-Key": "secret_dev_key"})
+    assert res_test_env.status_code == 201

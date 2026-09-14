@@ -113,9 +113,20 @@ def get_stores(db: Session = Depends(get_db)):
 
 @router.post("/events/click", tags=["Métricas & Tracking"])
 def track_affiliate_click(payload: dict):
-    """Registra evento de clique no link de afiliado."""
+    """
+    Registra evento de clique no link de afiliado.
+
+    Arquitetura de Tracking:
+    - Atualmente opera via logging estruturado de alta vazão (não bloqueante e stateless),
+      permitindo absorver picos de tráfego de redirecionamento sem onerar o banco relacional.
+    - Metadados registrados: offer_id, timestamp UTC.
+    - PENDÊNCIA TÉCNICA DOCUMENTADA: Persistência relacional em tabela dedicada ('offer_clicks')
+      e agregação por data/origem sem retenção de dados pessoais desnecessários planejada
+      para a Fase de Analytics Avançado (fora do escopo atual de curadoria e pipeline).
+    """
     offer_id = payload.get("offer_id")
-    logger.info(f"[Tracking Event] Clique registrado para oferta {offer_id}")
+    now_iso = datetime.now(timezone.utc).isoformat()
+    logger.info(f"[Tracking Event] Clique registrado para oferta {offer_id} às {now_iso}")
     return {"status": "success", "tracked": True}
 
 
@@ -127,22 +138,36 @@ def test_ingest_offer(
 ):
     """
     Endpoint seguro para inserção controlada de oferta de teste.
-    - Bloqueado em produção (ENVIRONMENT == 'production');
-    - Exige cabeçalho X-Test-Key configurado;
-    - Executa validação de regras, geração de link de afiliado e persistência no banco com status 'published'.
+    - Habilitado EXCLUSIVAMENTE quando ENVIRONMENT é exatamente 'development' ou 'test';
+    - Rejeita qualquer outro ambiente (production, staging ou ausente) com HTTP 403;
+    - Exige cabeçalho X-Test-Key válido correspondente à TEST_INGEST_KEY do servidor (HTTP 401);
+    - Status 'published' direto é restrito a este endpoint de teste local para validação de frontend;
+      no fluxo real assíncrono, a curadoria respeita AUTO_APPROVE_ENABLED (padrão 'pending').
     """
-    current_env = os.getenv("ENVIRONMENT", "development").lower().strip()
-    if current_env == "production":
+    raw_env = os.getenv("ENVIRONMENT")
+    if not raw_env:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Endpoint de teste desabilitado em ambiente de produção.",
+            detail="Endpoint de teste desabilitado: variável ENVIRONMENT não configurada.",
+        )
+    current_env = raw_env.lower().strip()
+    if current_env not in ("development", "test"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Endpoint de teste desabilitado no ambiente '{current_env}'. Permitido exclusivamente em 'development' ou 'test'.",
         )
 
     expected_key = os.getenv("TEST_INGEST_KEY")
-    if not expected_key or not x_test_key or x_test_key != expected_key:
+    if not expected_key or not expected_key.strip():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Endpoint de teste desabilitado: TEST_INGEST_KEY não configurada no servidor.",
+        )
+
+    if not x_test_key or x_test_key != expected_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Acesso não autorizado. Chave X-Test-Key inválida ou TEST_INGEST_KEY não configurada.",
+            detail="Acesso não autorizado. Chave X-Test-Key ausente ou inválida.",
         )
 
     # Se forneceu raw_text, roda pelo parser completo
@@ -161,12 +186,13 @@ def test_ingest_offer(
             "coupon_code": payload.coupon_code,
         }
 
-    # Valida contra o motor de regras
+    # Valida contra o motor de regras com exceção permitida para teste interno
     is_approved, reason, _ = evaluate_rules(
         parsed_data=parsed,
         db=db,
         telegram_msg_id=None,
-        source_name=payload.source_name,
+        source_name=payload.source_name or "TEST_SOURCE",
+        allow_internal_test=True,
     )
     if not is_approved:
         raise HTTPException(

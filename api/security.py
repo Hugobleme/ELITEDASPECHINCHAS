@@ -1,20 +1,51 @@
 import os
+import secrets
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 import jwt
 from passlib.context import CryptContext
 
+logger = logging.getLogger(__name__)
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower().strip()
-JWT_SECRET = os.getenv("JWT_SECRET") or os.getenv("SECRET_KEY")
-if not JWT_SECRET:
-    if ENVIRONMENT == "production":
-        raise RuntimeError(
-            "CRÍTICO DE SEGURANÇA: JWT_SECRET ou SECRET_KEY não configurado no ambiente de produção!"
-        )
-    JWT_SECRET = "dev_insecure_jwt_secret_change_in_production"
 
+_DEV_EPHEMERAL_SECRET: Optional[str] = None
+
+
+def _resolve_jwt_secret() -> str:
+    """
+    Resolve o segredo JWT com base no ambiente de execução:
+    - Em 'production' ou qualquer ambiente não-dev/test: EXIGE JWT_SECRET ou SECRET_KEY. Lança RuntimeError se ausente.
+    - Em 'test': se ausente, utiliza segredo determinístico isolado para testes automatizados.
+    - Em 'development': se ausente, gera uma chave efêmera aleatória única por processo e a mantém em memória.
+    NUNCA imprime o valor do segredo nos logs.
+    """
+    global _DEV_EPHEMERAL_SECRET
+    env = os.getenv("ENVIRONMENT", "development").lower().strip()
+    secret = os.getenv("JWT_SECRET") or os.getenv("SECRET_KEY")
+    if secret:
+        return secret
+
+    if env == "test":
+        logger.debug("[Security] Usando chave JWT determinística isolada para ambiente de teste.")
+        return "test-only-deterministic-jwt-secret-key-32bytes"
+    elif env == "development":
+        if _DEV_EPHEMERAL_SECRET is None:
+            logger.warning(
+                "[Security] AVISO: JWT_SECRET/SECRET_KEY não definida. "
+                "Gerando chave efêmera aleatória para a sessão de desenvolvimento."
+            )
+            _DEV_EPHEMERAL_SECRET = secrets.token_hex(32)
+        return _DEV_EPHEMERAL_SECRET
+    else:
+        raise RuntimeError(
+            f"CRÍTICO DE SEGURANÇA: JWT_SECRET ou SECRET_KEY deve ser configurado obrigatoriamente no ambiente '{env}'!"
+        )
+
+
+JWT_SECRET = _resolve_jwt_secret()
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TTL_MINUTES = int(os.getenv("JWT_ACCESS_TTL", "30"))  # 30 minutos
 JWT_REFRESH_TTL_DAYS = int(os.getenv("JWT_REFRESH_TTL", "30"))   # 30 dias
@@ -38,7 +69,7 @@ def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta]
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=JWT_ACCESS_TTL_MINUTES))
     to_encode.update({"exp": expire, "type": "access"})
-    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return jwt.encode(to_encode, _resolve_jwt_secret(), algorithm=JWT_ALGORITHM)
 
 
 def create_refresh_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
@@ -46,13 +77,13 @@ def create_refresh_token(data: Dict[str, Any], expires_delta: Optional[timedelta
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(days=JWT_REFRESH_TTL_DAYS))
     to_encode.update({"exp": expire, "type": "refresh"})
-    return jwt.encode(to_encode, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    return jwt.encode(to_encode, _resolve_jwt_secret(), algorithm=JWT_ALGORITHM)
 
 
 def decode_token(token: str) -> Dict[str, Any]:
     """Decodifica e valida assinatura e expiração do JWT."""
     try:
-        payload = jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        payload = jwt.decode(token, _resolve_jwt_secret(), algorithms=[JWT_ALGORITHM])
         return payload
     except jwt.PyJWTError as e:
         raise ValueError(f"Token inválido ou expirado: {str(e)}")

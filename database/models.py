@@ -5,6 +5,7 @@ from sqlalchemy import (
     String,
     Float,
     Integer,
+    BigInteger,
     Boolean,
     DateTime,
     ForeignKey,
@@ -38,8 +39,8 @@ class Source(Base):
     id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = Column(String(255), nullable=False)
     channel_username = Column(String(255), nullable=False)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=utcnow)
+    is_active = Column(Boolean, default=True, nullable=False)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
 
 
 class Offer(Base):
@@ -50,17 +51,17 @@ class Offer(Base):
     price_current = Column(Float, nullable=False)
     price_original = Column(Float, nullable=False)
     discount_pct = Column(Integer, nullable=False)
-    store = Column(String(100), nullable=False)
-    category = Column(String(100), nullable=False)
+    store = Column(String(100), nullable=False, index=True)
+    category = Column(String(100), nullable=False, index=True)
     image_url = Column(Text, nullable=False)
     original_link = Column(Text, nullable=True)
     affiliate_link = Column(Text, nullable=False)
     coupon_code = Column(String(64), nullable=True)
-    telegram_msg_id = Column(Integer, nullable=True)
+    telegram_msg_id = Column(BigInteger, nullable=True, index=True)
     source_name = Column(String(100), nullable=True)
-    status = Column(String(50), default="pending")  # pending, approved, published, rejected
-    published_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=utcnow)
+    status = Column(String(50), default="pending", nullable=False, index=True)  # pending, approved, published, rejected
+    published_at = Column(DateTime, nullable=True, index=True)
+    created_at = Column(DateTime, default=utcnow, nullable=False)
 
     favorites = relationship("Favorite", back_populates="offer", cascade="all, delete-orphan")
 
