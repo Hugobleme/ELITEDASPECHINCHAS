@@ -55,46 +55,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Fase 7 — Auditoria de Qualidade e Segurança
-        run: |
-          echo "=== 1. Verificando git diff --check ==="
-          git diff --check
-
-          echo "=== 2. Verificando ausência de arquivos .env e .env.local ==="
-          if [ -f .env ] || [ -f .env.local ]; then
-            echo "FALHA DE SEGURANÇA: Arquivo de ambiente real (.env / .env.local) detectado!" >&2
-            exit 1
-          fi
-
-          echo "=== 3. Verificando ausência de arquivos de sessão Telethon (.session) ==="
-          SESSION_COUNT=$(find . -name "*.session" -not -path "./.git/*" -not -path "./node_modules/*" | wc -l)
-          if [ "$SESSION_COUNT" -gt 0 ]; then
-            echo "FALHA DE SEGURANÇA: Arquivos de sessão Telethon encontrados no repositório!" >&2
-            exit 1
-          fi
-
-          echo "=== 4. Verificando ausência de chaves privadas ==="
-          if grep -rq -E "BEGIN [A-Z0-9 ]*PRIVATE KEY" . --exclude-dir={.git,node_modules,.next}; then
-            echo "FALHA DE SEGURANÇA: Chave privada detectada no código!" >&2
-            exit 1
-          fi
-
-          echo "=== 5. Verificando ausência de senhas conhecidas ou credenciais administrativas expostas ==="
-          FORBIDDEN_WORDS=("admin123" "NEXT_PUBLIC_ADMIN_PASSWORD")
-          for word in "${FORBIDDEN_WORDS[@]}"; do
-            if grep -rq "$word" . --exclude-dir={.git,node_modules,.next,.pytest_cache} --exclude=".github/workflows/ci.yml"; then
-              echo "FALHA DE SEGURANÇA: Credencial ou padrão proibido detectado no repositório!" >&2
-              exit 1
-            fi
-          done
-
-          echo "=== Auditoria de segurança aprovada: nenhum segredo ou credencial exposta ==="
-
       - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
+
+      - name: Fase 7 — Auditoria de Qualidade e Segurança
+        run: |
+          echo "=== 1. Verificando git diff --check ==="
+          git diff --check
+          echo "=== 2. Executando auditoria estrita de segredos e credenciais ==="
+          python scripts/security_audit.py
 
       - name: Install Python Dependencies
         run: |
