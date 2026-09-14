@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -7,6 +8,15 @@ from api.deps import get_current_user
 from api.schemas.push import PushSubscriptionCreate, PushSubscriptionDelete
 
 router = APIRouter(prefix="/me/push", tags=["Notificações Web Push"])
+
+
+@router.get("/vapid-public-key", status_code=status.HTTP_200_OK)
+def get_vapid_public_key():
+    """
+    Retorna a chave pública VAPID para registro no navegador.
+    Segredos privados nunca são expostos.
+    """
+    return {"vapid_public_key": os.getenv("VAPID_PUBLIC_KEY", "")}
 
 
 @router.post("/subscribe", status_code=status.HTTP_201_CREATED)

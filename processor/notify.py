@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "")
 VAPID_PRIVATE_KEY = os.getenv("VAPID_PRIVATE_KEY", "")
-VAPID_SUBJECT = os.getenv("VAPID_SUBJECT", "mailto:admin@promoradar.com.br")
+VAPID_SUBJECT = os.getenv("VAPID_SUBJECT", "mailto:admin@elitedaspechinchas.com.br")
 APP_BASE_URL = os.getenv("APP_BASE_URL", "http://localhost:3000").rstrip("/")
 
 
