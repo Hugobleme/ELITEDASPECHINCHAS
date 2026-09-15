@@ -357,3 +357,19 @@ docker run -d --name pg-test -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=elited
 # Executar script de validação de migrações
 TEST_POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/elitedaspechinchas_test python scripts/verify_migrations.py
 ```
+
+---
+
+## 🚀 Deploy em Produção (Vercel + Railway)
+
+O projeto está totalmente preparado e configurado para deploy em produção com arquitetura desacoplada:
+
+- **Frontend**: Hospedado na **[Vercel](https://vercel.com)** com SSR/SSG no Next.js 14.
+- **Backend & Worker**: Hospedados na **[Railway](https://railway.app)** com:
+  - **API FastAPI** (`uvicorn api.main:app`) com detecção automática de porta `$PORT`
+  - **PostgreSQL 16 & Redis 7** gerenciados na Railway
+  - **Celery Worker** para processamento assíncrono em background
+  - **Telegram Listener / Bot** (`python main.py`)
+- **Configurações Declarativas**: [`railway.toml`](railway.toml), [`Procfile`](Procfile) e [`vercel.json`](vercel.json).
+- **Guia Operacional Passo a Passo**: Consulte o manual completo em [`DEPLOY.md`](DEPLOY.md) com todas as variáveis de ambiente, comandos de inicialização, configuração do BotFather e checklist de validação end-to-end.
+
