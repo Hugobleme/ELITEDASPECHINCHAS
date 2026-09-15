@@ -1,5 +1,6 @@
 import os
 import time
+import uuid
 import logging
 from datetime import datetime, timezone
 from fastapi import FastAPI, HTTPException, Request, status, Depends
@@ -23,6 +24,7 @@ from api.routes.admin import router as admin_router
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("elitedaspechinchas.api")
+SERVER_START_TIME = time.time()
 
 # ==========================================
 # Inicialização Resiliente do Sentry Backend
@@ -88,21 +90,34 @@ app.add_middleware(CORSMiddleware, **cors_kwargs)
 
 
 # ==========================================
-# Middleware de Timing e Logs Estruturados
+# Middleware de Timing, Segurança e Logs Estruturados
 # ==========================================
 @app.middleware("http")
 async def request_timing_and_logging_middleware(request: Request, call_next):
     start_time = time.time()
+    request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+
     response = await call_next(request)
     duration_ms = (time.time() - start_time) * 1000
+
+    # Headers de Performance e Rastreabilidade
     response.headers["X-Response-Time"] = f"{duration_ms:.2f}ms"
+    response.headers["X-Request-ID"] = request_id
+
+    # Headers HTTP de Segurança (OWASP Best Practices)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    if os.getenv("ENVIRONMENT") in ("production", "staging"):
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
 
     # Log estruturado (suprime endpoints de liveness frequentes)
     if request.url.path not in ("/health", "/ready", "/metrics", "/favicon.ico"):
         client_ip = request.client.host if request.client else "unknown"
         logger.info(
             f"[{request.method}] {request.url.path} status={response.status_code} "
-            f"latency={duration_ms:.2f}ms ip={client_ip}"
+            f"latency={duration_ms:.2f}ms req_id={request_id} ip={client_ip}"
         )
     return response
 
@@ -185,13 +200,32 @@ app.include_router(feed_router)
 # Health Check, Readiness & Métricas de Monitoramento
 # ==========================================
 @app.get("/health", tags=["Health Check"])
-def health_check():
+def health_check(db: Session = Depends(get_db)):
+    """
+    Endpoint de health check detalhado para liveness e monitoramento de saúde.
+    Verifica conectividade com banco de dados e status do cache.
+    """
+    db_status = "connected"
+    try:
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))
+    except Exception as exc:
+        logger.debug(f"[Health] Verificação do banco: {exc}")
+        db_status = "unavailable"
+
+    cache_stats = cache_service.get_stats()
+    redis_status = "connected" if cache_stats.get("redis_connected") else "in_memory_fallback"
+
     return {
         "status": "healthy",
         "service": "Elite das Pechinchas Backend",
         "version": "4.0.0",
+        "environment": os.getenv("ENVIRONMENT", "development"),
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "cache": cache_service.get_stats(),
+        "uptime_seconds": round(time.time() - SERVER_START_TIME, 2),
+        "database": db_status,
+        "redis": redis_status,
+        "cache": cache_stats,
     }
 
 
