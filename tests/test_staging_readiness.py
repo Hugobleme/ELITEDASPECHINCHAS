@@ -100,3 +100,35 @@ def test_staging_environment_test_ingest_strictly_blocked(client, monkeypatch):
     )
     assert res.status_code == 403
     assert "desabilitado no ambiente 'staging'" in res.json()["detail"]
+
+
+def test_security_headers_and_request_id_present(client):
+    """Valida a injeção obrigatória de Security Headers OWASP e X-Request-ID."""
+    res = client.get("/health")
+    assert res.status_code == 200
+    assert res.headers.get("X-Content-Type-Options") == "nosniff"
+    assert res.headers.get("X-Frame-Options") == "DENY"
+    assert res.headers.get("X-XSS-Protection") == "1; mode=block"
+    assert res.headers.get("Referrer-Policy") == "strict-origin-when-cross-origin"
+    assert "X-Request-ID" in res.headers
+    assert "X-Response-Time" in res.headers
+    data = res.json()
+    assert data["status"] == "healthy"
+    assert data["database"] in ("connected", "unavailable")
+    assert "uptime_seconds" in data
+
+
+def test_custom_request_id_propagated(client):
+    """Valida que um correlation ID X-Request-ID enviado pelo cliente é preservado na resposta."""
+    custom_id = "req-audit-test-9999"
+    res = client.get("/health", headers={"X-Request-ID": custom_id})
+    assert res.headers.get("X-Request-ID") == custom_id
+
+
+def test_hsts_header_in_production(client, monkeypatch):
+    """Valida que Strict-Transport-Security é injetado em ambiente de produção."""
+    monkeypatch.setenv("ENVIRONMENT", "production")
+    res = client.get("/health")
+    assert "Strict-Transport-Security" in res.headers
+    assert "max-age=31536000" in res.headers["Strict-Transport-Security"]
+
