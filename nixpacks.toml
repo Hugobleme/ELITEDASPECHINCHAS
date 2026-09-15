@@ -1,13 +1,7 @@
 providers = ["python"]
 
-[phases.setup]
-nixPkgs = ["python312", "gcc", "postgresql"]
-
-[phases.install]
-cmds = ["pip install --no-cache-dir -r requirements.txt"]
-
-[phases.build]
-cmds = []
+[variables]
+PYTHONUNBUFFERED = "1"
 
 [start]
 cmd = "python -m alembic upgrade head && python seed.py && python -m uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000}"
