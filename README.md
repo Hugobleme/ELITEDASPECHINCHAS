@@ -360,16 +360,14 @@ TEST_POSTGRES_URL=postgresql://postgres:postgres@localhost:5432/elitedaspechinch
 
 ---
 
-## 🚀 Deploy em Produção (Vercel + Railway)
+## 🚀 Deploy em Produção (Vercel + Railway) — NO AR! 🟢
 
-O projeto está totalmente preparado e configurado para deploy em produção com arquitetura desacoplada:
+O ecossistema está **100% online e operando em produção**:
 
-- **Frontend**: Hospedado na **[Vercel](https://vercel.com)** com SSR/SSG no Next.js 14.
-- **Backend & Worker**: Hospedados na **[Railway](https://railway.app)** com:
-  - **API FastAPI** (`uvicorn api.main:app`) com detecção automática de porta `$PORT`
-  - **PostgreSQL 16 & Redis 7** gerenciados na Railway
-  - **Celery Worker** para processamento assíncrono em background
-  - **Telegram Listener / Bot** (`python main.py`)
-- **Configurações Declarativas**: [`railway.toml`](railway.toml), [`Procfile`](Procfile) e [`vercel.json`](vercel.json).
-- **Guia Operacional Passo a Passo**: Consulte o manual completo em [`DEPLOY.md`](DEPLOY.md) com todas as variáveis de ambiente, comandos de inicialização, configuração do BotFather e checklist de validação end-to-end.
+- 🌐 **Frontend (Vercel)**: [https://elitedaspechinchas.vercel.app](https://elitedaspechinchas.vercel.app)
+- ⚙️ **Backend API (Railway)**: [https://elitedaspechinchas-production.up.railway.app](https://elitedaspechinchas-production.up.railway.app)
+- 📖 **Documentação Swagger**: [https://elitedaspechinchas-production.up.railway.app/docs](https://elitedaspechinchas-production.up.railway.app/docs)
+- 🐘 **PostgreSQL 16 & Redis 7**: Gerenciados e conectados na Railway
+- 📦 **Celery Worker & Telegram Listener**: Preparados para processamento assíncrono e captura de ofertas
+- 📋 **Guia Operacional**: Consulte o manual completo em [`DEPLOY.md`](DEPLOY.md).
 

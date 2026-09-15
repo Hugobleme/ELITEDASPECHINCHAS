@@ -42,9 +42,9 @@ Configure no painel da Vercel → Settings → Environment Variables:
 
 | Variável | Valor | Escopo |
 |---|---|---|
-| `NEXT_PUBLIC_API_URL` | `https://SEU-APP.up.railway.app` | Production, Preview |
+| `NEXT_PUBLIC_API_URL` | `https://elitedaspechinchas-production.up.railway.app` | Production, Preview |
 | `NEXT_PUBLIC_USE_MOCK` | `false` | Production, Preview |
-| `NEXT_PUBLIC_SITE_URL` | `https://SEU-APP.vercel.app` | Production |
+| `NEXT_PUBLIC_SITE_URL` | `https://elitedaspechinchas.vercel.app` | Production |
 | `NEXT_PUBLIC_GA_ID` | `G-XXXXXXXXXX` (opcional) | Production |
 
 ### 1.3 Deploy
