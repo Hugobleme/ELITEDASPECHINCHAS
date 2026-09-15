@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { CouponItem } from '@/types/coupon';
 import StoreLogo from './StoreLogo';
+import { trackCopyCoupon, trackClickAffiliate } from '@/lib/analytics';
 import { Check, Copy, ExternalLink, Calendar, Sparkles, ShieldCheck } from 'lucide-react';
 
 export interface CouponCardProps {
@@ -18,12 +19,22 @@ export default function CouponCard({ coupon, className = '' }: CouponCardProps) 
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(coupon.code);
       setCopied(true);
+      trackCopyCoupon({
+        code: coupon.code,
+        store: coupon.store,
+        discount_text: coupon.discount_text,
+      });
       setTimeout(() => setCopied(false), 2500);
     }
   };
 
   const handleOpenStore = () => {
     if (coupon.affiliate_url) {
+      trackClickAffiliate({
+        id: coupon.id,
+        store: coupon.store,
+        affiliate_link: coupon.affiliate_url,
+      });
       window.open(coupon.affiliate_url, '_blank', 'noopener,noreferrer');
     }
   };

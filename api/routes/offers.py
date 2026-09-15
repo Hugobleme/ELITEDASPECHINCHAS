@@ -6,9 +6,13 @@ import uuid
 import logging
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
-from fastapi import APIRouter, Depends, HTTPException, Query, Header, status
-from sqlalchemy.orm import Session
+import json
+from fastapi import APIRouter, Depends, HTTPException, Query, Header, status, Response
+from fastapi.encoders import jsonable_encoder
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import desc, func
+
+from api.services.cache import cache_service
 
 from database.connection import get_db
 from database.models import Offer, Coupon, Category, Store
@@ -46,6 +50,7 @@ router = APIRouter(tags=["Vitrine e Catálogo"])
 
 @router.get("/offers", response_model=OffersPaginatedResponse)
 def list_offers(
+    response: Response,
     store: Optional[str] = None,
     category: Optional[str] = None,
     min_discount: int = Query(0, ge=0),
@@ -59,7 +64,17 @@ def list_offers(
 ):
     """
     Retorna ofertas publicadas na vitrine pública com filtros, ordenação e paginação.
+    Conta com cache transparente de 5 minutos e header de auditoria X-Cache: HIT/MISS.
     """
+    cache_key = f"offers:list:{store}:{category}:{min_discount}:{min_price}:{max_price}:{sort}:{page}:{limit}:{search}"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        response.headers["X-Cache"] = "HIT"
+        try:
+            return json.loads(cached)
+        except Exception:
+            pass
+
     query = db.query(Offer).filter(Offer.status == "published", Offer.is_active == True)
 
     if store and store.lower() != "todas":
@@ -92,13 +107,21 @@ def list_offers(
     offset = (page - 1) * limit
     items = query.offset(offset).limit(limit).all()
 
-    return {
+    result = {
         "items": items,
         "total": total,
         "page": page,
         "limit": limit,
         "has_more": offset + limit < total,
     }
+
+    try:
+        cache_service.set(cache_key, json.dumps(jsonable_encoder(result)), ttl_seconds=300)
+    except Exception as exc:
+        logger.debug(f"[Offers Cache] Erro ao gravar cache: {exc}")
+
+    response.headers["X-Cache"] = "MISS"
+    return result
 
 
 @router.get("/offers/{offer_id}", response_model=OfferRead)
@@ -153,6 +176,9 @@ def create_offer(payload: OfferCreate, db: Session = Depends(get_db)):
     db.add(new_offer)
     db.commit()
     db.refresh(new_offer)
+    cache_service.invalidate_prefix("offers:")
+    cache_service.invalidate_prefix("categories:")
+    cache_service.invalidate_prefix("stores:")
     logger.info(f"[API] Oferta criada: ID {new_offer.id}")
     return new_offer
 
@@ -175,6 +201,9 @@ def update_offer(offer_id: str, payload: OfferUpdate, db: Session = Depends(get_
 
     db.commit()
     db.refresh(offer)
+    cache_service.invalidate_prefix("offers:")
+    cache_service.invalidate_prefix("categories:")
+    cache_service.invalidate_prefix("stores:")
     return offer
 
 
@@ -188,6 +217,9 @@ def delete_offer(offer_id: str, db: Session = Depends(get_db)):
     offer.is_active = False
     offer.status = "deleted"
     db.commit()
+    cache_service.invalidate_prefix("offers:")
+    cache_service.invalidate_prefix("categories:")
+    cache_service.invalidate_prefix("stores:")
     return {"status": "success", "deleted_id": offer_id}
 
 
@@ -197,6 +229,7 @@ def delete_offer(offer_id: str, db: Session = Depends(get_db)):
 
 @router.get("/search", response_model=OffersPaginatedResponse)
 def search_offers(
+    response: Response,
     q: str = Query(..., min_length=1, description="Termo de pesquisa"),
     store: Optional[str] = None,
     category: Optional[str] = None,
@@ -208,7 +241,17 @@ def search_offers(
 ):
     """
     Busca full-text em ofertas publicadas por título, loja ou categoria.
+    Cache de 2 minutos com header X-Cache: HIT/MISS.
     """
+    cache_key = f"offers:search:{q.strip().lower()}:{store}:{category}:{min_discount}:{sort}:{page}:{limit}"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        response.headers["X-Cache"] = "HIT"
+        try:
+            return json.loads(cached)
+        except Exception:
+            pass
+
     s = f"%{q.strip()}%"
     query = (
         db.query(Offer)
@@ -239,13 +282,21 @@ def search_offers(
     offset = (page - 1) * limit
     items = query.offset(offset).limit(limit).all()
 
-    return {
+    result = {
         "items": items,
         "total": total,
         "page": page,
         "limit": limit,
         "has_more": offset + limit < total,
     }
+
+    try:
+        cache_service.set(cache_key, json.dumps(jsonable_encoder(result)), ttl_seconds=120)
+    except Exception as exc:
+        logger.debug(f"[Search Cache] Erro ao gravar cache: {exc}")
+
+    response.headers["X-Cache"] = "MISS"
+    return result
 
 
 # ==============================================================================
@@ -254,6 +305,7 @@ def search_offers(
 
 @router.get("/coupons", response_model=CouponsPaginatedResponse)
 def list_coupons(
+    response: Response,
     store: Optional[str] = None,
     category: Optional[str] = None,
     search: Optional[str] = None,
@@ -263,8 +315,17 @@ def list_coupons(
 ):
     """
     Retorna cupons de desconto ativos com filtros de loja, categoria e busca textual.
-    Consulta o banco de dados e utiliza fallback estruturado caso a tabela esteja vazia.
+    Consulta o banco de dados com cache de 5 minutos e header de auditoria X-Cache: HIT/MISS.
     """
+    cache_key = f"coupons:list:{store}:{category}:{search}:{page}:{limit}"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        response.headers["X-Cache"] = "HIT"
+        try:
+            return json.loads(cached)
+        except Exception:
+            pass
+
     query = db.query(Coupon).filter(Coupon.is_active == True)
 
     if store and store.lower() != "todas":
@@ -287,13 +348,19 @@ def list_coupons(
     if db_total > 0:
         offset = (page - 1) * limit
         items = query.order_by(desc(Coupon.created_at)).offset(offset).limit(limit).all()
-        return {
+        result = {
             "items": items,
             "total": db_total,
             "page": page,
             "limit": limit,
             "has_more": offset + limit < db_total,
         }
+        try:
+            cache_service.set(cache_key, json.dumps(jsonable_encoder(result)), ttl_seconds=300)
+        except Exception as exc:
+            logger.debug(f"[Coupons Cache] Erro ao gravar cache: {exc}")
+        response.headers["X-Cache"] = "MISS"
+        return result
 
     # Fallback para base mockada integrada
     results = list(PYTHON_MOCK_COUPONS)
@@ -320,13 +387,21 @@ def list_coupons(
     start = (page - 1) * limit
     paginated = results[start : start + limit]
 
-    return {
+    result = {
         "items": paginated,
         "total": total,
         "page": page,
         "limit": limit,
         "has_more": start + limit < total,
     }
+
+    try:
+        cache_service.set(cache_key, json.dumps(jsonable_encoder(result)), ttl_seconds=300)
+    except Exception as exc:
+        logger.debug(f"[Coupons Cache Fallback] Erro ao gravar cache: {exc}")
+
+    response.headers["X-Cache"] = "MISS"
+    return result
 
 
 @router.get("/coupons/{coupon_id}", response_model=CouponRead)
@@ -366,6 +441,7 @@ def create_coupon(payload: CouponCreate, db: Session = Depends(get_db)):
     db.add(cp)
     db.commit()
     db.refresh(cp)
+    cache_service.invalidate_prefix("coupons:")
     return cp
 
 
@@ -377,6 +453,7 @@ def delete_coupon(coupon_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Cupom não encontrado.")
     cp.is_active = False
     db.commit()
+    cache_service.invalidate_prefix("coupons:")
     return {"status": "success", "deleted_id": coupon_id}
 
 
@@ -385,8 +462,17 @@ def delete_coupon(coupon_id: str, db: Session = Depends(get_db)):
 # ==============================================================================
 
 @router.get("/categories", response_model=List[CategoryDetail])
-def get_categories(db: Session = Depends(get_db)):
-    """Retorna lista de categorias com contagem de ofertas publicadas."""
+def get_categories(response: Response, db: Session = Depends(get_db)):
+    """Retorna lista de categorias com contagem de ofertas publicadas (cache de 1 hora)."""
+    cache_key = "categories:all"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        response.headers["X-Cache"] = "HIT"
+        try:
+            return json.loads(cached)
+        except Exception:
+            pass
+
     db_cats = db.query(Category).all()
     if db_cats:
         res = []
@@ -402,6 +488,11 @@ def get_categories(db: Session = Depends(get_db)):
                 "count": count,
                 "description": cat.description,
             })
+        try:
+            cache_service.set(cache_key, json.dumps(jsonable_encoder(res)), ttl_seconds=3600)
+        except Exception as exc:
+            logger.debug(f"[Categories Cache] Erro ao gravar cache: {exc}")
+        response.headers["X-Cache"] = "MISS"
         return res
 
     db_results = (
@@ -412,15 +503,32 @@ def get_categories(db: Session = Depends(get_db)):
     )
 
     if db_results:
-        return [{"name": cat.capitalize(), "slug": cat, "count": count} for cat, count in db_results]
+        res = [{"name": cat.capitalize(), "slug": cat, "count": count} for cat, count in db_results]
+    else:
+        res = PYTHON_MOCK_CATEGORIES
 
-    return PYTHON_MOCK_CATEGORIES
+    try:
+        cache_service.set(cache_key, json.dumps(jsonable_encoder(res)), ttl_seconds=3600)
+    except Exception as exc:
+        logger.debug(f"[Categories Cache Fallback] Erro ao gravar cache: {exc}")
+
+    response.headers["X-Cache"] = "MISS"
+    return res
 
 
 @router.get("/categories/{slug}", response_model=CategoryDetail)
-def get_category_by_slug(slug: str, db: Session = Depends(get_db)):
-    """Busca categoria detalhada pelo slug."""
+def get_category_by_slug(slug: str, response: Response, db: Session = Depends(get_db)):
+    """Busca categoria detalhada pelo slug (cache de 1 hora)."""
     clean_slug = slug.strip().lower()
+    cache_key = f"categories:slug:{clean_slug}"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        response.headers["X-Cache"] = "HIT"
+        try:
+            return json.loads(cached)
+        except Exception:
+            pass
+
     cat = db.query(Category).filter(Category.slug == clean_slug).first()
     if cat:
         count = (
@@ -428,12 +536,18 @@ def get_category_by_slug(slug: str, db: Session = Depends(get_db)):
             .filter(Offer.status == "published", Offer.is_active == True, Offer.category.ilike(clean_slug))
             .scalar() or 0
         )
-        return {
+        res = {
             "name": cat.name,
             "slug": cat.slug,
             "count": count,
             "description": cat.description,
         }
+        try:
+            cache_service.set(cache_key, json.dumps(jsonable_encoder(res)), ttl_seconds=3600)
+        except Exception as exc:
+            logger.debug(f"[Category Slug Cache] Erro ao gravar cache: {exc}")
+        response.headers["X-Cache"] = "MISS"
+        return res
 
     for c in PYTHON_MOCK_CATEGORIES:
         if c["slug"] == clean_slug:
@@ -443,12 +557,19 @@ def get_category_by_slug(slug: str, db: Session = Depends(get_db)):
                 .scalar()
                 or c["count"]
             )
-            return {
+            res = {
                 "name": c["name"],
                 "slug": c["slug"],
                 "count": count,
                 "description": c.get("description"),
             }
+            try:
+                cache_service.set(cache_key, json.dumps(jsonable_encoder(res)), ttl_seconds=3600)
+            except Exception as exc:
+                logger.debug(f"[Category Slug Fallback Cache] Erro ao gravar cache: {exc}")
+            response.headers["X-Cache"] = "MISS"
+            return res
+
     raise HTTPException(status_code=404, detail=f"Categoria '{slug}' não encontrada.")
 
 
@@ -466,12 +587,22 @@ def create_category(payload: CategoryCreate, db: Session = Depends(get_db)):
     db.add(cat)
     db.commit()
     db.refresh(cat)
+    cache_service.invalidate_prefix("categories:")
     return {"name": cat.name, "slug": cat.slug, "count": 0, "description": cat.description}
 
 
 @router.get("/stores", response_model=List[StoreDetail])
-def get_stores(db: Session = Depends(get_db)):
-    """Retorna lista de lojas parceiras com contagem de ofertas publicadas."""
+def get_stores(response: Response, db: Session = Depends(get_db)):
+    """Retorna lista de lojas parceiras com contagem de ofertas publicadas (cache de 1 hora)."""
+    cache_key = "stores:all"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        response.headers["X-Cache"] = "HIT"
+        try:
+            return json.loads(cached)
+        except Exception:
+            pass
+
     db_stores = db.query(Store).filter(Store.is_trusted == True).all()
     if db_stores:
         res = []
@@ -487,6 +618,11 @@ def get_stores(db: Session = Depends(get_db)):
                 "count": count,
                 "url": st.website_url,
             })
+        try:
+            cache_service.set(cache_key, json.dumps(jsonable_encoder(res)), ttl_seconds=3600)
+        except Exception as exc:
+            logger.debug(f"[Stores Cache] Erro ao gravar cache: {exc}")
+        response.headers["X-Cache"] = "MISS"
         return res
 
     db_results = (
@@ -497,18 +633,35 @@ def get_stores(db: Session = Depends(get_db)):
     )
 
     if db_results:
-        return [
+        res = [
             {"name": store, "slug": store.lower().replace(" ", "-"), "count": count}
             for store, count in db_results
         ]
+    else:
+        res = PYTHON_MOCK_STORES
 
-    return PYTHON_MOCK_STORES
+    try:
+        cache_service.set(cache_key, json.dumps(jsonable_encoder(res)), ttl_seconds=3600)
+    except Exception as exc:
+        logger.debug(f"[Stores Fallback Cache] Erro ao gravar cache: {exc}")
+
+    response.headers["X-Cache"] = "MISS"
+    return res
 
 
 @router.get("/stores/{slug}", response_model=StoreDetail)
-def get_store_by_slug(slug: str, db: Session = Depends(get_db)):
-    """Busca loja parceira detalhada pelo slug."""
+def get_store_by_slug(slug: str, response: Response, db: Session = Depends(get_db)):
+    """Busca loja parceira detalhada pelo slug (cache de 1 hora)."""
     clean_slug = slug.strip().lower()
+    cache_key = f"stores:slug:{clean_slug}"
+    cached = cache_service.get(cache_key)
+    if cached is not None:
+        response.headers["X-Cache"] = "HIT"
+        try:
+            return json.loads(cached)
+        except Exception:
+            pass
+
     st = db.query(Store).filter(Store.slug == clean_slug).first()
     if st:
         count = (
@@ -516,12 +669,18 @@ def get_store_by_slug(slug: str, db: Session = Depends(get_db)):
             .filter(Offer.status == "published", Offer.is_active == True, Offer.store.ilike(f"%{st.name}%"))
             .scalar() or 0
         )
-        return {
+        res = {
             "name": st.name,
             "slug": st.slug,
             "count": count,
             "url": st.website_url,
         }
+        try:
+            cache_service.set(cache_key, json.dumps(jsonable_encoder(res)), ttl_seconds=3600)
+        except Exception as exc:
+            logger.debug(f"[Store Slug Cache] Erro ao gravar cache: {exc}")
+        response.headers["X-Cache"] = "MISS"
+        return res
 
     for item in PYTHON_MOCK_STORES:
         if item["slug"] == clean_slug or item["name"].lower().replace(" ", "-") == clean_slug:
@@ -531,12 +690,19 @@ def get_store_by_slug(slug: str, db: Session = Depends(get_db)):
                 .scalar()
                 or item["count"]
             )
-            return {
+            res = {
                 "name": item["name"],
                 "slug": item["slug"],
                 "count": count,
                 "url": item.get("url"),
             }
+            try:
+                cache_service.set(cache_key, json.dumps(jsonable_encoder(res)), ttl_seconds=3600)
+            except Exception as exc:
+                logger.debug(f"[Store Slug Fallback Cache] Erro ao gravar cache: {exc}")
+            response.headers["X-Cache"] = "MISS"
+            return res
+
     raise HTTPException(status_code=404, detail=f"Loja '{slug}' não encontrada.")
 
 
@@ -556,6 +722,7 @@ def create_store(payload: StoreCreate, db: Session = Depends(get_db)):
     db.add(st)
     db.commit()
     db.refresh(st)
+    cache_service.invalidate_prefix("stores:")
     return {"name": st.name, "slug": st.slug, "count": 0, "url": st.website_url}
 
 
@@ -664,6 +831,10 @@ def test_ingest_offer(
     db.add(new_offer)
     db.commit()
     db.refresh(new_offer)
+
+    cache_service.invalidate_prefix("offers:")
+    cache_service.invalidate_prefix("categories:")
+    cache_service.invalidate_prefix("stores:")
 
     logger.info(f"[Test Ingest] Oferta de teste criada com sucesso: ID {new_offer.id}")
     return new_offer

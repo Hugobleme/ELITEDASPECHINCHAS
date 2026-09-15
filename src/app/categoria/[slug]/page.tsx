@@ -13,9 +13,29 @@ interface CategoryPageProps {
 
 export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const categoryName = formatSlugToName(params.slug);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://elitedaspechinchas.com.br';
+  const canonicalUrl = `${siteUrl}/categoria/${params.slug}`;
+  const title = `Ofertas de ${categoryName} com Desconto — Elite das Pechinchas`;
+  const description = `As melhores promoções e cupons de desconto para ${categoryName}. Economize nas principais lojas com a Elite das Pechinchas.`;
+
   return {
-    title: `Ofertas de ${categoryName} com Desconto — Elite das Pechinchas`,
-    description: `As melhores promoções e cupons de desconto para ${categoryName}. Economize nas principais lojas com a Elite das Pechinchas.`,
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: 'website',
+      siteName: 'Elite das Pechinchas',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
   };
 }
 

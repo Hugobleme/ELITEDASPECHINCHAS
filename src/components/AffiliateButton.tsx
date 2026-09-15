@@ -30,7 +30,7 @@ function AffiliateButtonComponent({
 
   const handleClick = (e: React.MouseEvent) => {
     setClicked(true);
-    handleAffiliateClick(offerId, affiliateLink);
+    handleAffiliateClick(offerId, affiliateLink, storeName);
 
     setTimeout(() => {
       setClicked(false);
