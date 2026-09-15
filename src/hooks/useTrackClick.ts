@@ -2,9 +2,17 @@
 
 import { useCallback } from 'react';
 import { trackClick } from '@/lib/api';
+import { trackClickAffiliate } from '@/lib/analytics';
 
 export function useTrackClick() {
-  const handleAffiliateClick = useCallback(async (offerId: string, affiliateLink: string) => {
+  const handleAffiliateClick = useCallback(async (offerId: string, affiliateLink: string, storeName?: string) => {
+    // Registra evento no Google Analytics 4
+    trackClickAffiliate({
+      id: offerId,
+      store: storeName || 'Parceiro',
+      affiliate_link: affiliateLink,
+    });
+
     // Tenta registrar o clique sem travar a navegação do usuário
     try {
       if (typeof window !== 'undefined' && 'sendBeacon' in navigator && process.env.NEXT_PUBLIC_API_URL) {

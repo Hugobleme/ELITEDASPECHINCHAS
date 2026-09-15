@@ -37,6 +37,12 @@ def db_session():
 
 @pytest.fixture(scope="function")
 def client(db_session):
+    from api.services.cache import cache_service
+    from api.main import RATE_LIMIT_COUNTS, RATE_LIMIT_AUTH_COUNTS
+    cache_service.clear()
+    RATE_LIMIT_COUNTS.clear()
+    RATE_LIMIT_AUTH_COUNTS.clear()
+
     def override_get_db():
         try:
             yield db_session
@@ -47,6 +53,9 @@ def client(db_session):
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()
+    cache_service.clear()
+    RATE_LIMIT_COUNTS.clear()
+    RATE_LIMIT_AUTH_COUNTS.clear()
 
 
 @pytest.fixture

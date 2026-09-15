@@ -14,9 +14,29 @@ interface StorePageProps {
 
 export async function generateMetadata({ params }: StorePageProps): Promise<Metadata> {
   const storeName = formatSlugToName(params.slug);
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://elitedaspechinchas.com.br';
+  const canonicalUrl = `${siteUrl}/loja/${params.slug}`;
+  const title = `Promoções e Cupons na ${storeName} — Elite das Pechinchas`;
+  const description = `Confira as melhores ofertas e cupons verificados para economizar em suas compras na ${storeName}.`;
+
   return {
-    title: `Promoções e Cupons na ${storeName} — Elite das Pechinchas`,
-    description: `Confira as melhores ofertas e cupons verificados para economizar em suas compras na ${storeName}.`,
+    title,
+    description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: 'website',
+      siteName: 'Elite das Pechinchas',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+    },
   };
 }
 

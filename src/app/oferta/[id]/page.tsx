@@ -47,12 +47,19 @@ export async function generateMetadata({ params }: OfferPageProps): Promise<Meta
   const title = `${discountText}${offer.title} por ${formatBRL(offer.price_current)} na ${offer.store} — Elite das Pechinchas`;
   const description = `Compre ${offer.title} por apenas ${formatBRL(offer.price_current)} na ${offer.store}. Desconto verificado com economia real na Elite das Pechinchas.`;
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://elitedaspechinchas.com.br';
+  const canonicalUrl = `${siteUrl}/oferta/${params.id}`;
+
   return {
     title,
     description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title,
       description,
+      url: canonicalUrl,
       images: offer.image_url ? [{ url: offer.image_url }] : [],
       type: 'article',
       publishedTime: offer.published_at || undefined,

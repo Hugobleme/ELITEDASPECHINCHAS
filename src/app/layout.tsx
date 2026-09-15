@@ -1,4 +1,5 @@
 import dynamic from 'next/dynamic';
+import Script from 'next/script';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
@@ -7,6 +8,7 @@ import { UserAuthProvider } from '@/contexts/UserAuthContext';
 import { PriceAlertModalProvider } from '@/contexts/PriceAlertModalContext';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { OrganizationJsonLd } from '@/components/seo/JsonLd';
 
 // Code-split heavy modals and floating widgets so they don't block critical page load JS
 const UserAuthModal = dynamic(
@@ -62,6 +64,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
@@ -71,6 +75,27 @@ export default function RootLayout({
             __html: `(function(){try{var t=localStorage.getItem('elitedaspechinchas_theme')||localStorage.getItem('theme');var d=window.matchMedia('(prefers-color-scheme: dark)').matches;if(t==='dark'||(!t&&d)){document.documentElement.classList.add('dark');}else{document.documentElement.classList.remove('dark');}}catch(e){}})();`,
           }}
         />
+        {/* Google Analytics 4 */}
+        {gaId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaId}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
+          </>
+        )}
+        {/* Schema.org Structured Data (Organization) */}
+        <OrganizationJsonLd />
       </head>
       <body className={inter.className}>
         <QueryProvider>
