@@ -70,7 +70,7 @@ raw_cors = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:300
 CORS_ORIGINS = [origin.strip() for origin in raw_cors.split(",") if origin.strip()]
 CORS_ORIGIN_REGEX = os.getenv("CORS_ORIGIN_REGEX")
 
-if not CORS_ORIGIN_REGEX and os.getenv("ENVIRONMENT") == "staging":
+if not CORS_ORIGIN_REGEX and os.getenv("ENVIRONMENT") in ("staging", "production"):
     CORS_ORIGIN_REGEX = r"^https:\/\/[a-zA-Z0-9_-]+\.vercel\.app$"
 elif CORS_ORIGIN_REGEX and CORS_ORIGIN_REGEX.strip() in [".*", ".*?", "^.*$", ".*vercel.*"]:
     CORS_ORIGIN_REGEX = r"^https:\/\/[a-zA-Z0-9_-]+\.vercel\.app$"

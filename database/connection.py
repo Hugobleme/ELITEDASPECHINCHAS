@@ -9,6 +9,10 @@ logger = logging.getLogger(__name__)
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/elitedaspechinchas")
 
+# Railway e alguns provedores usam postgres:// mas SQLAlchemy 2.x exige postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 # Configuração adaptativa do Engine com Pooling Resiliente
 if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
