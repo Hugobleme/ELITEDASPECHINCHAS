@@ -48,6 +48,7 @@ async def generate():
     with open("session.txt", "w", encoding="utf-8") as f:
         f.write(session_string.strip())
 
+    username = f"@{me.username}" if getattr(me, "username", None) else (me.phone or "sem_username")
     print("\n" + "=" * 65)
     print(f"[OK] SUCESSO! Conectado como: {me.first_name} ({username})")
     print("=" * 65)
