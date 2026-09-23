@@ -44,11 +44,15 @@ async def generate():
     session_string = client.session.save()
     me = await client.get_me()
 
-    username = f"@{me.username}" if getattr(me, "username", None) else "sem_username"
+    # Salva em arquivo limpo para evitar problemas de quebra de linha do terminal
+    with open("session.txt", "w", encoding="utf-8") as f:
+        f.write(session_string.strip())
+
     print("\n" + "=" * 65)
     print(f"[OK] SUCESSO! Conectado como: {me.first_name} ({username})")
     print("=" * 65)
-    print("Copie o valor abaixo e cole na variavel TELEGRAM_STRING_SESSION no Railway:")
+    print("O codigo foi salvo no arquivo 'session.txt' (sem quebras de linha)!")
+    print("Abra o arquivo 'session.txt', copie todo o conteudo e cole no Railway.")
     print("-" * 65)
     print(session_string)
     print("-" * 65 + "\n")

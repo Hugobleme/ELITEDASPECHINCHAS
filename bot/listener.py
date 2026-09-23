@@ -204,9 +204,18 @@ async def start_userbot(client=None):
 
     while attempts < max_reconnects:
         try:
-            await client.start()
+            await client.connect()
+            if not await client.is_user_authorized():
+                logger.critical(
+                    "❌ [Listener] A sessão do Telegram não está autorizada no servidor!\n"
+                    "Gere uma nova sessão via 'python scripts/generate_telegram_session.py', "
+                    "copie o conteúdo do arquivo 'session.txt' e atualize a variável TELEGRAM_STRING_SESSION no Railway."
+                )
+                return
+
             me = await client.get_me()
-            logger.info(f"✅ Userbot conectado com sucesso como: {me.first_name} (@{me.username or me.phone})")
+            username = f"@{me.username}" if getattr(me, "username", None) else (me.phone or "sem_username")
+            logger.info(f"✅ Userbot conectado com sucesso como: {me.first_name} ({username})")
 
             await setup_event_handlers(client, SOURCE_CHANNELS)
             logger.info(f"🎯 Monitoramento ativo em tempo real em: {', '.join(SOURCE_CHANNELS)}")
@@ -223,8 +232,11 @@ def run_listener():
     """Ponto de entrada síncrono para o listener Telethon."""
     client = create_telegram_client()
     if client:
-        with client:
+        try:
             client.loop.run_until_complete(start_userbot(client))
+        finally:
+            if client.is_connected():
+                client.loop.run_until_complete(client.disconnect())
     else:
         logger.info("[Listener] Execução síncrona encerrada: credenciais não configuradas para modo real.")
 
