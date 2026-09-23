@@ -266,15 +266,16 @@ def is_source_authorized(
     from config import SOURCE_CHANNELS
     from database.models import Source
 
-    if clean_name in SOURCE_CHANNELS:
-        return True
+    norm_clean = clean_name.lstrip("@").lower()
+    for configured in SOURCE_CHANNELS:
+        if configured.lstrip("@").lower() == norm_clean:
+            return True
 
     try:
-        normalized_lookup = clean_name.lstrip("@").lower()
         src = (
             db.query(Source)
             .filter(
-                (Source.channel_username.ilike(f"%{normalized_lookup}%")) | (Source.name.ilike(f"%{normalized_lookup}%")),
+                (Source.channel_username.ilike(f"%{norm_clean}%")) | (Source.name.ilike(f"%{norm_clean}%")),
                 Source.is_active == True,
             )
             .first()

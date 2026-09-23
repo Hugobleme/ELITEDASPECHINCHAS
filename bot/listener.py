@@ -139,10 +139,23 @@ def create_telegram_client():
 async def setup_event_handlers(client, channels: List[str]):
     """
     Registra os ouvintes para novos eventos nos canais/grupos configurados.
+    Garante que a conta do Telegram esteja inscrita nos canais para receber atualizações via MTProto.
     """
     from telethon import events
+    from telethon.tl.functions.channels import JoinChannelRequest
 
     logger.info(f"Configurando escuta para os canais-fonte: {channels}")
+
+    for ch in channels:
+        clean_ch = ch.strip()
+        if not clean_ch:
+            continue
+        try:
+            entity = await client.get_entity(clean_ch)
+            await client(JoinChannelRequest(entity))
+            logger.info(f"[Listener] ✅ Inscrito com sucesso no canal-fonte: {clean_ch}")
+        except Exception as join_err:
+            logger.info(f"[Listener] Canal {clean_ch} verificado/acessível: {join_err}")
 
     @client.on(events.NewMessage(chats=channels))
     async def handle_new_promotion(event):

@@ -37,14 +37,14 @@ TELEGRAM_SESSION_NAME = os.getenv("TELEGRAM_SESSION_NAME", "elitedaspechinchas_u
 TELEGRAM_STRING_SESSION = os.getenv("TELEGRAM_STRING_SESSION", "")
 
 # Bot Oficial para postagem no canal próprio (obtido no @BotFather)
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7835051187:AAH5yVihJzEmTYorqOCHRQtFJ3JrZNbzg-g")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 
 # Canal ou grupo oficial de destino das promoções (ex: @ElitedasPechinchas ou -100123456789)
 TARGET_CHANNEL_ID = os.getenv("TARGET_CHANNEL_ID", "@ElitedasPechinchas")
 
 # Grupos/canais de origem autorizados para captura (1 a 3 fontes)
 # Exemplo no .env: SOURCE_CHANNELS="@promos_tech,@radar_gamer,@ofertas_vip"
-raw_sources = os.getenv("SOURCE_CHANNELS", "@promos_tech,@radar_gamer,@ofertas_vip")
+raw_sources = os.getenv("SOURCE_CHANNELS", "@pechinchou,@promos_tech,@ofertas_vip")
 SOURCE_CHANNELS: List[str] = [
     ch.strip() for ch in raw_sources.split(",") if ch.strip()
 ]
