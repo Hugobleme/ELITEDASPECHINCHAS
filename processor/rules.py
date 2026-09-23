@@ -289,11 +289,12 @@ def is_source_authorized(
 def determine_initial_status(discount_pct: int, quality_score: int = 50) -> str:
     """
     Define o status inicial da oferta:
-    - 'published': se auto-aprovação estiver ligada e desconto for brutal (>= 40%) com score alto
+    - 'published': se auto-aprovação estiver ligada e a oferta for qualificada
     - 'pending': padrão seguro para curadoria humana
     """
-    if AUTO_APPROVE_ENABLED and discount_pct >= AUTO_APPROVE_DISCOUNT_THRESHOLD and quality_score >= 60:
-        return "published"
+    if AUTO_APPROVE_ENABLED:
+        if discount_pct >= AUTO_APPROVE_DISCOUNT_THRESHOLD or quality_score >= 40 or discount_pct == 0:
+            return "published"
     return "pending"
 
 
@@ -379,7 +380,7 @@ def evaluate_rules(
         return False, reason, "rejected"
 
     # 9. Validação de Desconto Mínimo (Piso padrão configurado)
-    if discount_pct < MIN_DISCOUNT_PERCENT:
+    if discount_pct > 0 and discount_pct < MIN_DISCOUNT_PERCENT:
         reason = f"Desconto de {discount_pct}% abaixo do piso mínimo de {MIN_DISCOUNT_PERCENT}%"
         logger.warning(f"[Rules Rejeição] {reason}")
         return False, reason, "rejected"

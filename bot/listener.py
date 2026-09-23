@@ -22,24 +22,44 @@ logging.basicConfig(
 
 def extract_entities_urls(message) -> List[str]:
     """
-    Extrai URLs embutidas nas entidades de texto do Telegram (ex: hyperlinks [texto](url)).
+    Extrai URLs embutidas em botões inline, entidades de texto do Telegram e corpo da mensagem.
     """
     urls = []
-    if not message or not getattr(message, "entities", None):
+    if not message:
         return urls
 
-    try:
-        from telethon.tl.types import MessageEntityTextUrl, MessageEntityUrl
-        for entity in message.entities:
-            if isinstance(entity, MessageEntityTextUrl):
-                urls.append(entity.url)
-            elif isinstance(entity, MessageEntityUrl):
-                offset = entity.offset
-                length = entity.length
-                url_str = message.text[offset : offset + length]
-                urls.append(url_str)
-    except Exception as e:
-        logger.warning(f"[Listener] Falha ao extrair entidades: {e}")
+    # 1. Botões inline (ex: [Comprar no Mercado Livre])
+    if getattr(message, "buttons", None):
+        try:
+            for row in message.buttons:
+                for btn in row:
+                    btn_url = getattr(btn, "url", None)
+                    if btn_url and btn_url.startswith("http") and btn_url not in urls:
+                        urls.append(btn_url)
+        except Exception as e:
+            logger.debug(f"[Listener] Falha ao extrair URLs dos botões: {e}")
+
+    # 2. Entidades de texto do Telegram (ex: hyperlinks [texto](url))
+    if getattr(message, "entities", None):
+        try:
+            from telethon.tl.types import MessageEntityTextUrl
+            for entity in message.entities:
+                if isinstance(entity, MessageEntityTextUrl) and entity.url:
+                    if entity.url not in urls:
+                        urls.append(entity.url)
+        except Exception as e:
+            logger.debug(f"[Listener] Falha ao extrair entidades: {e}")
+
+    # 3. URLs diretas no texto via Regex seguro (evita descolamento de offset UTF-16)
+    text = getattr(message, "text", "") or ""
+    if text:
+        try:
+            from processor.parser import extract_all_urls
+            for u in extract_all_urls(text):
+                if u not in urls:
+                    urls.append(u)
+        except Exception as e:
+            logger.debug(f"[Listener] Falha ao extrair URLs do texto: {e}")
 
     return urls
 
@@ -146,18 +166,26 @@ async def setup_event_handlers(client, channels: List[str]):
 
     logger.info(f"Configurando escuta para os canais-fonte: {channels}")
 
+    resolved_chats = []
     for ch in channels:
         clean_ch = ch.strip()
         if not clean_ch:
             continue
         try:
             entity = await client.get_entity(clean_ch)
-            await client(JoinChannelRequest(entity))
-            logger.info(f"[Listener] ✅ Inscrito com sucesso no canal-fonte: {clean_ch}")
-        except Exception as join_err:
-            logger.info(f"[Listener] Canal {clean_ch} verificado/acessível: {join_err}")
+            try:
+                await client(JoinChannelRequest(entity))
+                logger.info(f"[Listener] ✅ Inscrito com sucesso no canal-fonte: {clean_ch}")
+            except Exception as join_err:
+                logger.info(f"[Listener] Canal {clean_ch} verificado/acessível: {join_err}")
+            resolved_chats.append(entity)
+        except Exception as ent_err:
+            logger.warning(f"[Listener] Não foi possível resolver entidade para {clean_ch}: {ent_err}")
+            resolved_chats.append(clean_ch)
 
-    @client.on(events.NewMessage(chats=channels))
+    target_chats = resolved_chats if resolved_chats else channels
+
+    @client.on(events.NewMessage(chats=target_chats))
     async def handle_new_promotion(event):
         msg = event.message
         text = msg.text or msg.message or ""

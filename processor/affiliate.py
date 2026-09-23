@@ -148,6 +148,10 @@ def replace_magalu_link(url: str, tag: str) -> str:
         new_url = re.sub(r"magazinevoce\.com\.br/[^/]+/", f"magazinevoce.com.br/{tag}/", url)
         return copy_preserved_params(url, new_url)
 
+    if "influenciadormagalu.com.br" in url:
+        new_url = re.sub(r"influenciadormagalu\.com\.br/[^/]+/", f"influenciadormagalu.com.br/{tag}/", url)
+        return copy_preserved_params(url, new_url)
+
     if "magazineluiza.com.br" in url:
         new_url = f"https://www.magazinevoce.com.br/{tag}{path}"
         return copy_preserved_params(url, new_url)
@@ -171,7 +175,8 @@ def replace_generic_link(url: str, param_name: str, tag: str) -> str:
 
 SHORTENER_DOMAINS = [
     "amzn.to", "amzn.com", "bit.ly", "tinyurl.com", "t.co", "shp.ee",
-    "is.gd", "cutt.ly", "linkr.bio", "s.shopee.com.br"
+    "is.gd", "cutt.ly", "linkr.bio", "s.shopee.com.br", "meli.la",
+    "pechin.co", "pechinchou.com.br", "t.me"
 ]
 
 

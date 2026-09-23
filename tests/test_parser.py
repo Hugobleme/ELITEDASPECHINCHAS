@@ -217,3 +217,37 @@ def test_parsed_offer_pydantic_model():
     d = offer.to_dict()
     assert d["title"] == "Kindle 11ª Geração"
     assert d["price_current"] == 449.0
+
+
+def test_parse_pechinchou_format_message(monkeypatch):
+    """Valida extração enriquecida de mensagens do canal @pechinchou."""
+    from processor.parser import unwrap_pechinchou_offer
+
+    mock_unwrapped = {
+        "title": "Cozinha Emilly 6 Portas 4 Gavetas C/ Nichos Yescasa Cinamomo/grafite",
+        "price_current": 542.78,
+        "price_original": 1119.90,
+        "destination_url": "https://meli.la/2EELSAZ",
+        "image_url": "https://assets.pechinchou.com.br/media/img/products/external-image_kqY9B75.jpg",
+        "store": "Mercado Livre",
+        "coupon_code": "TEMAQUI",
+    }
+    monkeypatch.setattr("processor.parser.unwrap_pechinchou_offer", lambda url: mock_unwrapped)
+
+    raw_text = (
+        "**6 PORTAS E 4 GAVETAS 🔑 Para Organizar Sua Cozinha Com Estilo 🥘**\n\n"
+        "•  Cozinha Emilly 6 Portas 4 Gavetas C/ Nichos Yescasa Cinamomo/grafite\n\n"
+        "🔥 **R$ 542** Pix\n"
+        "**Achado Mercado Livre 👇🏻**\n"
+        "🛒 https://pechin.co/151948\n"
+        "➡ **Cupom:** TEMAQUI"
+    )
+
+    parsed = parse_telegram_message(raw_text)
+    assert parsed["store"] == "Mercado Livre"
+    assert parsed["original_link"] == "https://meli.la/2EELSAZ"
+    assert parsed["price_current"] == 542.78
+    assert parsed["price_original"] == 1119.90
+    assert parsed["discount_pct"] == 52
+    assert parsed["coupon_code"] == "TEMAQUI"
+    assert "https://assets.pechinchou.com.br" in parsed["image_url"]

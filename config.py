@@ -108,7 +108,7 @@ MAX_OFFERS_PER_HOUR_PER_SOURCE = _get_int("MAX_OFFERS_PER_HOUR_PER_SOURCE", 30)
 
 # Se ativado, ofertas com super descontos são aprovadas automaticamente
 AUTO_APPROVE_ENABLED = os.getenv("AUTO_APPROVE_ENABLED", "false").lower() in ("true", "1", "yes")
-AUTO_APPROVE_DISCOUNT_THRESHOLD = _get_int("AUTO_APPROVE_DISCOUNT_THRESHOLD", 40)
+AUTO_APPROVE_DISCOUNT_THRESHOLD = _get_int("AUTO_APPROVE_DISCOUNT_THRESHOLD", 0)
 
 # Configuração de modo simulado do Bot e Mocks
 SIMULATED_BOT_ENABLED = os.getenv("SIMULATED_BOT_ENABLED", "true").lower() in ("true", "1", "yes")

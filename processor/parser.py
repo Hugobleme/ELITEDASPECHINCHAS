@@ -57,9 +57,11 @@ DOMAIN_STORE_MAP = {
     "mercadolivre.com.br": "Mercado Livre",
     "mercadolivre.com": "Mercado Livre",
     "produto.mercadolivre.com.br": "Mercado Livre",
+    "meli.la": "Mercado Livre",
     "kabum.com.br": "Kabum",
     "magazineluiza.com.br": "Magazine Luiza",
     "magazinevoce.com.br": "Magazine Luiza",
+    "influenciadormagalu.com.br": "Magazine Luiza",
     "shopee.com.br": "Shopee",
     "shp.ee": "Shopee",
     "aliexpress.com": "AliExpress",
@@ -488,6 +490,63 @@ def extract_coupon_validity(text: str) -> Optional[str]:
 # Funções Principais de Parsing
 # ==============================================================================
 
+def unwrap_pechinchou_offer(url: str, timeout: float = 6.0) -> Optional[Dict[str, Any]]:
+    """
+    Desempacota metadados de ofertas do Pechinchou (pechin.co ou pechinchou.com.br)
+    extraindo dados estruturados do __NEXT_DATA__ (preço antigo, preço atual, loja, link real e imagem).
+    """
+    if not url or not ("pechin.co" in url.lower() or "pechinchou.com.br" in url.lower()):
+        return None
+    try:
+        import json
+        import httpx
+        with httpx.Client(follow_redirects=True, timeout=timeout, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}) as client:
+            resp = client.get(url)
+            if not resp.is_success:
+                return None
+            m = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', resp.text)
+            if not m:
+                return None
+            data = json.loads(m.group(1))
+            page_props = data.get("props", {}).get("pageProps", {})
+            promo = page_props.get("promo")
+            if not isinstance(promo, dict):
+                return None
+
+            store_val = promo.get("store")
+            store_name = store_val.get("name") if isinstance(store_val, dict) else store_val
+
+            coupon_val = promo.get("coupon")
+            if not coupon_val and promo.get("coupons"):
+                first_c = promo.get("coupons")[0]
+                coupon_val = first_c.get("name") if isinstance(first_c, dict) else str(first_c)
+
+            dest_url = promo.get("long_url") or promo.get("short_url")
+
+            def _to_float(v):
+                if v is None:
+                    return 0.0
+                try:
+                    return float(str(v).replace(",", "."))
+                except (ValueError, TypeError):
+                    return 0.0
+
+            price = _to_float(promo.get("price"))
+            old_price = _to_float(promo.get("old_price"))
+
+            return {
+                "title": promo.get("title") or "",
+                "price_current": price,
+                "price_original": old_price if old_price > 0 else price,
+                "destination_url": dest_url,
+                "image_url": promo.get("image"),
+                "store": store_name or "",
+                "coupon_code": coupon_val,
+            }
+    except Exception as e:
+        return None
+
+
 def parse_telegram_message(
     text: str,
     media_url: Optional[str] = None,
@@ -534,6 +593,29 @@ def parse_telegram_message(
     # 7. Contagem de produtos na mensagem
     all_links = extract_all_urls(text)
     items_count = max(1, len(all_links)) if len(all_links) > 1 else 1
+
+    # 8. Desempacotamento de Links Intermediários / Canais Parceiros (Pechinchou)
+    if original_link and ("pechin.co" in original_link.lower() or "pechinchou.com.br" in original_link.lower()):
+        unwrapped = unwrap_pechinchou_offer(original_link)
+        if unwrapped:
+            if unwrapped.get("destination_url") and is_valid_url(unwrapped["destination_url"]):
+                original_link = unwrapped["destination_url"]
+            if unwrapped.get("title") and len(unwrapped["title"]) >= 10:
+                title = unwrapped["title"]
+            if unwrapped.get("price_current") and unwrapped["price_current"] > 0:
+                price_current = unwrapped["price_current"]
+            if unwrapped.get("price_original") and unwrapped["price_original"] > 0:
+                price_original = unwrapped["price_original"]
+            if price_original > price_current > 0:
+                discount_pct = round(((price_original - price_current) / price_original) * 100)
+            if unwrapped.get("image_url") and is_valid_url(unwrapped["image_url"]):
+                image_url = unwrapped["image_url"]
+            if unwrapped.get("store") and unwrapped["store"].strip():
+                store = unwrapped["store"].strip()
+            elif not store:
+                store = detect_store(original_link, text)
+            if unwrapped.get("coupon_code"):
+                coupon_code = unwrapped["coupon_code"]
 
     parsed_obj = ParsedOffer(
         title=title,
