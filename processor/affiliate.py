@@ -169,6 +169,47 @@ def replace_generic_link(url: str, param_name: str, tag: str) -> str:
     return urllib.parse.urlunparse(parsed._replace(query=new_query))
 
 
+SHORTENER_DOMAINS = [
+    "amzn.to", "amzn.com", "bit.ly", "tinyurl.com", "t.co", "shp.ee",
+    "is.gd", "cutt.ly", "linkr.bio", "s.shopee.com.br"
+]
+
+
+def resolve_redirect_url(url: str, timeout: float = 4.0) -> str:
+    """
+    Expande URLs encurtadas (amzn.to, shp.ee, bit.ly, etc.) seguindo redirecionamentos
+    para obter a URL canônica do produto antes da troca da tag de afiliado.
+    """
+    if not url or not url.startswith("http"):
+        return url
+
+    parsed = urllib.parse.urlparse(url)
+    domain = parsed.netloc.lower()
+    path = parsed.path.lower()
+
+    needs_resolution = (
+        any(s in domain for s in SHORTENER_DOMAINS)
+        or "mercadolivre.com/sec" in f"{domain}{path}"
+        or "mercadolivre.com.br/sec" in f"{domain}{path}"
+    )
+
+    if not needs_resolution:
+        return url
+
+    try:
+        import httpx
+        with httpx.Client(follow_redirects=True, timeout=timeout, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}) as client:
+            resp = client.head(url)
+            if resp.status_code >= 400 or str(resp.url) == url:
+                resp = client.get(url)
+            resolved = str(resp.url)
+            logger.info(f"[Affiliate] Link desencurtado com sucesso: {url} -> {resolved}")
+            return resolved
+    except Exception as e:
+        logger.warning(f"[Affiliate] Não foi possível desencurtar {url}: {e}")
+        return url
+
+
 def generate_affiliate_link(
     original_link: str,
     store: str,
@@ -181,6 +222,9 @@ def generate_affiliate_link(
     """
     if not original_link or not original_link.startswith("http"):
         return original_link or ""
+
+    # Desencurta links (ex: amzn.to -> amazon.com.br/dp/ASIN) para garantir a troca correta de tag
+    original_link = resolve_redirect_url(original_link)
 
     try:
         tag = get_affiliate_tag_for_store(store, db)
