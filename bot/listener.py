@@ -8,6 +8,7 @@ from config import (
     TELEGRAM_API_ID,
     TELEGRAM_API_HASH,
     TELEGRAM_SESSION_NAME,
+    TELEGRAM_STRING_SESSION,
     SOURCE_CHANNELS,
 )
 from processor.tasks import process_telegram_message
@@ -120,6 +121,12 @@ def create_telegram_client():
 
     try:
         from telethon import TelegramClient
+        from telethon.sessions import StringSession
+
+        if TELEGRAM_STRING_SESSION and TELEGRAM_STRING_SESSION.strip():
+            logger.info("[Listener] Conectando Telethon via TELEGRAM_STRING_SESSION persistente.")
+            return TelegramClient(StringSession(TELEGRAM_STRING_SESSION.strip()), TELEGRAM_API_ID, TELEGRAM_API_HASH)
+
         session_dir = os.path.dirname(TELEGRAM_SESSION_NAME)
         if session_dir:
             os.makedirs(session_dir, exist_ok=True)
