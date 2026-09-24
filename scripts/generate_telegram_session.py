@@ -39,7 +39,7 @@ async def generate():
     print("O Telegram solicitará seu telefone (ex: +5511999998888) e código de confirmação:\n")
 
     client = TelegramClient(StringSession(), api_id, api_hash)
-    await client.start()
+    await client.start()  # type: ignore
 
     session_string = client.session.save()
     me = await client.get_me()
