@@ -156,6 +156,76 @@ def create_telegram_client():
         return None
 
 
+last_processed_ids: Dict[int, int] = {}
+
+
+async def run_channel_poller(client, channels: List[str], interval: float = 8.0):
+    """
+    Poller ativo concorrente que garante captura imediata em canais broadcast do Telegram.
+    Complementa os eventos push do MTProto para garantir latência mínima e 100% de entrega.
+    """
+    logger.info(f"[Poller] Iniciando verificação ativa periódica (intervalo: {interval}s) para: {channels}")
+
+    # Inicializa last_seen para os canais
+    for ch in channels:
+        clean_ch = ch.strip()
+        if not clean_ch:
+            continue
+        try:
+            entity = await client.get_entity(clean_ch)
+            async for m in client.iter_messages(entity, limit=1):
+                last_processed_ids[entity.id] = m.id
+                logger.info(f"[Poller] Canal {clean_ch} sincronizado no último post ID: {m.id}")
+        except Exception as e:
+            logger.debug(f"[Poller] Erro ao sincronizar inicial do canal {clean_ch}: {e}")
+
+    while True:
+        try:
+            await asyncio.sleep(interval)
+            for ch in channels:
+                clean_ch = ch.strip()
+                if not clean_ch:
+                    continue
+                try:
+                    entity = await client.get_entity(clean_ch)
+                    last_id = last_processed_ids.get(entity.id, 0)
+
+                    new_messages = []
+                    async for m in client.iter_messages(entity, limit=5, min_id=last_id):
+                        if m.text and m.text.strip():
+                            new_messages.append(m)
+
+                    for msg in reversed(new_messages):
+                        last_processed_ids[entity.id] = max(last_processed_ids.get(entity.id, 0), msg.id)
+
+                        source_name = getattr(entity, "username", None)
+                        if source_name:
+                            source_name = f"@{source_name}"
+                        else:
+                            source_name = getattr(entity, "title", clean_ch)
+
+                        logger.info(f"[Poller] 📥 Nova mensagem descoberta de {source_name} (ID: {msg.id})")
+                        entities_links = extract_entities_urls(msg)
+
+                        payload = {
+                            "text": msg.text,
+                            "telegram_msg_id": msg.id,
+                            "source_name": source_name,
+                            "entities_links": entities_links,
+                            "media_url": None,
+                        }
+                        process_incoming_payload(payload)
+
+                except Exception as ch_err:
+                    logger.debug(f"[Poller] Erro ao verificar {clean_ch}: {ch_err}")
+
+        except asyncio.CancelledError:
+            break
+        except Exception as loop_err:
+            logger.warning(f"[Poller] Exceção no loop do poller: {loop_err}")
+            await asyncio.sleep(interval)
+
+
 async def setup_event_handlers(client, channels: List[str]):
     """
     Registra os ouvintes para novos eventos nos canais/grupos configurados.
@@ -180,10 +250,9 @@ async def setup_event_handlers(client, channels: List[str]):
                 logger.info(f"[Listener] Canal {clean_ch} verificado/acessível: {join_err}")
             resolved_chats.append(entity)
         except Exception as ent_err:
-            logger.warning(f"[Listener] Não foi possível resolver entidade para {clean_ch}: {ent_err}")
-            resolved_chats.append(clean_ch)
+            logger.warning(f"[Listener] Canal {clean_ch} não encontrado ou inacessível: {ent_err}")
 
-    target_chats = resolved_chats if resolved_chats else channels
+    target_chats = resolved_chats if resolved_chats else None
 
     @client.on(events.NewMessage(chats=target_chats))
     async def handle_new_promotion(event):
@@ -202,6 +271,11 @@ async def setup_event_handlers(client, channels: List[str]):
             source_name = getattr(chat, "title", f"chat_{event.chat_id}")
 
         logger.info(f"[Listener] 📥 Nova mensagem capturada de {source_name} (ID: {msg.id})")
+
+        # Atualiza last_processed_ids para evitar que o poller re-despache a mesma mensagem
+        chat_id = getattr(chat, "id", None)
+        if chat_id:
+            last_processed_ids[chat_id] = max(last_processed_ids.get(chat_id, 0), msg.id)
 
         entities_links = extract_entities_urls(msg)
 
@@ -248,7 +322,13 @@ async def start_userbot(client=None):
             await setup_event_handlers(client, SOURCE_CHANNELS)
             logger.info(f"🎯 Monitoramento ativo em tempo real em: {', '.join(SOURCE_CHANNELS)}")
 
-            await client.run_until_disconnected()
+            # Inicia o poller concorrente contínuo (complementa o push do MTProto para canais broadcast)
+            poller_task = asyncio.create_task(run_channel_poller(client, SOURCE_CHANNELS, interval=8.0))
+
+            try:
+                await client.run_until_disconnected()
+            finally:
+                poller_task.cancel()
             break
         except Exception as e:
             attempts += 1
