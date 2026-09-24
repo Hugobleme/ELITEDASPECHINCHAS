@@ -159,20 +159,22 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
         if initial_status == "published":
             logger.info(f"[Tasks] Disparando publicação automática para oferta {offer_id}")
             try:
-                publish_offer_to_channel.delay(offer_id)
-            except Exception:
+                publish_offer_to_channel(offer_id)
+                logger.info(f"[Tasks] ✅ Oferta {offer_id} publicada com sucesso no canal!")
+            except Exception as direct_pub_err:
+                logger.warning(f"[Tasks] Falha na publicação direta ({direct_pub_err}). Tentando via Celery...")
                 try:
-                    publish_offer_to_channel(offer_id)
-                except Exception as direct_pub_err:
-                    logger.warning(f"[Tasks] Fallback de publicação direta ignorado: {direct_pub_err}")
+                    publish_offer_to_channel.delay(offer_id)
+                except Exception as celery_pub_err:
+                    logger.error(f"[Tasks] Falha em ambos os métodos de publicação para oferta {offer_id}: {celery_pub_err}")
 
             try:
-                match_and_notify.delay(offer_id)
+                match_and_notify(offer_id)
             except Exception:
                 try:
-                    match_and_notify(offer_id)
-                except Exception as direct_notif_err:
-                    logger.warning(f"[Tasks] Fallback de notificação direta ignorado: {direct_notif_err}")
+                    match_and_notify.delay(offer_id)
+                except Exception:
+                    pass
 
         return {
             "status": "success",

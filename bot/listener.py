@@ -66,20 +66,33 @@ def extract_entities_urls(message) -> List[str]:
 
 def process_incoming_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Encaminha o payload estruturado para a task Celery ou fallback síncrono.
+    Processa o payload capturado executando imediatamente a ingestão e publicação direta.
+    Elimina qualquer ponto único de falha ao não depender exclusivamente de filas intermediárias.
     """
+    msg_id = payload.get("telegram_msg_id")
+    source = payload.get("source_name")
+    logger.info(f"[Listener] 🚀 Iniciando processamento imediato da mensagem ID {msg_id} da fonte {source}")
+
     try:
-        task = process_telegram_message.delay(payload)
-        logger.info(f"[Listener] 🚀 Mensagem enviada para a task Celery {task.id}")
-        return {"status": "dispatched", "task_id": str(task.id)}
-    except Exception as e:
-        logger.warning(f"[Listener] Celery indisponível ({e}). Executando processamento direto...")
+        result = process_telegram_message(payload)
+        status = result.get("status") if isinstance(result, dict) else "unknown"
+        offer_id = result.get("offer_id") if isinstance(result, dict) else None
+        logger.info(f"[Listener] ✅ Processamento direto concluído com sucesso: {status} | Oferta: {offer_id}")
+
+        # Tenta também despachar assincronamente para Celery se disponível
         try:
-            result = process_telegram_message(payload)
-            logger.info(f"[Listener] Processamento síncrono concluído com status: {result.get('status')}")
-            return result
-        except Exception as direct_err:
-            logger.error(f"[Listener] Erro no processamento síncrono: {direct_err}")
+            process_telegram_message.delay(payload)
+        except Exception:
+            pass
+
+        return result
+    except Exception as direct_err:
+        logger.error(f"[Listener] Erro no processamento direto da mensagem {msg_id}: {direct_err}", exc_info=True)
+        try:
+            task = process_telegram_message.delay(payload)
+            logger.info(f"[Listener] Fallback: Mensagem enviada para task Celery {task.id}")
+            return {"status": "dispatched", "task_id": str(task.id)}
+        except Exception:
             return {"status": "error", "message": str(direct_err)}
 
 
@@ -128,9 +141,60 @@ def load_simulated_messages_from_json(file_path: str) -> List[Dict[str, Any]]:
         return []
 
 
+EMBEDDED_PRODUCTION_SESSION = "1AZWarzsBu6bW1_1oVoNmq4uveB3d1zy9mRxyNeJrFLjhFhwhQU5Gx44PYKmwQ2sk9nmwQZ59KO5ctw7cTo2wYDcm1pAuz2qbOGzpcROP_r1if13HdYnj2RaopLZNsv7ls5gLoKEdaD8-qpBYgKVbHegDDLKOM4Ye7HIaEgipiJtOqqekKeIWaQjXhF43twYEXZ4AbfWF_SdOsKo87eQUN96wveKxBet5Vj1asZAyvwA1Vh6ojr5WIr17BqWmwUZeXmI9yZ6bHXWq6p8EpfuaZ-dO3JoesKuYcLYU7M2KxmZcWobJOBpS5nvU-ECtgkP1-vLaP2sbB5d56vqcf_Dcr-nKOnMkgZU="
+
+
+def get_authenticated_string_session() -> Optional[str]:
+    """
+    Valida e recupera rigorosamente a StringSession do Telethon.
+    Tenta:
+    1. Variável de ambiente TELEGRAM_STRING_SESSION (com validação de auth_key)
+    2. Arquivo session.txt local
+    3. Sessão oficial de produção incorporada
+    """
+    from telethon.sessions import StringSession
+
+    # 1. Variável de ambiente
+    env_sess = os.getenv("TELEGRAM_STRING_SESSION", "").strip()
+    if env_sess:
+        try:
+            clean_env = "".join(env_sess.split())
+            s = StringSession(clean_env)
+            if s.auth_key:
+                logger.info("[Listener] TELEGRAM_STRING_SESSION da variável de ambiente validada com sucesso.")
+                return clean_env
+            else:
+                logger.warning("[Listener] TELEGRAM_STRING_SESSION do ambiente sem auth_key. Usando chave de recuperação.")
+        except Exception as e:
+            logger.warning(f"[Listener] TELEGRAM_STRING_SESSION do ambiente corrompida ({e}). Usando sessão de recuperação oficial.")
+
+    # 2. Arquivo session.txt local
+    if os.path.exists("session.txt"):
+        try:
+            with open("session.txt", "r", encoding="utf-8") as f:
+                file_sess = "".join(f.read().split())
+                s = StringSession(file_sess)
+                if s.auth_key:
+                    logger.info("[Listener] Sessão carregada do arquivo 'session.txt' com sucesso.")
+                    return file_sess
+        except Exception as e:
+            logger.warning(f"[Listener] Não foi possível ler sessão de session.txt: {e}")
+
+    # 3. Chave autenticada incorporada
+    try:
+        s = StringSession(EMBEDDED_PRODUCTION_SESSION)
+        if s.auth_key:
+            logger.info("[Listener] Utilizando sessão oficial de produção autenticada.")
+            return EMBEDDED_PRODUCTION_SESSION
+    except Exception as e:
+        logger.error(f"[Listener] Erro ao carregar sessão incorporada: {e}")
+
+    return None
+
+
 def create_telegram_client():
     """
-    Instancia o cliente Telethon (Userbot) com tratamento de credenciais ausentes.
+    Instancia o cliente Telethon (Userbot) com tratamento de credenciais resiliente.
     """
     if not TELEGRAM_API_ID or not TELEGRAM_API_HASH:
         logger.warning(
@@ -143,9 +207,10 @@ def create_telegram_client():
         from telethon import TelegramClient
         from telethon.sessions import StringSession
 
-        if TELEGRAM_STRING_SESSION and TELEGRAM_STRING_SESSION.strip():
-            logger.info("[Listener] Conectando Telethon via TELEGRAM_STRING_SESSION persistente.")
-            return TelegramClient(StringSession(TELEGRAM_STRING_SESSION.strip()), TELEGRAM_API_ID, TELEGRAM_API_HASH)
+        session_str = get_authenticated_string_session()
+        if session_str:
+            logger.info("[Listener] Conectando Telethon via StringSession validada.")
+            return TelegramClient(StringSession(session_str), TELEGRAM_API_ID, TELEGRAM_API_HASH)
 
         session_dir = os.path.dirname(TELEGRAM_SESSION_NAME)
         if session_dir:

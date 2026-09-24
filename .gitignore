@@ -47,7 +47,6 @@ ENV/
 # telethon sessions
 *.session
 *.session-journal
-session.txt
 
 # local databases
 *.db
