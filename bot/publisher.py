@@ -44,11 +44,11 @@ def publish_to_telegram(
     channel_id: Optional[str] = None,
     image_url: Optional[str] = None,
     parse_mode: str = "HTML",
+    reply_markup: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Publica uma mensagem formatada no canal/grupo do Telegram utilizando a Bot API oficial.
-    Em modo simulado (quando o token não estiver definido ou SIMULATED_BOT_ENABLED=True),
-    grava em log e persiste no arquivo de simulação sem falhar.
+    Suporta imagens com legenda, botões inline interativos e fallback resiliente.
     """
     target = channel_id or TARGET_CHANNEL_ID
     token = TELEGRAM_BOT_TOKEN
@@ -69,6 +69,7 @@ def publish_to_telegram(
             "channel": target,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "has_image": bool(image_url),
+            "has_button": bool(reply_markup),
             "message_length": len(message),
             "message_preview": message[:150],
         }
@@ -87,6 +88,9 @@ def publish_to_telegram(
                     "caption": message[:1024],
                     "parse_mode": parse_mode,
                 }
+                if reply_markup:
+                    photo_payload["reply_markup"] = json.dumps(reply_markup)
+
                 response = client.post(f"{api_url}/sendPhoto", data=photo_payload)
                 resp_json = response.json()
 
@@ -110,6 +114,8 @@ def publish_to_telegram(
                 "parse_mode": parse_mode,
                 "disable_web_page_preview": False,
             }
+            if reply_markup:
+                text_payload["reply_markup"] = json.dumps(reply_markup)
             response = client.post(f"{api_url}/sendMessage", data=text_payload)
             resp_json = response.json()
 

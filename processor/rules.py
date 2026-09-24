@@ -158,7 +158,16 @@ def check_blocked_content(
 
     # 3. Palavras-chave proibidas
     combined_text = f"{title} {raw_text}".lower()
+
+    # Exceção para cosméticos / perfumaria legítimos que usam nomes fantasia como 'Cassino' (ex: Eudora Club 6 Cassino)
+    is_cosmetics_or_fragrance = any(
+        term in combined_text
+        for term in ("colônia", "colonia", "perfume", "desodorante", "fragrância", "fragrancia", "eau de", "eudora", "boticário", "boticario", "natura")
+    )
+
     for kw in BLOCKED_KEYWORDS:
+        if "cassino" in kw and is_cosmetics_or_fragrance:
+            continue
         if re.search(r"\b" + re.escape(kw) + r"\b", combined_text):
             return True, f"Contém palavra-chave bloqueada: '{kw}'"
 

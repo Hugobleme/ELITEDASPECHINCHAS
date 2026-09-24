@@ -239,10 +239,22 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
 
         formatted_message = format_telegram_card_html(card_data)
 
+        reply_markup = None
+        if offer.affiliate_link:
+            btn_text = f"🛒 COMPRAR COM {offer.discount_pct}% OFF" if (offer.discount_pct and offer.discount_pct > 0) else "🛒 RESGATAR PROMOÇÃO"
+            reply_markup = {
+                "inline_keyboard": [
+                    [
+                        {"text": btn_text, "url": offer.affiliate_link}
+                    ]
+                ]
+            }
+
         pub_result = publish_to_telegram(
             message=formatted_message,
             channel_id=target_channel,
             image_url=offer.image_url,
+            reply_markup=reply_markup,
             parse_mode="HTML",
         )
 

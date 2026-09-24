@@ -72,6 +72,16 @@ DOMAIN_STORE_MAP = {
     "fastshop.com.br": "Fast Shop",
     "pichau.com.br": "Pichau",
     "terabyteshop.com.br": "Terabyte",
+    "netshoes.com.br": "Netshoes",
+    "zattini.com.br": "Zattini",
+    "carrefour.com.br": "Carrefour",
+    "pontofrio.com.br": "Ponto",
+    "ponto.com.br": "Ponto",
+    "extra.com.br": "Extra",
+    "centauro.com.br": "Centauro",
+    "boticario.com.br": "O Boticário",
+    "eudora.com.br": "Eudora",
+    "belezanaweb.com.br": "Beleza na Web",
 }
 
 STORE_TEXT_KEYWORDS = {
@@ -86,6 +96,15 @@ STORE_TEXT_KEYWORDS = {
     "Fast Shop": ["fast shop", "fastshop"],
     "Pichau": ["pichau"],
     "Terabyte": ["terabyte", "terabyteshop"],
+    "Netshoes": ["netshoes"],
+    "Zattini": ["zattini"],
+    "Carrefour": ["carrefour"],
+    "Ponto": ["pontofrio", "ponto frio", "ponto"],
+    "Extra": ["extra.com.br", "extra"],
+    "Centauro": ["centauro"],
+    "O Boticário": ["boticário", "boticario"],
+    "Eudora": ["eudora"],
+    "Beleza na Web": ["beleza na web", "belezanaweb"],
 }
 
 CATEGORY_KEYWORDS = {
@@ -312,7 +331,7 @@ def extract_prices_and_discount(text: str) -> Tuple[float, float, int]:
     # 4. Se não encontrou "Por", busca preços com símbolo R$ explícito
     if not price_current:
         all_r_prices = re.findall(r"R\$\s*([\d\.,]+)", sanitized_text, re.IGNORECASE)
-        parsed_prices = [p for p in (parse_price(x) for x in all_r_prices) if p and p > 1.0]
+        parsed_prices = [p for p in (parse_price(x) for x in all_r_prices) if p and p >= 0.1]
         if parsed_prices:
             if price_original and price_original > 0:
                 # O preço atual deve ser menor que o original se houver desconto
@@ -324,7 +343,7 @@ def extract_prices_and_discount(text: str) -> Tuple[float, float, int]:
     # 5. Fallback para números isolados com formato de moeda (ex: "99.90" ou "99,90")
     if not price_current:
         isolated = re.findall(r"\b(\d{1,5}[\.,]\d{2})\b", sanitized_text)
-        parsed_isolated = [p for p in (parse_price(x) for x in isolated) if p and p > 1.0]
+        parsed_isolated = [p for p in (parse_price(x) for x in isolated) if p and p >= 0.1]
         if parsed_isolated:
             price_current = parsed_isolated[0]
 

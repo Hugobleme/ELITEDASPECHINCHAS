@@ -39,7 +39,10 @@ def format_telegram_card_html(offer_data: Dict[str, Any]) -> str:
     Inclui título, preços, desconto %, cupom (se houver), botão de afiliado e hashtags.
     Garante respeito ao limite de caracteres do Telegram.
     """
-    title = html.escape(str(offer_data.get("title", "Oferta Imperdível")))
+    raw_title = str(offer_data.get("title", "Oferta Imperdível")).strip()
+    if len(raw_title) > 130:
+        raw_title = raw_title[:127] + "..."
+    title = html.escape(raw_title)
     price_current = float(offer_data.get("price_current", 0.0) or 0.0)
     price_original = float(offer_data.get("price_original", 0.0) or 0.0)
     discount_pct = int(offer_data.get("discount_pct", 0) or 0)
@@ -68,9 +71,9 @@ def format_telegram_card_html(offer_data: Dict[str, Any]) -> str:
     # Cupom de desconto
     if coupon_code:
         clean_coupon = html.escape(str(coupon_code))
-        coupon_line = f"🎟 <b>Cupom:</b> <code>{clean_coupon}</code>"
+        coupon_line = f"🎟 <b>Cupom:</b> <code>{clean_coupon}</code> <i>(Toque para copiar)</i>"
         if coupon_validity:
-            coupon_line += f" <i>(Válido até: {html.escape(str(coupon_validity))})</i>"
+            coupon_line += f" | <i>Válido até: {html.escape(str(coupon_validity))}</i>"
         lines.append(coupon_line + "\n")
 
     # Botão de Ação / Link de Afiliado

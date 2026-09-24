@@ -59,7 +59,10 @@ def test_is_duplicate_by_hash(db_session):
     assert "Oferta idêntica encontrada" in reason
 
 
-def test_evaluate_rules_discount_threshold(db_session):
+def test_evaluate_rules_discount_threshold(monkeypatch, db_session):
+    # Simula piso de desconto configurado em 10%
+    monkeypatch.setattr("processor.rules.MIN_DISCOUNT_PERCENT", 10)
+
     # Oferta com apenas 5% de desconto (abaixo do piso de 10%)
     parsed_bad = {
         "title": "Mouse USB Barato",
@@ -256,12 +259,12 @@ def test_calculate_quality_score():
 
 def test_evaluate_rules_price_limits(db_session):
     """Rejeita ofertas com preço abaixo do mínimo ou acima do máximo configurado."""
-    # Abaixo do mínimo (ex: R$ 5,00 quando mínimo é R$ 10,00)
+    # Abaixo do mínimo (ex: R$ 0.20 quando mínimo é R$ 0.50)
     low_offer = {
         "title": "Caneta Esferográfica",
-        "price_current": 5.0,
-        "price_original": 10.0,
-        "discount_pct": 50,
+        "price_current": 0.20,
+        "price_original": 1.0,
+        "discount_pct": 80,
         "store": "Amazon",
         "original_link": "https://amazon.com.br/dp/123",
     }
@@ -269,18 +272,34 @@ def test_evaluate_rules_price_limits(db_session):
     assert approved is False
     assert "abaixo do valor mínimo" in reason
 
-    # Acima do máximo (ex: R$ 8.000,00 quando máximo é R$ 5.000,00)
+    # Acima do máximo (ex: R$ 60.000,00 quando máximo é R$ 50.000,00)
     high_offer = {
-        "title": "MacBook Pro M3 Max 64GB",
-        "price_current": 8999.0,
-        "price_original": 12000.0,
-        "discount_pct": 25,
+        "title": "Supercomputador Industrial Especial",
+        "price_current": 60000.0,
+        "price_original": 75000.0,
+        "discount_pct": 20,
         "store": "Amazon",
         "original_link": "https://amazon.com.br/dp/123",
     }
     approved, reason, status = evaluate_rules(high_offer, db_session, allow_internal_test=True)
     assert approved is False
     assert "acima do limite máximo" in reason
+
+
+def test_evaluate_rules_perfume_cassino_exemption(db_session):
+    """Garante que perfumes legítimos como Eudora Club 6 Cassino não sejam rejeitados por falso positivo de cassino."""
+    perfume_offer = {
+        "title": "Eudora Club 6 Cassino Desodorante Colônia 95ml",
+        "price_current": 86.90,
+        "price_original": 135.90,
+        "discount_pct": 36,
+        "store": "Mercado Livre",
+        "category": "moda",
+        "original_link": "https://mercadolivre.com.br/p/123",
+    }
+    approved, reason, status = evaluate_rules(perfume_offer, db_session, source_name="TEST_SOURCE")
+    assert approved is True
+    assert status == "pending"
 
 
 def test_evaluate_rules_blocked_keywords_and_categories(db_session):

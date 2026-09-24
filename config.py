@@ -75,11 +75,11 @@ AFFILIATE_PARAM_NAMES = {
 # 3. Motor de Regras e Curadoria
 # ------------------------------------------------------------------------------
 # Faixas de preço aceitáveis
-MIN_PRICE = _get_float("MIN_PRICE", 10.0)
-MAX_PRICE = _get_float("MAX_PRICE", 5000.0)
+MIN_PRICE = _get_float("MIN_PRICE", 0.50)
+MAX_PRICE = _get_float("MAX_PRICE", 50000.0)
 
-# Desconto percentual mínimo para aceitar uma promoção
-MIN_DISCOUNT_PERCENT = _get_int("MIN_DISCOUNT_PERCENT", 10)
+# Desconto percentual mínimo para aceitar uma promoção (padrão 5% para capturar ofertas de dígito único e filtrar variações espúrias)
+MIN_DISCOUNT_PERCENT = _get_int("MIN_DISCOUNT_PERCENT", 5)
 
 # Score mínimo de qualidade para aprovação (0-100)
 MIN_QUALITY_SCORE = _get_int("MIN_QUALITY_SCORE", 40)
@@ -88,7 +88,7 @@ MIN_QUALITY_SCORE = _get_int("MIN_QUALITY_SCORE", 40)
 REQUIRE_VALID_IMAGE = os.getenv("REQUIRE_VALID_IMAGE", "false").lower() in ("true", "1", "yes")
 
 # Categorias, lojas e palavras-chave bloqueadas
-raw_blocked_cats = os.getenv("BLOCKED_CATEGORIES", "adulto,jogos de azar,armas,tabaco,drogas,pirataria,apostas,cassino")
+raw_blocked_cats = os.getenv("BLOCKED_CATEGORIES", "adulto,jogos de azar,armas,tabaco,drogas,pirataria,apostas")
 BLOCKED_CATEGORIES: List[str] = [c.strip().lower() for c in raw_blocked_cats.split(",") if c.strip()]
 
 raw_blocked_stores = os.getenv("BLOCKED_STORES", "loja_duvidosa,golpe_shop,fake_store")
@@ -96,7 +96,7 @@ BLOCKED_STORES: List[str] = [s.strip().lower() for s in raw_blocked_stores.split
 
 raw_blocked_kws = os.getenv(
     "BLOCKED_KEYWORDS",
-    "réplica,replica,falso,pirata,cassino,aposta,bet365,blaze,tigrinho,fortune tiger,18+",
+    "réplica,replica,falso,pirata,cassino online,jogo do cassino,aposta esportiva,bet365,blaze,tigrinho,fortune tiger,18+",
 )
 BLOCKED_KEYWORDS: List[str] = [k.strip().lower() for k in raw_blocked_kws.split(",") if k.strip()]
 

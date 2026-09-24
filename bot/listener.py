@@ -293,7 +293,7 @@ async def run_channel_poller(client, channels: List[str], interval: float = 5.0)
                     last_id = last_processed_ids.get(entity.id, 0)
 
                     new_messages = []
-                    async for m in client.iter_messages(entity, limit=5, min_id=last_id):
+                    async for m in client.iter_messages(entity, limit=20, min_id=last_id):
                         if m.text and m.text.strip():
                             new_messages.append(m)
 
