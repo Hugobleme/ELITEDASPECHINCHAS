@@ -159,25 +159,62 @@ def create_telegram_client():
 last_processed_ids: Dict[int, int] = {}
 
 
-async def run_channel_poller(client, channels: List[str], interval: float = 8.0):
+async def run_channel_poller(client, channels: List[str], interval: float = 5.0):
     """
     Poller ativo concorrente que garante captura imediata em canais broadcast do Telegram.
     Complementa os eventos push do MTProto para garantir latência mínima e 100% de entrega.
+    Na inicialização, processa mensagens recentes (até 3 horas) para evitar perda de promoções
+    durante restarts ou deploys.
     """
+    from datetime import datetime, timezone
+
     logger.info(f"[Poller] Iniciando verificação ativa periódica (intervalo: {interval}s) para: {channels}")
 
-    # Inicializa last_seen para os canais
+    # Inicializa e recupera mensagens recentes dos canais para não perder nenhuma postagem
     for ch in channels:
         clean_ch = ch.strip()
         if not clean_ch:
             continue
         try:
             entity = await client.get_entity(clean_ch)
-            async for m in client.iter_messages(entity, limit=1):
-                last_processed_ids[entity.id] = m.id
-                logger.info(f"[Poller] Canal {clean_ch} sincronizado no último post ID: {m.id}")
+            recent_msgs = []
+            async for m in client.iter_messages(entity, limit=5):
+                if m.text and m.text.strip():
+                    recent_msgs.append(m)
+
+            if recent_msgs:
+                max_id = max(m.id for m in recent_msgs)
+                last_processed_ids[entity.id] = max_id
+                logger.info(f"[Poller] Canal {clean_ch} sincronizado no último post ID: {max_id}")
+
+                # Processa os posts recentes (últimas 3 horas) em ordem cronológica
+                now_utc = datetime.now(timezone.utc)
+                for msg in reversed(recent_msgs):
+                    if msg.date:
+                        msg_date = msg.date if msg.date.tzinfo else msg.date.replace(tzinfo=timezone.utc)
+                        if (now_utc - msg_date).total_seconds() > 10800:
+                            continue
+
+                    source_name = getattr(entity, "username", None)
+                    if source_name:
+                        source_name = f"@{source_name}"
+                    else:
+                        source_name = getattr(entity, "title", clean_ch)
+
+                    logger.info(f"[Poller Startup] 📥 Processando post recente de {source_name} (ID: {msg.id})")
+                    entities_links = extract_entities_urls(msg)
+
+                    payload = {
+                        "text": msg.text,
+                        "telegram_msg_id": msg.id,
+                        "source_name": source_name,
+                        "entities_links": entities_links,
+                        "media_url": None,
+                    }
+                    process_incoming_payload(payload)
+
         except Exception as e:
-            logger.debug(f"[Poller] Erro ao sincronizar inicial do canal {clean_ch}: {e}")
+            logger.warning(f"[Poller] Erro ao sincronizar inicial do canal {clean_ch}: {e}")
 
     while True:
         try:

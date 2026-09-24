@@ -111,7 +111,7 @@ AUTO_APPROVE_ENABLED = os.getenv("AUTO_APPROVE_ENABLED", "false").lower() in ("t
 AUTO_APPROVE_DISCOUNT_THRESHOLD = _get_int("AUTO_APPROVE_DISCOUNT_THRESHOLD", 0)
 
 # Configuração de modo simulado do Bot e Mocks
-SIMULATED_BOT_ENABLED = os.getenv("SIMULATED_BOT_ENABLED", "true").lower() in ("true", "1", "yes")
+SIMULATED_BOT_ENABLED = os.getenv("SIMULATED_BOT_ENABLED", "false").lower() in ("true", "1", "yes")
 SIMULATED_PUBLICATIONS_FILE = os.getenv("SIMULATED_PUBLICATIONS_FILE", "simulated_publications.json")
 USE_MOCK_DATA = os.getenv("USE_MOCK_DATA", "false").lower() in ("true", "1", "yes")
 

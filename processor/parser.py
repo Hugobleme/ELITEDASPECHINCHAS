@@ -370,6 +370,39 @@ def extract_all_urls(text: str) -> List[str]:
     return urls
 
 
+def extract_product_url(text: str) -> Optional[str]:
+    """
+    Extrai a URL principal do produto no texto.
+    Prioriza links associados a marcadores de produto (como 🛒, 'link do produto', 'compre aqui', etc.)
+    para evitar selecionar acidentalmente links de resgate de cupom ou regras.
+    """
+    if not text:
+        return None
+
+    lines = text.split("\n")
+    product_markers = [
+        "🛒", "link do produto", "link do item", "compre aqui", "pegue aqui",
+        "achado", "link 👇", "oferta 👇", "acesse aqui", "veja aqui", "produto 👇"
+    ]
+    for line in lines:
+      line_lower = line.lower()
+      if any(marker in line_lower for marker in product_markers):
+          url = extract_first_url(line)
+          if url and is_valid_url(url):
+              return url
+
+    all_urls = extract_all_urls(text)
+    if len(all_urls) > 1:
+        for line in lines:
+            line_lower = line.lower()
+            if "cupom" not in line_lower and "resgate" not in line_lower and ("http://" in line or "https://" in line):
+                url = extract_first_url(line)
+                if url and is_valid_url(url):
+                    return url
+
+    return extract_first_url(text)
+
+
 def extract_image_url(text: str) -> Optional[str]:
     """
     Detecta URL direta de imagem no texto (formatos comuns de imagem ou tags markdown).
@@ -559,9 +592,12 @@ def parse_telegram_message(
     if not text:
         text = ""
 
-    # 1. Extração de Links válidos
+    # 1. Extração de Links válidos (prioriza link específico do produto sobre links de cupom)
     original_link = None
-    if entities_links and len(entities_links) > 0:
+    product_candidate = extract_product_url(text)
+    if product_candidate and is_valid_url(product_candidate):
+        original_link = product_candidate.strip()
+    elif entities_links and len(entities_links) > 0:
         for link in entities_links:
             if is_valid_url(link):
                 original_link = link.strip()
