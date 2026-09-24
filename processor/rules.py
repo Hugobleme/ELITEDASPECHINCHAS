@@ -192,25 +192,28 @@ def is_duplicate(
     """
     Verifica se a oferta já foi capturada por telegram_msg_id ou por título/preço nas últimas horas.
     """
-    if telegram_msg_id:
-        existing_msg = db.query(Offer).filter(Offer.telegram_msg_id == telegram_msg_id).first()
-        if existing_msg:
-            return True, f"Mensagem duplicada já capturada (telegram_msg_id: {telegram_msg_id})"
+    try:
+        if telegram_msg_id:
+            existing_msg = db.query(Offer).filter(Offer.telegram_msg_id == telegram_msg_id).first()
+            if existing_msg:
+                return True, f"Mensagem duplicada já capturada (telegram_msg_id: {telegram_msg_id})"
 
-    cutoff_time = datetime.now(timezone.utc) - timedelta(hours=hours)
-    recent_offers = (
-        db.query(Offer)
-        .filter(
-            Offer.created_at >= cutoff_time,
-            Offer.price_current.between(price_current - 1.0, price_current + 1.0),
+        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=hours)
+        recent_offers = (
+            db.query(Offer)
+            .filter(
+                Offer.created_at >= cutoff_time,
+                Offer.price_current.between(price_current - 1.0, price_current + 1.0),
+            )
+            .all()
         )
-        .all()
-    )
 
-    current_hash = generate_offer_hash(title, price_current)
-    for off in recent_offers:
-        if generate_offer_hash(off.title, off.price_current) == current_hash:
-            return True, f"Oferta idêntica encontrada nas últimas {hours}h (ID existente: {off.id})"
+        current_hash = generate_offer_hash(title, price_current)
+        for off in recent_offers:
+            if generate_offer_hash(off.title, off.price_current) == current_hash:
+                return True, f"Oferta idêntica encontrada nas últimas {hours}h (ID existente: {off.id})"
+    except Exception as db_err:
+        logger.warning(f"[Rules] Consulta de duplicidade no banco ignorada devido a erro de conexão: {db_err}")
 
     return False, "Oferta única"
 
@@ -226,21 +229,24 @@ def check_rate_limit(
     if not source_name:
         return True
 
-    one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
-    count = (
-        db.query(Offer)
-        .filter(
-            Offer.source_name == source_name,
-            Offer.created_at >= one_hour_ago,
+    try:
+        one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
+        count = (
+            db.query(Offer)
+            .filter(
+                Offer.source_name == source_name,
+                Offer.created_at >= one_hour_ago,
+            )
+            .count()
         )
-        .count()
-    )
 
-    if count >= max_per_hour:
-        logger.warning(
-            f"[Rules] Rate limit atingido para fonte '{source_name}': {count}/{max_per_hour} ofertas/h"
-        )
-        return False
+        if count >= max_per_hour:
+            logger.warning(
+                f"[Rules] Rate limit atingido para fonte '{source_name}': {count}/{max_per_hour} ofertas/h"
+            )
+            return False
+    except Exception as db_err:
+        logger.warning(f"[Rules] Verificação de rate limit no banco ignorada devido a erro: {db_err}")
 
     return True
 
