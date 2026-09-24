@@ -162,6 +162,18 @@ def clean_text_title(raw_text: str) -> str:
     if not lines:
         return ""
 
+    # 1. Prioriza linha com marcador explícito de especificação do produto (ex: "•⁠ Caixa de Som...", "• Projetor...")
+    for line in lines:
+        if line.startswith(("•", "- ", "* ")) or "•" in line[:3]:
+            candidate = line.lstrip("•\u2060\ufeff-* \t").strip()
+            candidate = re.sub(r"^[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒🏆🎉📌\s\-•*`#]+", "", candidate).strip()
+            if (
+                len(candidate) >= 8
+                and not re.search(r"^(cupom|frete|link|compras|resgate|atenção)", candidate, re.IGNORECASE)
+                and not re.search(r"^r?\$?\s*\d+", candidate, re.IGNORECASE)
+            ):
+                return candidate
+
     # Ignora linhas que são puramente URLs ou cabeçalhos de alerta sem produto
     first_line = lines[0]
     idx = 0
@@ -277,7 +289,7 @@ def extract_prices_and_discount(text: str) -> Tuple[float, float, int]:
 
     # 2. Busca por preço original 'De: R$ XXX', 'De R$ XXX' ou 'Era: R$ XXX'
     de_match = re.search(
-        r"(?:de|de:|era|era:)\s*R?\$?\s*([\d\.,]+)",
+        r"\b(?:de|era):?\s*(?:R\$\s*)?([\d\.,]+)(?!\s*[a-zA-Z])",
         sanitized_text,
         re.IGNORECASE,
     )
@@ -302,7 +314,7 @@ def extract_prices_and_discount(text: str) -> Tuple[float, float, int]:
         all_r_prices = re.findall(r"R\$\s*([\d\.,]+)", sanitized_text, re.IGNORECASE)
         parsed_prices = [p for p in (parse_price(x) for x in all_r_prices) if p and p > 1.0]
         if parsed_prices:
-            if price_original:
+            if price_original and price_original > 0:
                 # O preço atual deve ser menor que o original se houver desconto
                 candidates = [p for p in parsed_prices if p < price_original]
                 price_current = candidates[0] if candidates else parsed_prices[-1]
@@ -317,6 +329,10 @@ def extract_prices_and_discount(text: str) -> Tuple[float, float, int]:
             price_current = parsed_isolated[0]
 
     # 6. Reconciliação dos preços e desconto
+    if price_original and price_current and price_original <= price_current:
+        price_original = price_current
+        discount_pct = 0
+
     if price_current > 0 and discount_pct > 0 and not price_original:
         price_original = round(price_current / (1 - (discount_pct / 100)), 2)
 
