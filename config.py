@@ -37,7 +37,7 @@ TELEGRAM_SESSION_NAME = os.getenv("TELEGRAM_SESSION_NAME", "elitedaspechinchas_u
 TELEGRAM_STRING_SESSION = os.getenv("TELEGRAM_STRING_SESSION", "")
 
 # Bot Oficial para postagem no canal próprio (obtido no @BotFather)
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "7835051187:AAH5yVihJzEmTYorqOCHRqtFJ3JrZNbzg-g")
 
 # Canal ou grupo oficial de destino das promoções (ex: @ElitedasPechinchas ou -100123456789)
 TARGET_CHANNEL_ID = os.getenv("TARGET_CHANNEL_ID", "@ElitedasPechinchas")

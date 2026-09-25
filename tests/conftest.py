@@ -8,6 +8,8 @@ from sqlalchemy.pool import StaticPool
 # Configura ambiente como 'test' para os testes automatizados
 os.environ.setdefault("ENVIRONMENT", "test")
 os.environ.setdefault("AUTO_APPROVE_ENABLED", "false")
+os.environ["TELEGRAM_BOT_TOKEN"] = ""
+os.environ["SIMULATED_BOT_ENABLED"] = "true"
 
 from database.connection import Base, get_db
 from database.models import User, Offer

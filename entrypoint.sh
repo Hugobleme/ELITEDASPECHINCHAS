@@ -55,13 +55,13 @@ case "$COMMAND" in
         echo "🌐 Iniciando servidor FastAPI Uvicorn na porta 8000..."
         exec uvicorn api.main:app --host 0.0.0.0 --port 8000
         ;;
-    worker)
+    worker|celery-worker)
         wait_for_postgres
         wait_for_redis
         echo "⚙️ Iniciando Celery Worker (processor.celery_app)..."
         exec celery -A processor.celery_app worker --loglevel=info
         ;;
-    listener)
+    listener|telegram-bot|bot)
         wait_for_postgres
         wait_for_redis
         echo "🤖 Iniciando Automação Telethon Userbot (main.py)..."

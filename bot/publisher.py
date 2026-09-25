@@ -77,8 +77,8 @@ def publish_to_telegram(
         return sim_result
 
     api_url = f"https://api.telegram.org/bot{token}"
-
-    with httpx.Client(timeout=15.0) as client:
+    timeout_config = httpx.Timeout(30.0, connect=15.0)
+    with httpx.Client(timeout=timeout_config) as client:
         # Tentativa 1: Enviar como Foto com Legenda (limite 1024 caracteres)
         if image_url and image_url.startswith("http"):
             try:
