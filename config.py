@@ -52,9 +52,12 @@ SOURCE_CHANNELS: List[str] = [
 # ------------------------------------------------------------------------------
 # 2. Tags e Regras de Afiliados por Loja
 # ------------------------------------------------------------------------------
+MERCADOLIVRE_TAG = os.getenv("MERCADOLIVRE_TAG", "elitedaspechinchas")
+MERCADOLIVRE_TOOL_ID = os.getenv("MERCADOLIVRE_TOOL_ID", "17470999")
+
 DEFAULT_AFFILIATE_TAGS = {
     "Amazon": os.getenv("AMAZON_TAG", ""),
-    "Mercado Livre": os.getenv("MERCADOLIVRE_TAG", ""),
+    "Mercado Livre": MERCADOLIVRE_TAG,
     "Magazine Luiza": os.getenv("MAGALU_TAG", ""),
     "Kabum": os.getenv("KABUM_TAG", ""),
     "Shopee": os.getenv("SHOPEE_TAG", ""),
@@ -64,7 +67,7 @@ DEFAULT_AFFILIATE_TAGS = {
 # Parâmetros de URL utilizados por cada loja
 AFFILIATE_PARAM_NAMES = {
     "Amazon": "tag",
-    "Mercado Livre": "tag",
+    "Mercado Livre": "matt_word",
     "Magazine Luiza": "parceiro",
     "Kabum": "tag",
     "Shopee": "af_siteid",

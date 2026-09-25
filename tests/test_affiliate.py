@@ -41,9 +41,12 @@ def test_replace_amazon_link_preserves_utm():
 
 def test_replace_mercadolivre_link():
     url = "https://www.mercadolivre.com.br/produto/p/MLB123456?matt_tool=999&p=antigo"
-    new_url = replace_mercadolivre_link(url, "meu_afiliado_ml")
+    new_url = replace_mercadolivre_link(url, "meu_afiliado_ml", tool_id="17470999")
     assert "tag=meu_afiliado_ml" in new_url
-    assert "matt_tool" not in new_url
+    assert "matt_word=meu_afiliado_ml" in new_url
+    assert "matt_tool=17470999" in new_url
+    assert "matt_tool=999" not in new_url
+    assert "p=antigo" not in new_url
 
 
 def test_replace_magalu_link():

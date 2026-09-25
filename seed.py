@@ -167,6 +167,10 @@ def seed_database(session: Optional[Session] = None):
                 db.add(rule)
                 rules_count += 1
                 print(f"  + Regra de afiliado criada: {store_name} ({param})")
+            elif tag and rule.affiliate_tag != tag:
+                rule.affiliate_tag = tag
+                rule.tag_param = param
+                print(f"  ~ Regra de afiliado atualizada: {store_name} -> {tag} ({param})")
 
         db.commit()
 

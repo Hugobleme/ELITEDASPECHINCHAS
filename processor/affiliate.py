@@ -5,7 +5,7 @@ from typing import Optional, Dict, Any
 from sqlalchemy.orm import Session
 
 from database.models import AffiliateRule
-from config import DEFAULT_AFFILIATE_TAGS, AFFILIATE_PARAM_NAMES
+from config import DEFAULT_AFFILIATE_TAGS, AFFILIATE_PARAM_NAMES, MERCADOLIVRE_TOOL_ID
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +17,34 @@ PRESERVED_UTM_PARAMS = [
     "utm_term",
     "utm_content",
 ]
+
+
+def extract_mercadolivre_product_url(url: str, timeout: float = 4.0) -> str:
+    """
+    Se a URL for um link social/vitrine ou encurtado do Mercado Livre (ex: meli.la ou /social/),
+    acessa o HTML e extrai o link direto canônico do anúncio (/p/MLB... ou produto.mercadolivre.com.br/MLB-...).
+    Garante que o link direcione diretamente ao item real sem depender do perfil/token do canal de origem.
+    """
+    if not url or not ("meli.la" in url or "/social/" in url):
+        return url
+
+    try:
+        import httpx
+        from bs4 import BeautifulSoup
+        with httpx.Client(follow_redirects=True, timeout=timeout, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}) as client:
+            resp = client.get(url)
+            if resp.status_code < 400:
+                soup = BeautifulSoup(resp.text, "html.parser")
+                for a in soup.find_all("a", href=True):
+                    href = a["href"]
+                    if "/p/MLB" in href or "produto.mercadolivre.com.br/MLB" in href:
+                        clean_href = href.split("?")[0].split("#")[0]
+                        logger.info(f"[Affiliate ML] Produto canônico extraído com sucesso: {url} -> {clean_href}")
+                        return clean_href
+    except Exception as e:
+        logger.warning(f"[Affiliate ML] Não foi possível extrair produto canônico de {url}: {e}")
+
+    return url
 
 
 def extract_amazon_asin(url: str) -> Optional[str]:
@@ -121,20 +149,36 @@ def replace_amazon_link(url: str, tag: str) -> str:
     return urllib.parse.urlunparse(parsed._replace(query=new_query))
 
 
-def replace_mercadolivre_link(url: str, tag: str) -> str:
+def replace_mercadolivre_link(url: str, tag: str, tool_id: Optional[str] = None) -> str:
     """
-    Injeta tag de afiliado do Mercado Livre limpando parâmetros de terceiros.
+    Injeta credenciais oficiais de afiliado do Mercado Livre (matt_word e matt_tool)
+    limpando parâmetros e tokens de rastreamento de terceiros.
     """
+    if not url:
+        return url
+
+    # Converte link social/meli.la para URL direta do produto
+    url = extract_mercadolivre_product_url(url)
+
+    effective_tool_id = tool_id or MERCADOLIVRE_TOOL_ID or "17470999"
+
     parsed = urllib.parse.urlparse(url)
     query_params = urllib.parse.parse_qs(parsed.query)
 
     # Remove identificadores antigos de afiliados terceiros
-    for key in ["p", "tag", "matt_tool", "matt_word", "tracking_id"]:
+    for key in [
+        "p", "tag", "matt_tool", "matt_word", "matt_tool_id", "tracking_id",
+        "ref", "forceInApp", "polycard_client", "reco_backend", "reco_client",
+        "reco_item_pos", "reco_backend_type", "reco_id", "wid", "sid", "c_id", "c_uid"
+    ]:
         query_params.pop(key, None)
 
+    query_params["matt_tool"] = [effective_tool_id]
+    query_params["matt_word"] = [tag]
     query_params["tag"] = [tag]
+
     new_query = urllib.parse.urlencode(query_params, doseq=True)
-    return urllib.parse.urlunparse(parsed._replace(query=new_query))
+    return urllib.parse.urlunparse(parsed._replace(query=new_query, fragment=""))
 
 
 def replace_magalu_link(url: str, tag: str) -> str:
