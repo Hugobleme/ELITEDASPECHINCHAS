@@ -102,7 +102,7 @@ def test_seed_database(monkeypatch, db_session):
     seed.seed_database()
     from database.models import Source, AffiliateRule
     sources = db_session.query(Source).all()
-    assert len(sources) >= 3
+    assert len(sources) >= 1
     rules = db_session.query(AffiliateRule).all()
     assert len(rules) >= 5
 

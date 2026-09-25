@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import asyncio
+from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 
 from config import (
@@ -247,12 +248,6 @@ async def run_channel_poller(client, channels: List[str], interval: float = 5.0)
                 if m.text and m.text.strip():
                     recent_msgs.append(m)
 
-            if recent_msgs:
-                max_id = max(m.id for m in recent_msgs)
-                last_processed_ids[entity.id] = max_id
-                logger.info(f"[Poller] Canal {clean_ch} sincronizado no último post ID: {max_id}")
-
-                # Processa os posts recentes (últimas 3 horas) em ordem cronológica
                 now_utc = datetime.now(timezone.utc)
                 for msg in reversed(recent_msgs):
                     if msg.date:
@@ -276,7 +271,14 @@ async def run_channel_poller(client, channels: List[str], interval: float = 5.0)
                         "entities_links": entities_links,
                         "media_url": None,
                     }
-                    process_incoming_payload(payload)
+                    try:
+                        await asyncio.to_thread(process_incoming_payload, payload)
+                    except Exception as poll_err:
+                        logger.error(f"[Poller Startup] Erro ao processar mensagem {msg.id}: {poll_err}", exc_info=True)
+
+                max_id = max(m.id for m in recent_msgs)
+                last_processed_ids[entity.id] = max_id
+                logger.info(f"[Poller] Canal {clean_ch} sincronizado no último post ID: {max_id}")
 
         except Exception as e:
             logger.warning(f"[Poller] Erro ao sincronizar inicial do canal {clean_ch}: {e}")
@@ -316,7 +318,10 @@ async def run_channel_poller(client, channels: List[str], interval: float = 5.0)
                             "entities_links": entities_links,
                             "media_url": None,
                         }
-                        process_incoming_payload(payload)
+                        try:
+                            await asyncio.to_thread(process_incoming_payload, payload)
+                        except Exception as poll_loop_err:
+                            logger.error(f"[Poller] Erro ao processar mensagem {msg.id}: {poll_loop_err}", exc_info=True)
 
                 except Exception as ch_err:
                     logger.debug(f"[Poller] Erro ao verificar {clean_ch}: {ch_err}")
@@ -389,7 +394,10 @@ async def setup_event_handlers(client, channels: List[str]):
             "media_url": None,
         }
 
-        process_incoming_payload(payload)
+        try:
+            await asyncio.to_thread(process_incoming_payload, payload)
+        except Exception as evt_err:
+            logger.error(f"[Listener] Erro ao processar evento de mensagem {msg.id}: {evt_err}", exc_info=True)
 
 
 async def start_userbot(client=None):

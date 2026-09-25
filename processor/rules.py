@@ -304,13 +304,12 @@ def is_source_authorized(
 def determine_initial_status(discount_pct: int, quality_score: int = 50) -> str:
     """
     Define o status inicial da oferta:
-    - 'published': se auto-aprovação estiver ligada e a oferta for qualificada
-    - 'pending': padrão seguro para curadoria humana
+    - 'published': se auto-aprovação estiver ligada (AUTO_APPROVE_ENABLED=True)
+    - 'pending': se auto-aprovação estiver desligada para curadoria humana
     """
-    if AUTO_APPROVE_ENABLED:
-        if discount_pct >= AUTO_APPROVE_DISCOUNT_THRESHOLD or quality_score >= 40 or discount_pct == 0:
-            return "published"
-    return "pending"
+    if not AUTO_APPROVE_ENABLED:
+        return "pending"
+    return "published"
 
 
 def evaluate_rules(

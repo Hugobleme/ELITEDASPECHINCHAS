@@ -7,6 +7,7 @@ from sqlalchemy.pool import StaticPool
 
 # Configura ambiente como 'test' para os testes automatizados
 os.environ.setdefault("ENVIRONMENT", "test")
+os.environ.setdefault("AUTO_APPROVE_ENABLED", "false")
 
 from database.connection import Base, get_db
 from database.models import User, Offer
