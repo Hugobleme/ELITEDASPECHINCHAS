@@ -207,7 +207,7 @@ def is_duplicate(
             if existing_msg:
                 return True, f"Mensagem duplicada já capturada (telegram_msg_id: {telegram_msg_id})"
 
-        cutoff_time = datetime.now(timezone.utc) - timedelta(hours=hours)
+        cutoff_time = (datetime.now(timezone.utc) - timedelta(hours=hours)).replace(tzinfo=None)
         recent_offers = (
             db.query(Offer)
             .filter(
@@ -239,7 +239,7 @@ def check_rate_limit(
         return True
 
     try:
-        one_hour_ago = datetime.now(timezone.utc) - timedelta(hours=1)
+        one_hour_ago = (datetime.now(timezone.utc) - timedelta(hours=1)).replace(tzinfo=None)
         count = (
             db.query(Offer)
             .filter(
@@ -267,6 +267,7 @@ def is_source_authorized(
 ) -> bool:
     """
     Verifica se o canal ou grupo de origem está cadastrado e ativo no banco ou na configuração.
+    Suporta correspondência por handle (@pechinchou) ou título parcial ([CANAL] Pechinchou Promoções).
     """
     if not source_name or not str(source_name).strip():
         if allow_internal_test:
@@ -283,7 +284,8 @@ def is_source_authorized(
 
     norm_clean = clean_name.lstrip("@").lower()
     for configured in SOURCE_CHANNELS:
-        if configured.lstrip("@").lower() == norm_clean:
+        norm_conf = configured.lstrip("@").lower()
+        if norm_conf == norm_clean or norm_conf in norm_clean or norm_clean in norm_conf:
             return True
 
     try:

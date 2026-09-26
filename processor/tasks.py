@@ -255,7 +255,7 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
             }
 
         # DEDUPLICAÇÃO DE CONCORRÊNCIA: Verifica se oferta idêntica foi publicada nas últimas 6h
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=6)
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=6)).replace(tzinfo=None)
         identical_published = (
             db.query(Offer)
             .filter(
@@ -311,6 +311,11 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
             reply_markup=reply_markup,
             parse_mode="HTML",
         )
+
+        if not pub_result.get("success"):
+            err = pub_result.get("error", "Falha desconhecida na Telegram Bot API")
+            logger.error(f"[Publish Task] ❌ Falha ao publicar oferta {offer.id} no Telegram: {err}")
+            raise Exception(f"Erro ao publicar no canal: {err}")
 
         offer.status = "published"
         offer.published_at = datetime.now(timezone.utc)

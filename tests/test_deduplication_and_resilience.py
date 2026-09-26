@@ -93,3 +93,24 @@ def test_process_incoming_payload_no_celery_dispatch_on_success(monkeypatch):
     assert res["status"] == "success"
     # O Celery NÃO deve ser chamado pois a execução direta sucedeu!
     mock_celery_delay.assert_not_called()
+
+
+def test_incoming_payload_processed_normally_once():
+    """Garante que a primeira mensagem com telegram_msg_id é aceita e processada, e apenas a segunda é ignorada."""
+    calls = []
+    def mock_proc(payload):
+        calls.append(payload["telegram_msg_id"])
+        return {"status": "success", "offer_id": "test-1"}
+
+    with patch("bot.listener.process_telegram_message", side_effect=mock_proc):
+        p1 = {"telegram_msg_id": 55443322, "source_name": "@pechinchou", "text": "Teste"}
+        r1 = process_incoming_payload(p1)
+        assert r1["status"] == "success"
+        assert len(calls) == 1
+
+        # Segunda chamada com o mesmo ID deve ser ignorada
+        r2 = process_incoming_payload(p1)
+        assert r2["status"] == "skipped"
+        assert r2["reason"] == "already_processing_or_processed"
+        assert len(calls) == 1
+

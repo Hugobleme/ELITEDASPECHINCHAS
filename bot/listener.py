@@ -13,6 +13,8 @@ from config import (
     SOURCE_CHANNELS,
 )
 from processor.tasks import process_telegram_message
+from database.connection import SessionLocal
+from database.models import Offer
 
 import threading
 import time
@@ -255,32 +257,64 @@ last_processed_ids: Dict[int, int] = {}
 async def run_channel_poller(client, channels: List[str], interval: float = 8.0):
     """
     Poller ativo concorrente que garante captura em canais broadcast do Telegram.
-    Sincroniza os IDs mais recentes na inicialização e monitora continuamente novas postagens.
+    Sincroniza os IDs na inicialização, recupera ofertas recentes e monitora continuamente novas postagens.
     """
     logger.info(f"[Poller] Iniciando verificação ativa periódica (intervalo: {interval}s) para: {channels}")
 
-    # Inicializa sincronizando os IDs mais recentes de cada canal para não reprocessar postagens antigas no boot
+    # Inicializa sincronizando os canais e processa mensagens recentes (últimos 30 min) que não estejam no banco
     for ch in channels:
         clean_ch = ch.strip()
         if not clean_ch:
             continue
         try:
             entity = await client.get_entity(clean_ch)
-            latest_id = 0
-            async for m in client.iter_messages(entity, limit=1):
-                latest_id = m.id
-                break
-
             ent_id = getattr(entity, "id", None)
-            if ent_id:
-                last_processed_ids[ent_id] = latest_id
-                # Telethon channel peer IDs may also be referenced with -100 prefix or signed
-                last_processed_ids[-ent_id] = latest_id
+
+            recent_msgs = []
+            async for m in client.iter_messages(entity, limit=10):
+                recent_msgs.append(m)
+
+            if recent_msgs:
+                max_id = max(m.id for m in recent_msgs)
+                if ent_id:
+                    last_processed_ids[ent_id] = max_id
+                    last_processed_ids[-ent_id] = max_id
+                    try:
+                        last_processed_ids[int(f"-100{ent_id}")] = max_id
+                    except Exception:
+                        pass
+
+                # Processa ofertas dos últimos 30 minutos pós-boot se ainda não persistidas
+                now_utc = datetime.now(timezone.utc)
+                db = SessionLocal()
                 try:
-                    last_processed_ids[int(f"-100{ent_id}")] = latest_id
-                except Exception:
-                    pass
-            logger.info(f"[Poller Startup] Canal {clean_ch} sincronizado no último post ID: {latest_id}")
+                    for msg in reversed(recent_msgs):
+                        if not msg.text or not msg.text.strip():
+                            continue
+                        if msg.date:
+                            msg_date = msg.date if msg.date.tzinfo else msg.date.replace(tzinfo=timezone.utc)
+                            if (now_utc - msg_date).total_seconds() > 1800:
+                                continue
+
+                        exists = db.query(Offer).filter(Offer.telegram_msg_id == msg.id).first()
+                        if exists:
+                            continue
+
+                        source_name = f"@{entity.username}" if getattr(entity, "username", None) else (clean_ch if clean_ch.startswith("@") else getattr(entity, "title", clean_ch))
+                        logger.info(f"[Poller Startup] 📥 Processando post recente pós-boot de {source_name} (ID: {msg.id})")
+                        entities_links = extract_entities_urls(msg)
+                        payload = {
+                            "text": msg.text,
+                            "telegram_msg_id": msg.id,
+                            "source_name": source_name,
+                            "entities_links": entities_links,
+                            "media_url": None,
+                        }
+                        await asyncio.to_thread(process_incoming_payload, payload)
+                finally:
+                    db.close()
+
+                logger.info(f"[Poller Startup] Canal {clean_ch} sincronizado no último post ID: {max_id}")
         except Exception as e:
             logger.warning(f"[Poller] Erro ao sincronizar inicial do canal {clean_ch}: {e}")
 
@@ -305,15 +339,7 @@ async def run_channel_poller(client, channels: List[str], interval: float = 8.0)
                         if ent_id:
                             last_processed_ids[ent_id] = max(last_processed_ids.get(ent_id, 0), msg.id)
 
-                        source_name = getattr(entity, "username", None)
-                        if source_name:
-                            source_name = f"@{source_name}"
-                        else:
-                            source_name = getattr(entity, "title", clean_ch)
-
-                        # Evita reprocessamento concorrente entre Poller e NewMessage
-                        if not should_process_msg_id(msg.id):
-                            continue
+                        source_name = f"@{entity.username}" if getattr(entity, "username", None) else (clean_ch if clean_ch.startswith("@") else getattr(entity, "title", clean_ch))
 
                         logger.info(f"[Poller] 📥 Nova mensagem descoberta de {source_name} (ID: {msg.id})")
                         entities_links = extract_entities_urls(msg)
@@ -351,6 +377,7 @@ async def setup_event_handlers(client, channels: List[str]):
     logger.info(f"Configurando escuta para os canais-fonte: {channels}")
 
     resolved_chats = []
+    chat_id_to_handle: Dict[Any, str] = {}
     for ch in channels:
         clean_ch = ch.strip()
         if not clean_ch:
@@ -363,6 +390,14 @@ async def setup_event_handlers(client, channels: List[str]):
             except Exception as join_err:
                 logger.info(f"[Listener] Canal {clean_ch} verificado/acessível: {join_err}")
             resolved_chats.append(entity)
+            ent_id = getattr(entity, "id", None)
+            if ent_id:
+                chat_id_to_handle[ent_id] = clean_ch
+                chat_id_to_handle[-ent_id] = clean_ch
+                try:
+                    chat_id_to_handle[int(f"-100{ent_id}")] = clean_ch
+                except Exception:
+                    pass
         except Exception as ent_err:
             logger.warning(f"[Listener] Canal {clean_ch} não encontrado ou inacessível: {ent_err}")
 
@@ -378,11 +413,9 @@ async def setup_event_handlers(client, channels: List[str]):
             return
 
         chat = await event.get_chat()
-        source_name = getattr(chat, "username", None)
-        if source_name:
-            source_name = f"@{source_name}"
-        else:
-            source_name = getattr(chat, "title", f"chat_{event.chat_id}")
+        chat_id = getattr(chat, "id", None)
+        username = getattr(chat, "username", None)
+        source_name = f"@{username}" if username else chat_id_to_handle.get(chat_id, chat_id_to_handle.get(event.chat_id, getattr(chat, "title", f"chat_{event.chat_id}")))
 
         logger.info(f"[Listener] 📥 Nova mensagem capturada de {source_name} (ID: {msg.id})")
 
@@ -397,11 +430,6 @@ async def setup_event_handlers(client, channels: List[str]):
                 except ValueError:
                     pass
             last_processed_ids[base_id] = max(last_processed_ids.get(base_id, 0), msg.id)
-
-        # Evita reprocessamento concorrente entre NewMessage e Poller
-        if not should_process_msg_id(msg.id):
-            logger.info(f"[Listener] Mensagem ID {msg.id} já capturada pelo Poller. Ignorando evento concorrente.")
-            return
 
         entities_links = extract_entities_urls(msg)
 
@@ -453,8 +481,10 @@ async def start_userbot(client=None):
             username = f"@{me.username}" if getattr(me, "username", None) else (me.phone or "sem_username")
             logger.info(f"✅ Userbot conectado com sucesso como: {me.first_name} ({username})")
 
-            await setup_event_handlers(client, SOURCE_CHANNELS)
-            logger.info(f"🎯 Monitoramento ativo em tempo real em: {', '.join(SOURCE_CHANNELS)}")
+            if not getattr(client, "_handlers_registered", False):
+                await setup_event_handlers(client, SOURCE_CHANNELS)
+                client._handlers_registered = True
+                logger.info(f"🎯 Monitoramento ativo em tempo real em: {', '.join(SOURCE_CHANNELS)}")
 
             # Inicia o poller concorrente contínuo
             poller_task = asyncio.create_task(run_channel_poller(client, SOURCE_CHANNELS, interval=8.0))
