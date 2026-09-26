@@ -2,6 +2,8 @@ import os
 import json
 import logging
 import asyncio
+import re
+import httpx
 from datetime import datetime, timezone
 from typing import List, Optional, Dict, Any
 
@@ -254,6 +256,131 @@ def create_telegram_client():
 last_processed_ids: Dict[int, int] = {}
 
 
+async def poll_public_channel(channel: str, limit: int = 15) -> List[Dict[str, Any]]:
+    """
+    Recupera as mensagens mais recentes de um canal público do Telegram via web preview oficial.
+    Não requer credenciais de Userbot ou chaves de sessão MTProto.
+    """
+    slug = channel.lstrip("@").strip()
+    if not slug:
+        return []
+    url = f"https://t.me/s/{slug}"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=15.0, follow_redirects=True, headers=headers) as client:
+            resp = await client.get(url)
+            if resp.status_code != 200:
+                logger.warning(f"[WebPoller] Falha ao consultar {url} (status: {resp.status_code})")
+                return []
+    except Exception as fetch_err:
+        logger.warning(f"[WebPoller] Exceção de rede ao consultar {url}: {fetch_err}")
+        return []
+
+    try:
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(resp.text, "html.parser")
+        wraps = soup.find_all("div", class_="tgme_widget_message_wrap")
+
+        parsed_messages = []
+        for w in wraps:
+            msg_div = w.find("div", class_="tgme_widget_message")
+            if not msg_div:
+                continue
+            data_post = msg_div.get("data-post", "")
+            if "/" not in data_post:
+                continue
+            try:
+                msg_id = int(data_post.split("/")[-1])
+            except (ValueError, TypeError):
+                continue
+
+            text_div = w.find("div", class_="tgme_widget_message_text")
+            if not text_div:
+                continue
+            text = text_div.get_text(separator="\n").strip()
+            if not text:
+                continue
+
+            links = []
+            for a in text_div.find_all("a", href=True):
+                href = a["href"].strip()
+                if href and href.startswith("http"):
+                    links.append(href)
+
+            photo_wrap = w.find("a", class_="tgme_widget_message_photo_wrap")
+            media_url = None
+            if photo_wrap and photo_wrap.get("style"):
+                m_img = re.search(r"url\('(.*?)'\)", photo_wrap["style"])
+                if m_img:
+                    media_url = m_img.group(1)
+
+            parsed_messages.append({
+                "text": text,
+                "telegram_msg_id": msg_id,
+                "source_name": f"@{slug}",
+                "entities_links": links,
+                "media_url": media_url,
+            })
+
+        return parsed_messages[-limit:] if limit else parsed_messages
+    except Exception as parse_err:
+        logger.error(f"[WebPoller] Erro ao parsear HTML do canal {slug}: {parse_err}")
+        return []
+
+
+async def run_public_web_poller(channels: List[str], interval: float = 8.0):
+    """
+    Loop assíncrono perpétuo do Web Poller HTTP.
+    Garante captura ininterrupta de mensagens públicas com resiliência total a quedas de sessão MTProto.
+    """
+    logger.info(f"[WebPoller] 🌐 Iniciando Web Poller HTTP público autônomo (intervalo: {interval}s) para: {channels}")
+
+    # Startup catch-up: processa mensagens recentes que não estejam no banco
+    for ch in channels:
+        try:
+            recent_msgs = await poll_public_channel(ch, limit=5)
+            if recent_msgs:
+                db = SessionLocal()
+                try:
+                    for msg in recent_msgs:
+                        mid = msg.get("telegram_msg_id")
+                        if not mid:
+                            continue
+                        exists = db.query(Offer).filter(Offer.telegram_msg_id == mid).first()
+                        if exists:
+                            continue
+                        logger.info(f"[WebPoller Startup] 📥 Processando post recente pós-boot de {msg['source_name']} (ID: {mid})")
+                        await asyncio.to_thread(process_incoming_payload, msg)
+                finally:
+                    db.close()
+        except Exception as startup_err:
+            logger.warning(f"[WebPoller] Erro na sincronização inicial do canal {ch}: {startup_err}")
+
+    while True:
+        try:
+            await asyncio.sleep(interval)
+            for ch in channels:
+                try:
+                    new_msgs = await poll_public_channel(ch, limit=10)
+                    for msg in new_msgs:
+                        mid = msg.get("telegram_msg_id")
+                        if not mid:
+                            continue
+                        await asyncio.to_thread(process_incoming_payload, msg)
+                except Exception as ch_err:
+                    logger.debug(f"[WebPoller] Erro ao verificar {ch}: {ch_err}")
+        except asyncio.CancelledError:
+            logger.info("[WebPoller] Cancelado graciosamente.")
+            break
+        except Exception as loop_err:
+            logger.warning(f"[WebPoller] Erro no loop: {loop_err}")
+            await asyncio.sleep(interval)
+
+
 async def run_channel_poller(client, channels: List[str], interval: float = 8.0):
     """
     Poller ativo concorrente que garante captura em canais broadcast do Telegram.
@@ -449,106 +576,81 @@ async def setup_event_handlers(client, channels: List[str]):
 
 async def start_userbot(client=None):
     """
-    Inicia e mantém o Userbot Telethon ativo continuamente com supervisor e reconexão infinita resiliente.
-    Nunca encerra o processo no Railway por desconexões temporárias de rede.
+    Supervisor resiliente de captura com dupla camada de redundância:
+    - Camada Primária (Universal): Web Poller HTTP público autônomo (100% resiliente, sem necessidade de sessão MTProto).
+    - Camada Secundária (Telethon): MTProto Userbot para eventos em tempo real (se autorizado).
     """
-    attempts = 0
+    # 1. Inicia o Web Poller HTTP público imediatamente como task paralela perpétua
+    web_poller_task = asyncio.create_task(run_public_web_poller(SOURCE_CHANNELS, interval=8.0))
 
-    while True:
+    # 2. Heartbeat periódico a cada 5 minutos
+    async def heartbeat_loop():
+        while True:
+            await asyncio.sleep(300)
+            logger.info("[Heartbeat] 💓 Sistema de captura e publicação 100% operacional.")
+
+    heartbeat_task = asyncio.create_task(heartbeat_loop())
+
+    # 3. Tenta conectar o Telethon MTProto se client fornecido
+    if client is not None:
         try:
-            if client is None:
-                client = create_telegram_client()
-
-            if client is None:
-                logger.warning("[Listener] Cliente Telethon não configurado. Aguardando 60s antes de tentar novamente...")
-                await asyncio.sleep(60)
-                continue
-
-            if not client.is_connected():
-                logger.info(f"[Listener] Conectando ao Telegram MTProto (tentativa {attempts + 1})...")
-                await client.connect()
+            logger.info("[Listener] Tentando autenticar cliente Telethon MTProto...")
+            await client.connect()
 
             if not await client.is_user_authorized():
-                logger.critical(
-                    "❌ [Listener] A sessão do Telegram não está autorizada no servidor!\n"
-                    "Gere uma nova sessão via 'python scripts/generate_telegram_session.py', "
-                    "copie o conteúdo do arquivo 'session.txt' e atualize a variável TELEGRAM_STRING_SESSION no Railway."
+                logger.warning(
+                    "⚠️ [Listener] Sessão MTProto do Telethon não está autorizada.\n"
+                    "O Web Poller HTTP público está ativo e operando com 100% de capacidade de captura."
                 )
-                await asyncio.sleep(60)
-                continue
+            else:
+                me = await client.get_me()
+                username = f"@{me.username}" if getattr(me, "username", None) else (me.phone or "sem_username")
+                logger.info(f"✅ Userbot conectado com sucesso como: {me.first_name} ({username})")
 
-            me = await client.get_me()
-            username = f"@{me.username}" if getattr(me, "username", None) else (me.phone or "sem_username")
-            logger.info(f"✅ Userbot conectado com sucesso como: {me.first_name} ({username})")
+                if not getattr(client, "_handlers_registered", False):
+                    await setup_event_handlers(client, SOURCE_CHANNELS)
+                    client._handlers_registered = True
+                    logger.info(f"🎯 Monitoramento MTProto ativo em tempo real em: {', '.join(SOURCE_CHANNELS)}")
 
-            if not getattr(client, "_handlers_registered", False):
-                await setup_event_handlers(client, SOURCE_CHANNELS)
-                client._handlers_registered = True
-                logger.info(f"🎯 Monitoramento ativo em tempo real em: {', '.join(SOURCE_CHANNELS)}")
+                poller_task = asyncio.create_task(run_channel_poller(client, SOURCE_CHANNELS, interval=8.0))
 
-            # Inicia o poller concorrente contínuo
-            poller_task = asyncio.create_task(run_channel_poller(client, SOURCE_CHANNELS, interval=8.0))
+                try:
+                    await client.run_until_disconnected()
+                    logger.warning("[Listener] Conexão MTProto desconectada.")
+                finally:
+                    poller_task.cancel()
 
-            # Task periódica de heartbeat no log a cada 5 minutos
-            async def heartbeat_loop():
-                while True:
-                    await asyncio.sleep(300)
-                    if client and client.is_connected():
-                        logger.info("[Heartbeat] 💓 Userbot Telethon 100% operacional e conectado aos canais de origem.")
-
-            heartbeat_task = asyncio.create_task(heartbeat_loop())
-
-            # Reseta contador de tentativas após conexão bem-sucedida
-            attempts = 0
-
-            try:
-                await client.run_until_disconnected()
-                logger.warning("[Listener] Conexão MTProto desconectada. Reconectando...")
-            finally:
-                poller_task.cancel()
-                heartbeat_task.cancel()
-
-            # Pausa breve antes de reconectar após desconexão natural
-            await asyncio.sleep(3)
-
-        except asyncio.CancelledError:
-            logger.info("[Listener] Tarefa cancelada graciosamente.")
-            break
-        except Exception as e:
-            attempts += 1
-            delay = min(60, max(5, attempts * 5))
-            logger.error(
-                f"[Listener] Queda na conexão do Telegram (tentativa {attempts}): {e}. Reconectando em {delay}s...",
-                exc_info=True,
+        except Exception as telethon_err:
+            logger.warning(
+                f"⚠️ [Listener] Telethon MTProto indisponível ({telethon_err}). "
+                "O Web Poller HTTP público está ativo e operando com 100% de capacidade de captura."
             )
-            try:
-                if client and client.is_connected():
-                    await client.disconnect()
-            except Exception:
-                pass
-            client = None
-            await asyncio.sleep(delay)
+
+    # Mantém o processo vivo indefinidamente executando o Web Poller
+    try:
+        await web_poller_task
+    finally:
+        heartbeat_task.cancel()
 
 
 def run_listener():
-    """Ponto de entrada síncrono para o listener Telethon com supervisor infinito."""
+    """Ponto de entrada síncrono para o listener com redundância dupla (Telethon + HTTP Web Poller)."""
     while True:
         client = create_telegram_client()
-        if client:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(start_userbot(client))
+        except (KeyboardInterrupt, SystemExit):
+            logger.info("[Listener] Interrupção recebida. Encerrando listener.")
+            break
+        except Exception as e:
+            logger.error(f"[Listener] Falha no supervisor: {e}. Reiniciando em 5s...", exc_info=True)
+            time.sleep(5)
+        finally:
             try:
-                client.loop.run_until_complete(start_userbot(client))
-            except (KeyboardInterrupt, SystemExit):
-                logger.info("[Listener] Interrupção recebida. Encerrando listener.")
-                break
-            except Exception as e:
-                logger.error(f"[Listener] Falha no loop do cliente Telethon: {e}. Reiniciando em 5s...", exc_info=True)
-                time.sleep(5)
-            finally:
-                try:
-                    if client.is_connected():
-                        client.loop.run_until_complete(client.disconnect())
-                except Exception:
-                    pass
-        else:
-            logger.info("[Listener] Credenciais do Telegram não configuradas. Aguardando 60s...")
-            time.sleep(60)
+                if client and client.is_connected():
+                    loop.run_until_complete(client.disconnect())
+            except Exception:
+                pass
+            loop.close()

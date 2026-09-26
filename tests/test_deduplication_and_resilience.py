@@ -114,3 +114,48 @@ def test_incoming_payload_processed_normally_once():
         assert r2["reason"] == "already_processing_or_processed"
         assert len(calls) == 1
 
+
+@pytest.mark.asyncio
+async def test_poll_public_channel(monkeypatch):
+    """Valida extração resiliente de posts públicos do Telegram via web preview."""
+    from bot.listener import poll_public_channel
+
+    mock_html = """
+    <div class="tgme_widget_message_wrap">
+      <div class="tgme_widget_message" data-post="pechinchou/998877">
+        <a class="tgme_widget_message_photo_wrap" style="background-image:url('https://cdn.telesco.pe/photo123.jpg')"></a>
+        <div class="tgme_widget_message_text">
+          <b>Fone Bluetooth Gamer</b><br>
+          R$ 89,90<br>
+          <a href="https://pechin.co/998877">https://pechin.co/998877</a>
+        </div>
+      </div>
+    </div>
+    """
+
+    class MockResponse:
+        status_code = 200
+        text = mock_html
+
+    class MockAsyncClient:
+        def __init__(self, *args, **kwargs):
+            pass
+        async def __aenter__(self):
+            return self
+        async def __aexit__(self, *args):
+            pass
+        async def get(self, url):
+            return MockResponse()
+
+    monkeypatch.setattr("httpx.AsyncClient", MockAsyncClient)
+
+    messages = await poll_public_channel("@pechinchou")
+    assert len(messages) == 1
+    m = messages[0]
+    assert m["telegram_msg_id"] == 998877
+    assert m["source_name"] == "@pechinchou"
+    assert "https://pechin.co/998877" in m["entities_links"]
+    assert m["media_url"] == "https://cdn.telesco.pe/photo123.jpg"
+    assert "Fone Bluetooth Gamer" in m["text"]
+
+
