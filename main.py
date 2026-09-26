@@ -17,6 +17,8 @@ from config import (
 )
 from bot.listener import run_listener
 
+import time
+
 # Configuração de Logging com formato limpo
 logging.basicConfig(
     level=logging.INFO,
@@ -50,15 +52,25 @@ def main():
             "Preencha suas credenciais do Telegram (https://my.telegram.org/apps) para conectar o Userbot real."
         )
 
-    logger.info("Iniciando escuta do Userbot Telethon...")
-    try:
-        run_listener()
-    except KeyboardInterrupt:
-        logger.info("🛑 Automação interrompida pelo operador (Ctrl+C). Encerrando graciosamente...")
-        sys.exit(0)
-    except Exception as e:
-        logger.critical(f"❌ Falha fatal na execução do Userbot: {e}", exc_info=True)
-        sys.exit(1)
+    logger.info("Iniciando escuta do Userbot Telethon com supervisor ativo...")
+    restart_count = 0
+    while True:
+        try:
+            run_listener()
+            logger.warning("[Main Supervisor] run_listener encerrou normalmente. Reiniciando em 5 segundos...")
+            time.sleep(5)
+        except KeyboardInterrupt:
+            logger.info("🛑 Automação interrompida pelo operador (Ctrl+C). Encerrando graciosamente...")
+            sys.exit(0)
+        except Exception as e:
+            restart_count += 1
+            delay = min(60, max(5, restart_count * 5))
+            logger.critical(
+                f"❌ [Main Supervisor] Falha na execução do Userbot (reinício #{restart_count}): {e}. "
+                f"Reiniciando em {delay}s...",
+                exc_info=True,
+            )
+            time.sleep(delay)
 
 
 if __name__ == "__main__":

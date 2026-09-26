@@ -105,6 +105,20 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
             ).first()
 
         # 5. Persistência no Banco de Dados
+        # Verificação atômica adicional de idempotência por telegram_msg_id
+        if telegram_msg_id:
+            existing_offer = db.query(Offer).filter(Offer.telegram_msg_id == int(telegram_msg_id)).first()
+            if existing_offer:
+                logger.warning(
+                    f"[Tasks] ⚠️ Mensagem duplicada detectada no momento da inserção (telegram_msg_id={telegram_msg_id}). "
+                    f"Oferta existente ID={existing_offer.id}. Abortando nova persistência."
+                )
+                return {
+                    "status": "rejected",
+                    "reason": f"Mensagem duplicada já capturada (telegram_msg_id: {telegram_msg_id})",
+                    "offer_id": str(existing_offer.id),
+                }
+
         now_utc = datetime.now(timezone.utc)
         new_offer = Offer(
             title=parsed["title"],
@@ -124,7 +138,7 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
             source_name=source_name,
             status=initial_status,
             is_active=True,
-            published_at=now_utc if initial_status == "published" else None,
+            published_at=None,
             created_at=now_utc,
             updated_at=now_utc,
         )
@@ -217,6 +231,7 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
     """
     Publica uma oferta aprovada no canal do Telegram e atualiza seu status para 'published'.
     Dispara subsequentemente o matching de alertas para Web Push.
+    Garante idempotência estrita para evitar publicações duplicadas.
     """
     target_channel = channel_id or TARGET_CHANNEL_ID
     db: Session = SessionLocal()
@@ -225,6 +240,45 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
         if not offer:
             logger.error(f"[Publish Task] Oferta {offer_id} não encontrada no banco.")
             return {"status": "error", "message": f"Oferta {offer_id} inexistente"}
+
+        # IDEMPOTÊNCIA CRÍTICA: Se a oferta já foi publicada anteriormente, NUNCA republica!
+        if offer.published_at is not None:
+            logger.warning(
+                f"[Publish Task] ⚠️ Oferta {offer.id} ('{offer.title}') já foi publicada anteriormente em "
+                f"{offer.published_at}. Bloqueando envio duplicado."
+            )
+            return {
+                "status": "skipped",
+                "reason": "already_published",
+                "offer_id": str(offer.id),
+                "published_at": str(offer.published_at),
+            }
+
+        # DEDUPLICAÇÃO DE CONCORRÊNCIA: Verifica se oferta idêntica foi publicada nas últimas 6h
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=6)
+        identical_published = (
+            db.query(Offer)
+            .filter(
+                Offer.id != offer.id,
+                Offer.status == "published",
+                Offer.published_at >= cutoff,
+                Offer.title == offer.title,
+                Offer.price_current == offer.price_current,
+            )
+            .first()
+        )
+        if identical_published:
+            logger.warning(
+                f"[Publish Task] ⚠️ Oferta idêntica {identical_published.id} já foi publicada em {identical_published.published_at}. "
+                f"Ignorando publicação repetida de {offer.id}."
+            )
+            offer.status = "duplicate_skipped"
+            db.commit()
+            return {
+                "status": "skipped",
+                "reason": "identical_offer_recently_published",
+                "offer_id": str(offer.id),
+            }
 
         card_data = {
             "title": offer.title,

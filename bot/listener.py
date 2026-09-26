@@ -14,11 +14,38 @@ from config import (
 )
 from processor.tasks import process_telegram_message
 
+import threading
+import time
+
 logger = logging.getLogger("elitedaspechinchas.bot.listener")
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
+
+_processing_msg_ids: Dict[int, float] = {}
+_msg_ids_lock = threading.Lock()
+MSG_ID_DEDUPLICATION_WINDOW_SECONDS = 1800  # 30 minutos
+
+
+def should_process_msg_id(msg_id: Optional[int]) -> bool:
+    """
+    Garante que um telegram_msg_id seja processado exatamente UMA vez entre threads e rotinas.
+    Elimina qualquer concorrência entre o evento NewMessage e o Poller de canal.
+    """
+    if not msg_id:
+        return True
+    now = time.time()
+    with _msg_ids_lock:
+        cutoff = now - MSG_ID_DEDUPLICATION_WINDOW_SECONDS
+        expired = [k for k, v in _processing_msg_ids.items() if v < cutoff]
+        for k in expired:
+            del _processing_msg_ids[k]
+
+        if msg_id in _processing_msg_ids:
+            return False
+        _processing_msg_ids[msg_id] = now
+        return True
 
 
 def extract_entities_urls(message) -> List[str]:
@@ -69,9 +96,16 @@ def process_incoming_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     """
     Processa o payload capturado executando imediatamente a ingestão e publicação direta.
     Elimina qualquer ponto único de falha ao não depender exclusivamente de filas intermediárias.
+    Garante ausência total de duplicações ao não despachar para Celery se a execução direta sucedeu.
     """
     msg_id = payload.get("telegram_msg_id")
     source = payload.get("source_name")
+
+    # Prevenção rigorosa de concorrência NewMessage vs Poller
+    if msg_id and not should_process_msg_id(msg_id):
+        logger.info(f"[Listener] ⚠️ Mensagem ID {msg_id} já em processamento ou capturada recentemente. Ignorando duplicação.")
+        return {"status": "skipped", "reason": "already_processing_or_processed", "telegram_msg_id": msg_id}
+
     logger.info(f"[Listener] 🚀 Iniciando processamento imediato da mensagem ID {msg_id} da fonte {source}")
 
     try:
@@ -79,13 +113,6 @@ def process_incoming_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
         status = result.get("status") if isinstance(result, dict) else "unknown"
         offer_id = result.get("offer_id") if isinstance(result, dict) else None
         logger.info(f"[Listener] ✅ Processamento direto concluído com sucesso: {status} | Oferta: {offer_id}")
-
-        # Tenta também despachar assincronamente para Celery se disponível
-        try:
-            process_telegram_message.delay(payload)
-        except Exception:
-            pass
-
         return result
     except Exception as direct_err:
         logger.error(f"[Listener] Erro no processamento direto da mensagem {msg_id}: {direct_err}", exc_info=True)
@@ -225,61 +252,35 @@ def create_telegram_client():
 last_processed_ids: Dict[int, int] = {}
 
 
-async def run_channel_poller(client, channels: List[str], interval: float = 5.0):
+async def run_channel_poller(client, channels: List[str], interval: float = 8.0):
     """
-    Poller ativo concorrente que garante captura imediata em canais broadcast do Telegram.
-    Complementa os eventos push do MTProto para garantir latência mínima e 100% de entrega.
-    Na inicialização, processa mensagens recentes (até 3 horas) para evitar perda de promoções
-    durante restarts ou deploys.
+    Poller ativo concorrente que garante captura em canais broadcast do Telegram.
+    Sincroniza os IDs mais recentes na inicialização e monitora continuamente novas postagens.
     """
-    from datetime import datetime, timezone
-
     logger.info(f"[Poller] Iniciando verificação ativa periódica (intervalo: {interval}s) para: {channels}")
 
-    # Inicializa e recupera mensagens recentes dos canais para não perder nenhuma postagem
+    # Inicializa sincronizando os IDs mais recentes de cada canal para não reprocessar postagens antigas no boot
     for ch in channels:
         clean_ch = ch.strip()
         if not clean_ch:
             continue
         try:
             entity = await client.get_entity(clean_ch)
-            recent_msgs = []
-            async for m in client.iter_messages(entity, limit=20):
-                if m.text and m.text.strip():
-                    recent_msgs.append(m)
+            latest_id = 0
+            async for m in client.iter_messages(entity, limit=1):
+                latest_id = m.id
+                break
 
-                now_utc = datetime.now(timezone.utc)
-                for msg in reversed(recent_msgs):
-                    if msg.date:
-                        msg_date = msg.date if msg.date.tzinfo else msg.date.replace(tzinfo=timezone.utc)
-                        if (now_utc - msg_date).total_seconds() > 10800:
-                            continue
-
-                    source_name = getattr(entity, "username", None)
-                    if source_name:
-                        source_name = f"@{source_name}"
-                    else:
-                        source_name = getattr(entity, "title", clean_ch)
-
-                    logger.info(f"[Poller Startup] 📥 Processando post recente de {source_name} (ID: {msg.id})")
-                    entities_links = extract_entities_urls(msg)
-
-                    payload = {
-                        "text": msg.text,
-                        "telegram_msg_id": msg.id,
-                        "source_name": source_name,
-                        "entities_links": entities_links,
-                        "media_url": None,
-                    }
-                    try:
-                        await asyncio.to_thread(process_incoming_payload, payload)
-                    except Exception as poll_err:
-                        logger.error(f"[Poller Startup] Erro ao processar mensagem {msg.id}: {poll_err}", exc_info=True)
-
-                max_id = max(m.id for m in recent_msgs)
-                last_processed_ids[entity.id] = max_id
-                logger.info(f"[Poller] Canal {clean_ch} sincronizado no último post ID: {max_id}")
-
+            ent_id = getattr(entity, "id", None)
+            if ent_id:
+                last_processed_ids[ent_id] = latest_id
+                # Telethon channel peer IDs may also be referenced with -100 prefix or signed
+                last_processed_ids[-ent_id] = latest_id
+                try:
+                    last_processed_ids[int(f"-100{ent_id}")] = latest_id
+                except Exception:
+                    pass
+            logger.info(f"[Poller Startup] Canal {clean_ch} sincronizado no último post ID: {latest_id}")
         except Exception as e:
             logger.warning(f"[Poller] Erro ao sincronizar inicial do canal {clean_ch}: {e}")
 
@@ -292,7 +293,8 @@ async def run_channel_poller(client, channels: List[str], interval: float = 5.0)
                     continue
                 try:
                     entity = await client.get_entity(clean_ch)
-                    last_id = last_processed_ids.get(entity.id, 0)
+                    ent_id = getattr(entity, "id", None)
+                    last_id = last_processed_ids.get(ent_id, 0)
 
                     new_messages = []
                     async for m in client.iter_messages(entity, limit=20, min_id=last_id):
@@ -300,13 +302,18 @@ async def run_channel_poller(client, channels: List[str], interval: float = 5.0)
                             new_messages.append(m)
 
                     for msg in reversed(new_messages):
-                        last_processed_ids[entity.id] = max(last_processed_ids.get(entity.id, 0), msg.id)
+                        if ent_id:
+                            last_processed_ids[ent_id] = max(last_processed_ids.get(ent_id, 0), msg.id)
 
                         source_name = getattr(entity, "username", None)
                         if source_name:
                             source_name = f"@{source_name}"
                         else:
                             source_name = getattr(entity, "title", clean_ch)
+
+                        # Evita reprocessamento concorrente entre Poller e NewMessage
+                        if not should_process_msg_id(msg.id):
+                            continue
 
                         logger.info(f"[Poller] 📥 Nova mensagem descoberta de {source_name} (ID: {msg.id})")
                         entities_links = extract_entities_urls(msg)
@@ -379,10 +386,22 @@ async def setup_event_handlers(client, channels: List[str]):
 
         logger.info(f"[Listener] 📥 Nova mensagem capturada de {source_name} (ID: {msg.id})")
 
-        # Atualiza last_processed_ids para evitar que o poller re-despache a mesma mensagem
+        # Atualiza last_processed_ids em todos os formatos de chave
         chat_id = getattr(chat, "id", None)
         if chat_id:
             last_processed_ids[chat_id] = max(last_processed_ids.get(chat_id, 0), msg.id)
+            base_id = abs(chat_id)
+            if str(base_id).startswith("100"):
+                try:
+                    base_id = int(str(base_id)[3:])
+                except ValueError:
+                    pass
+            last_processed_ids[base_id] = max(last_processed_ids.get(base_id, 0), msg.id)
+
+        # Evita reprocessamento concorrente entre NewMessage e Poller
+        if not should_process_msg_id(msg.id):
+            logger.info(f"[Listener] Mensagem ID {msg.id} já capturada pelo Poller. Ignorando evento concorrente.")
+            return
 
         entities_links = extract_entities_urls(msg)
 
@@ -402,28 +421,33 @@ async def setup_event_handlers(client, channels: List[str]):
 
 async def start_userbot(client=None):
     """
-    Inicia e mantém o Userbot Telethon ativo escutando os grupos-fonte com reconexão resiliente.
+    Inicia e mantém o Userbot Telethon ativo continuamente com supervisor e reconexão infinita resiliente.
+    Nunca encerra o processo no Railway por desconexões temporárias de rede.
     """
-    if client is None:
-        client = create_telegram_client()
-
-    if client is None:
-        logger.warning("[Listener] Cliente Telethon não pôde ser iniciado. Operando em modo simulado.")
-        return
-
-    max_reconnects = 5
     attempts = 0
 
-    while attempts < max_reconnects:
+    while True:
         try:
-            await client.connect()
+            if client is None:
+                client = create_telegram_client()
+
+            if client is None:
+                logger.warning("[Listener] Cliente Telethon não configurado. Aguardando 60s antes de tentar novamente...")
+                await asyncio.sleep(60)
+                continue
+
+            if not client.is_connected():
+                logger.info(f"[Listener] Conectando ao Telegram MTProto (tentativa {attempts + 1})...")
+                await client.connect()
+
             if not await client.is_user_authorized():
                 logger.critical(
                     "❌ [Listener] A sessão do Telegram não está autorizada no servidor!\n"
                     "Gere uma nova sessão via 'python scripts/generate_telegram_session.py', "
                     "copie o conteúdo do arquivo 'session.txt' e atualize a variável TELEGRAM_STRING_SESSION no Railway."
                 )
-                return
+                await asyncio.sleep(60)
+                continue
 
             me = await client.get_me()
             username = f"@{me.username}" if getattr(me, "username", None) else (me.phone or "sem_username")
@@ -432,32 +456,69 @@ async def start_userbot(client=None):
             await setup_event_handlers(client, SOURCE_CHANNELS)
             logger.info(f"🎯 Monitoramento ativo em tempo real em: {', '.join(SOURCE_CHANNELS)}")
 
-            # Inicia o poller concorrente contínuo (complementa o push do MTProto para canais broadcast)
+            # Inicia o poller concorrente contínuo
             poller_task = asyncio.create_task(run_channel_poller(client, SOURCE_CHANNELS, interval=8.0))
+
+            # Task periódica de heartbeat no log a cada 5 minutos
+            async def heartbeat_loop():
+                while True:
+                    await asyncio.sleep(300)
+                    if client and client.is_connected():
+                        logger.info("[Heartbeat] 💓 Userbot Telethon 100% operacional e conectado aos canais de origem.")
+
+            heartbeat_task = asyncio.create_task(heartbeat_loop())
+
+            # Reseta contador de tentativas após conexão bem-sucedida
+            attempts = 0
 
             try:
                 await client.run_until_disconnected()
+                logger.warning("[Listener] Conexão MTProto desconectada. Reconectando...")
             finally:
                 poller_task.cancel()
+                heartbeat_task.cancel()
+
+            # Pausa breve antes de reconectar após desconexão natural
+            await asyncio.sleep(3)
+
+        except asyncio.CancelledError:
+            logger.info("[Listener] Tarefa cancelada graciosamente.")
             break
         except Exception as e:
             attempts += 1
-            logger.error(f"[Listener] Queda na conexão do Telegram (tentativa {attempts}/{max_reconnects}): {e}")
-            await asyncio.sleep(min(30, attempts * 5))
+            delay = min(60, max(5, attempts * 5))
+            logger.error(
+                f"[Listener] Queda na conexão do Telegram (tentativa {attempts}): {e}. Reconectando em {delay}s...",
+                exc_info=True,
+            )
+            try:
+                if client and client.is_connected():
+                    await client.disconnect()
+            except Exception:
+                pass
+            client = None
+            await asyncio.sleep(delay)
 
 
 def run_listener():
-    """Ponto de entrada síncrono para o listener Telethon."""
-    client = create_telegram_client()
-    if client:
-        try:
-            client.loop.run_until_complete(start_userbot(client))
-        finally:
-            if client.is_connected():
-                client.loop.run_until_complete(client.disconnect())
-    else:
-        logger.info("[Listener] Execução síncrona encerrada: credenciais não configuradas para modo real.")
-
-
-if __name__ == "__main__":
-    run_listener()
+    """Ponto de entrada síncrono para o listener Telethon com supervisor infinito."""
+    while True:
+        client = create_telegram_client()
+        if client:
+            try:
+                client.loop.run_until_complete(start_userbot(client))
+            except (KeyboardInterrupt, SystemExit):
+                logger.info("[Listener] Interrupção recebida. Encerrando listener.")
+                break
+            except Exception as e:
+                logger.error(f"[Listener] Falha no loop do cliente Telethon: {e}. Reiniciando em 5s...", exc_info=True)
+                time.sleep(5)
+            finally:
+                try:
+                    if client.is_connected():
+                        client.loop.run_until_complete(client.disconnect())
+                except Exception:
+                    pass
+        else:
+            logger.info("[Listener] Credenciais do Telegram não configuradas. Aguardando 60s...")
+            time.sleep(60)
