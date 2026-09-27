@@ -54,9 +54,10 @@ SOURCE_CHANNELS: List[str] = [
 # ------------------------------------------------------------------------------
 MERCADOLIVRE_TAG = os.getenv("MERCADOLIVRE_TAG", "elitedaspechinchas")
 MERCADOLIVRE_TOOL_ID = os.getenv("MERCADOLIVRE_TOOL_ID", "17470999")
+AMAZON_TAG = os.getenv("AMAZON_TAG", "elitedaspechi-20")
 
 DEFAULT_AFFILIATE_TAGS = {
-    "Amazon": os.getenv("AMAZON_TAG", ""),
+    "Amazon": AMAZON_TAG,
     "Mercado Livre": MERCADOLIVRE_TAG,
     "Magazine Luiza": os.getenv("MAGALU_TAG", ""),
     "Kabum": os.getenv("KABUM_TAG", ""),
