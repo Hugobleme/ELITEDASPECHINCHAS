@@ -44,9 +44,9 @@ htmlcov/
 venv/
 ENV/
 
-# telethon sessions
-*.session
-*.session-journal
+# telethon sessions and tokens
+session.txt
+*.session*
 
 # local databases
 *.db

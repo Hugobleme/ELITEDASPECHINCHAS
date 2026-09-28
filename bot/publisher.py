@@ -112,28 +112,36 @@ def publish_to_telegram(
             "message": "Post duplicado bloqueado pelo mecanismo de proteção temporal.",
         }
 
-    is_simulated = (
-        not token
-        or token in ("SEU_BOT_TOKEN_AQUI", "mock_bot_token")
-        or (SIMULATED_BOT_ENABLED and os.getenv("ENVIRONMENT") != "production")
-    )
+    # Validação estrita de TELEGRAM_BOT_TOKEN
+    clean_token = (token or "").strip()
+    if not clean_token or clean_token in ("SEU_BOT_TOKEN_AQUI", "mock_bot_token"):
+        # Modo simulado permitido exclusivamente se explicitamente ativado e fora de produção
+        if SIMULATED_BOT_ENABLED and os.getenv("ENVIRONMENT") != "production":
+            logger.info(
+                f"[Publisher SIMULAÇÃO] Publicação simulada para canal '{target}':\n{message[:200]}..."
+            )
+            sim_result = {
+                "success": True,
+                "simulated": True,
+                "channel": target,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "has_image": bool(image_url),
+                "has_button": bool(reply_markup),
+                "message_length": len(message),
+                "message_preview": message[:150],
+            }
+            _record_simulated_publication(sim_result)
+            return sim_result
 
-    if is_simulated:
-        logger.info(
-            f"[Publisher SIMULAÇÃO] Publicação simulada para canal '{target}':\n{message[:200]}..."
+        logger.error(
+            f"[Publisher] ❌ TELEGRAM_BOT_TOKEN não configurado no ambiente. "
+            f"Publicação no canal '{target}' abortada."
         )
-        sim_result = {
-            "success": True,
-            "simulated": True,
+        return {
+            "success": False,
+            "error": "TELEGRAM_BOT_TOKEN não configurado no ambiente",
             "channel": target,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "has_image": bool(image_url),
-            "has_button": bool(reply_markup),
-            "message_length": len(message),
-            "message_preview": message[:150],
         }
-        _record_simulated_publication(sim_result)
-        return sim_result
 
     api_url = f"https://api.telegram.org/bot{token}"
     timeout_config = httpx.Timeout(30.0, connect=15.0)

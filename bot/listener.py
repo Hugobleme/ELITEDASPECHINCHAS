@@ -173,65 +173,49 @@ def load_simulated_messages_from_json(file_path: str) -> List[Dict[str, Any]]:
         return []
 
 
-EMBEDDED_PRODUCTION_SESSION = "1AZWarzsBu6bW1_1oVoNmq4uveB3d1zy9mRxyNeJrFLjhFhwhQU5Gx44PYKmwQ2sk9nmwQZ59KO5ctw7cTo2wYDcm1pAuz2qbOGzpcROP_r1if13HdYnj2RaopLZNsv7ls5gLoKEdaD8-qpBYgKVbHegDDLKOM4Ye7HIaEgipiJtOqqekKeIWaQjXhF43twYEXZ4AbfWF_SdOsKo87eQUN96wveKxBet5Vj1asZAyvwA1Vh6ojr5WIr17BqWmwUZeXmI9yZ6bHXWq6p8EpfuaZ-dO3JoesKuYcLYU7M2KxmZcWobJOBpS5nvU-ECtgkP1-vLaP2sbB5d56vqcf_Dcr-nKOnMkgZU="
-
-
 def get_authenticated_string_session() -> Optional[str]:
     """
-    Valida e recupera rigorosamente a StringSession do Telethon.
-    Tenta:
-    1. Variável de ambiente TELEGRAM_STRING_SESSION (com validação de auth_key)
-    2. Arquivo session.txt local
-    3. Sessão oficial de produção incorporada
+    Valida e recupera a StringSession do Telethon exclusivamente da variável de ambiente TELEGRAM_STRING_SESSION.
+    Não utiliza chaves embarcadas nem arquivos locais para garantir segurança estrita.
     """
     from telethon.sessions import StringSession
 
-    # 1. Variável de ambiente
     env_sess = os.getenv("TELEGRAM_STRING_SESSION", "").strip()
-    if env_sess:
-        try:
-            clean_env = "".join(env_sess.split())
-            s = StringSession(clean_env)
-            if s.auth_key:
-                logger.info("[Listener] TELEGRAM_STRING_SESSION da variável de ambiente validada com sucesso.")
-                return clean_env
-            else:
-                logger.warning("[Listener] TELEGRAM_STRING_SESSION do ambiente sem auth_key. Usando chave de recuperação.")
-        except Exception as e:
-            logger.warning(f"[Listener] TELEGRAM_STRING_SESSION do ambiente corrompida ({e}). Usando sessão de recuperação oficial.")
+    if not env_sess:
+        logger.info("[Listener] TELEGRAM_STRING_SESSION não configurada no ambiente.")
+        return None
 
-    # 2. Arquivo session.txt local
-    if os.path.exists("session.txt"):
-        try:
-            with open("session.txt", "r", encoding="utf-8") as f:
-                file_sess = "".join(f.read().split())
-                s = StringSession(file_sess)
-                if s.auth_key:
-                    logger.info("[Listener] Sessão carregada do arquivo 'session.txt' com sucesso.")
-                    return file_sess
-        except Exception as e:
-            logger.warning(f"[Listener] Não foi possível ler sessão de session.txt: {e}")
-
-    # 3. Chave autenticada incorporada
     try:
-        s = StringSession(EMBEDDED_PRODUCTION_SESSION)
+        clean_env = "".join(env_sess.split())
+        s = StringSession(clean_env)
         if s.auth_key:
-            logger.info("[Listener] Utilizando sessão oficial de produção autenticada.")
-            return EMBEDDED_PRODUCTION_SESSION
+            logger.info("[Listener] TELEGRAM_STRING_SESSION da variável de ambiente validada com sucesso.")
+            return clean_env
+        else:
+            logger.warning("[Listener] TELEGRAM_STRING_SESSION fornecida é inválida (sem auth_key).")
+            return None
     except Exception as e:
-        logger.error(f"[Listener] Erro ao carregar sessão incorporada: {e}")
-
-    return None
+        logger.warning(f"[Listener] Falha ao validar TELEGRAM_STRING_SESSION do ambiente: {e}")
+        return None
 
 
 def create_telegram_client():
     """
-    Instancia o cliente Telethon (Userbot) com tratamento de credenciais resiliente.
+    Instancia o cliente Telethon (Userbot) exclusivamente se as credenciais e a sessão
+    estiverem configuradas via variáveis de ambiente.
     """
     if not TELEGRAM_API_ID or not TELEGRAM_API_HASH:
+        logger.info(
+            "[Listener] TELEGRAM_API_ID ou TELEGRAM_API_HASH não configurados no ambiente. "
+            "Modo Userbot MTProto inativo."
+        )
+        return None
+
+    session_str = get_authenticated_string_session()
+    if not session_str:
         logger.warning(
-            "TELEGRAM_API_ID ou TELEGRAM_API_HASH não configurados. "
-            "Modo de escuta real inativo. Utilize simulate_incoming_message."
+            "[Listener] TELEGRAM_STRING_SESSION não configurada no ambiente. "
+            "Userbot Telethon não será iniciado. O Web Poller HTTP público operará como motor autônomo."
         )
         return None
 
@@ -239,15 +223,8 @@ def create_telegram_client():
         from telethon import TelegramClient
         from telethon.sessions import StringSession
 
-        session_str = get_authenticated_string_session()
-        if session_str:
-            logger.info("[Listener] Conectando Telethon via StringSession validada.")
-            return TelegramClient(StringSession(session_str), TELEGRAM_API_ID, TELEGRAM_API_HASH)
-
-        session_dir = os.path.dirname(TELEGRAM_SESSION_NAME)
-        if session_dir:
-            os.makedirs(session_dir, exist_ok=True)
-        return TelegramClient(TELEGRAM_SESSION_NAME, TELEGRAM_API_ID, TELEGRAM_API_HASH)
+        logger.info("[Listener] Conectando Telethon via StringSession do ambiente.")
+        return TelegramClient(StringSession(session_str), TELEGRAM_API_ID, TELEGRAM_API_HASH)
     except Exception as e:
         logger.error(f"[Listener] Erro ao instanciar TelegramClient: {e}")
         return None
