@@ -359,6 +359,15 @@ pytest tests/test_production_e2e.py -v
 RAILWAY_API_URL="https://elitedaspechinchas-production.up.railway.app" pytest tests/test_production_e2e.py -v
 ```
 
+### Como Executar o Teste de Carga e Latência (p95 < 100ms)
+```bash
+# Execução padrão (50 workers concorrentes por 30s):
+pytest tests/test_load.py -v -s
+
+# Execução rápida (5s):
+LOAD_TEST_DURATION=5 pytest tests/test_load.py -v -s
+```
+
 ### Como Executar a Validação de Migrations Localmente
 Caso possua o Docker rodando localmente:
 ```bash

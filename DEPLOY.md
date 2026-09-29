@@ -233,6 +233,35 @@ STRICT_HEALTHCHECK=true pytest tests/test_production_e2e.py -v
 #### Execução no CI/CD (GitHub Actions):
 O pipeline `.github/workflows/ci.yml` inclui o step automatizado **Fase 7 — Validação End-to-End (E2E) em Produção**, executando a suíte contra a API pública a cada build.
 
+### 6.2 Teste de Carga e Validação de Latência (p95 < 100ms)
+
+Para validar a capacidade de atendimento concorrente e garantir que a API mantém latência ultrabaixa sob carga contínua, utilize o script `tests/test_load.py`.
+
+#### O que é validado:
+- Disparo simultâneo contra `/offers`, `/health` e `/coupons` com 50 workers concorrentes por 30 segundos.
+- Medição e cálculo de percentis de latência (**p50**, **p95**, **p99**) e taxa de erro.
+- Asserção estrita: falha se **p95 > 100ms** ou **taxa de erros > 1%**.
+- Exibição de comparativo entre tempo de processamento interno da API (`X-Response-Time`) e RTT de rede WAN.
+
+#### Como Executar:
+
+```bash
+# Execução padrão (30 segundos, 50 workers concorrentes):
+pytest tests/test_load.py -v -s
+
+# Execução rápida (ex: 5 segundos para validação ágil):
+LOAD_TEST_DURATION=5 pytest tests/test_load.py -v -s
+
+# Apontando para outra URL ou instância local:
+RAILWAY_API_URL="http://localhost:8000" pytest tests/test_load.py -v -s
+
+# Ajustando concorrência (ex: 100 requisições simultâneas):
+LOAD_TEST_CONCURRENCY=100 pytest tests/test_load.py -v -s
+
+# Validação com limiar de latência personalizado (ex: p95 < 50ms):
+LOAD_TEST_MAX_P95_MS=50 pytest tests/test_load.py -v -s
+```
+
 ---
 
 ## 7. Monitoramento
