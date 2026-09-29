@@ -43,11 +43,30 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TARGET_CHANNEL_ID = os.getenv("TARGET_CHANNEL_ID")
 
 # Grupos/canais de origem autorizados para captura (1 a 3 fontes)
-# Exemplo no .env: SOURCE_CHANNELS="@promos_tech,@radar_gamer,@ofertas_vip"
-raw_sources = os.getenv("SOURCE_CHANNELS", "@pechinchou")
-SOURCE_CHANNELS: List[str] = [
-    ch.strip() for ch in raw_sources.split(",") if ch.strip()
-]
+# Exemplo no .env: SOURCE_CHANNELS="@pechinchou,@urubupromo"
+raw_sources = os.getenv("SOURCE_CHANNELS", "@pechinchou,@urubupromo")
+configured_sources: List[str] = []
+for ch in raw_sources.split(","):
+    clean = ch.strip()
+    if not clean:
+        continue
+    if clean.startswith("https://t.me/"):
+        clean = "@" + clean.replace("https://t.me/", "").strip("/")
+    elif clean.startswith("http://t.me/"):
+        clean = "@" + clean.replace("http://t.me/", "").strip("/")
+    elif clean.startswith("t.me/"):
+        clean = "@" + clean.replace("t.me/", "").strip("/")
+    elif not clean.startswith("@") and not clean.startswith("-100"):
+        clean = f"@{clean}"
+    if clean not in configured_sources:
+        configured_sources.append(clean)
+
+# Garante que canais oficiais padrão estejam sempre presentes
+for default_ch in ["@pechinchou", "@urubupromo"]:
+    if default_ch not in configured_sources:
+        configured_sources.append(default_ch)
+
+SOURCE_CHANNELS: List[str] = configured_sources
 
 # ------------------------------------------------------------------------------
 # 2. Tags e Regras de Afiliados por Loja
