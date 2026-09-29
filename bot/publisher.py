@@ -11,12 +11,13 @@ from config import (
     SIMULATED_BOT_ENABLED,
     SIMULATED_PUBLICATIONS_FILE,
 )
+from bot.structured_logger import get_structured_logger, emit_json_log
 
 import hashlib
 import threading
 import time
 
-logger = logging.getLogger(__name__)
+logger = get_structured_logger("elitedaspechinchas.bot.publisher", component="publisher")
 
 # Cache de publicações recentes para garantir prevenção total de posts duplicados
 _recent_publications: Dict[str, float] = {}
@@ -100,9 +101,17 @@ def publish_to_telegram(
     Suporta imagens com legenda, botões inline interativos e fallback resiliente.
     Possui proteção integrada contra publicações duplicadas (15 min).
     """
+    start_time = time.time()
     target = (channel_id or os.getenv("TARGET_CHANNEL_ID") or TARGET_CHANNEL_ID or "").strip()
     if not target:
-        logger.error("[Publisher] ❌ TARGET_CHANNEL_ID não configurado no ambiente. Publicação abortada.")
+        emit_json_log(
+            logger=logger,
+            level="error",
+            component="publisher",
+            event="publish_aborted",
+            message="TARGET_CHANNEL_ID não configurado no ambiente. Publicação abortada.",
+            channel=None,
+        )
         return {
             "success": False,
             "error": "TARGET_CHANNEL_ID não configurado no ambiente",
@@ -113,6 +122,14 @@ def publish_to_telegram(
 
     # Proteção de Duplicação Imediata
     if check_duplicate and is_duplicate_publication(message, image_url):
+        emit_json_log(
+            logger=logger,
+            level="info",
+            component="publisher",
+            event="duplicate_prevented",
+            message="Post duplicado bloqueado pelo mecanismo de proteção temporal.",
+            channel=target,
+        )
         return {
             "success": True,
             "duplicate_prevented": True,
@@ -125,8 +142,13 @@ def publish_to_telegram(
     if not clean_token or clean_token in ("SEU_BOT_TOKEN_AQUI", "mock_bot_token"):
         # Modo simulado permitido exclusivamente se explicitamente ativado e fora de produção
         if SIMULATED_BOT_ENABLED and os.getenv("ENVIRONMENT") != "production":
-            logger.info(
-                f"[Publisher SIMULAÇÃO] Publicação simulada para canal '{target}':\n{message[:200]}..."
+            emit_json_log(
+                logger=logger,
+                level="info",
+                component="publisher",
+                event="publish_simulated",
+                message=f"[Publisher SIMULAÇÃO] Publicação simulada para canal '{target}': {message[:200]}...",
+                channel=target,
             )
             sim_result = {
                 "success": True,
@@ -141,9 +163,13 @@ def publish_to_telegram(
             _record_simulated_publication(sim_result)
             return sim_result
 
-        logger.error(
-            f"[Publisher] ❌ TELEGRAM_BOT_TOKEN não configurado no ambiente. "
-            f"Publicação no canal '{target}' abortada."
+        emit_json_log(
+            logger=logger,
+            level="error",
+            component="publisher",
+            event="publish_aborted",
+            message=f"TELEGRAM_BOT_TOKEN não configurado no ambiente. Publicação no canal '{target}' abortada.",
+            channel=target,
         )
         return {
             "success": False,
@@ -171,7 +197,18 @@ def publish_to_telegram(
 
                 if response.is_success and resp_json.get("ok"):
                     msg_id = resp_json.get("result", {}).get("message_id")
-                    logger.info(f"[Publisher] Oferta com foto postada em {target} (msg_id: {msg_id})")
+                    duration_ms = (time.time() - start_time) * 1000
+                    emit_json_log(
+                        logger=logger,
+                        level="info",
+                        component="publisher",
+                        event="publish_success",
+                        message=f"Oferta com foto postada em {target} (msg_id: {msg_id})",
+                        channel=target,
+                        duration=round(duration_ms, 2),
+                        telegram_msg_id=msg_id,
+                        mode="photo",
+                    )
                     return {"success": True, "message_id": msg_id, "mode": "photo"}
                 else:
                     logger.warning(
@@ -194,15 +231,43 @@ def publish_to_telegram(
             response = client.post(f"{api_url}/sendMessage", data=text_payload)
             resp_json = response.json()
 
+            duration_ms = (time.time() - start_time) * 1000
             if response.is_success and resp_json.get("ok"):
                 msg_id = resp_json.get("result", {}).get("message_id")
-                logger.info(f"[Publisher] Oferta em texto postada em {target} (msg_id: {msg_id})")
+                emit_json_log(
+                    logger=logger,
+                    level="info",
+                    component="publisher",
+                    event="publish_success",
+                    message=f"Oferta em texto postada em {target} (msg_id: {msg_id})",
+                    channel=target,
+                    duration=round(duration_ms, 2),
+                    telegram_msg_id=msg_id,
+                    mode="text",
+                )
                 return {"success": True, "message_id": msg_id, "mode": "text"}
             else:
                 err_msg = resp_json.get("description", "Erro desconhecido")
-                logger.error(f"[Publisher] Erro ao postar mensagem no Telegram: {err_msg}")
+                emit_json_log(
+                    logger=logger,
+                    level="error",
+                    component="publisher",
+                    event="publish_failed",
+                    message=f"Erro ao postar mensagem no Telegram: {err_msg}",
+                    channel=target,
+                    duration=round(duration_ms, 2),
+                )
                 return {"success": False, "error": err_msg}
 
         except Exception as e:
-            logger.error(f"[Publisher] Exceção de rede ao comunicar com a Bot API do Telegram: {e}")
+            duration_ms = (time.time() - start_time) * 1000
+            emit_json_log(
+                logger=logger,
+                level="error",
+                component="publisher",
+                event="publish_failed",
+                message=f"Exceção de rede ao comunicar com a Bot API do Telegram: {e}",
+                channel=target,
+                duration=round(duration_ms, 2),
+            )
             return {"success": False, "error": str(e)}

@@ -21,11 +21,9 @@ from database.models import Offer
 import threading
 import time
 
-logger = logging.getLogger("elitedaspechinchas.bot.listener")
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-)
+from bot.structured_logger import get_structured_logger, emit_json_log
+
+logger = get_structured_logger("elitedaspechinchas.bot.listener", component="listener")
 
 _processing_msg_ids: Dict[int, float] = {}
 _msg_ids_lock = threading.Lock()
@@ -107,19 +105,53 @@ def process_incoming_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     # Prevenção rigorosa de concorrência NewMessage vs Poller
     if msg_id and not should_process_msg_id(msg_id):
-        logger.info(f"[Listener] ⚠️ Mensagem ID {msg_id} já em processamento ou capturada recentemente. Ignorando duplicação.")
+        emit_json_log(
+            logger=logger,
+            level="info",
+            component="listener",
+            event="message_skipped",
+            message=f"Mensagem ID {msg_id} já em processamento ou capturada recentemente. Ignorando duplicação.",
+            telegram_msg_id=msg_id,
+            source_name=source,
+        )
         return {"status": "skipped", "reason": "already_processing_or_processed", "telegram_msg_id": msg_id}
 
-    logger.info(f"[Listener] 🚀 Iniciando processamento imediato da mensagem ID {msg_id} da fonte {source}")
+    emit_json_log(
+        logger=logger,
+        level="info",
+        component="listener",
+        event="message_processing_started",
+        message=f"Iniciando processamento imediato da mensagem ID {msg_id} da fonte {source}",
+        telegram_msg_id=msg_id,
+        source_name=source,
+    )
 
     try:
         result = process_telegram_message(payload)
         status = result.get("status") if isinstance(result, dict) else "unknown"
         offer_id = result.get("offer_id") if isinstance(result, dict) else None
-        logger.info(f"[Listener] ✅ Processamento direto concluído com sucesso: {status} | Oferta: {offer_id}")
+        emit_json_log(
+            logger=logger,
+            level="info",
+            component="listener",
+            event="message_processed",
+            message=f"Processamento direto concluído com sucesso: {status} | Oferta: {offer_id}",
+            telegram_msg_id=msg_id,
+            source_name=source,
+            offer_id=str(offer_id) if offer_id else None,
+            processing_status=status,
+        )
         return result
     except Exception as direct_err:
-        logger.error(f"[Listener] Erro no processamento direto da mensagem {msg_id}: {direct_err}", exc_info=True)
+        emit_json_log(
+            logger=logger,
+            level="error",
+            component="listener",
+            event="message_process_error",
+            message=f"Erro no processamento direto da mensagem {msg_id}: {direct_err}",
+            telegram_msg_id=msg_id,
+            source_name=source,
+        )
         try:
             task = process_telegram_message.delay(payload)
             logger.info(f"[Listener] Fallback: Mensagem enviada para task Celery {task.id}")
@@ -521,7 +553,15 @@ async def setup_event_handlers(client, channels: List[str]):
         username = getattr(chat, "username", None)
         source_name = f"@{username}" if username else chat_id_to_handle.get(chat_id, chat_id_to_handle.get(event.chat_id, getattr(chat, "title", f"chat_{event.chat_id}")))
 
-        logger.info(f"[Listener] 📥 Nova mensagem capturada de {source_name} (ID: {msg.id})")
+        emit_json_log(
+            logger=logger,
+            level="info",
+            component="listener",
+            event="message_received",
+            message=f"Nova mensagem capturada de {source_name} (ID: {msg.id})",
+            source_name=source_name,
+            telegram_msg_id=msg.id,
+        )
 
         # Atualiza last_processed_ids em todos os formatos de chave
         chat_id = getattr(chat, "id", None)
@@ -564,7 +604,13 @@ async def start_userbot(client=None):
     async def heartbeat_loop():
         while True:
             await asyncio.sleep(300)
-            logger.info("[Heartbeat] 💓 Sistema de captura e publicação 100% operacional.")
+            emit_json_log(
+                logger=logger,
+                level="info",
+                component="listener",
+                event="heartbeat",
+                message="listener operational",
+            )
 
     heartbeat_task = asyncio.create_task(heartbeat_loop())
 

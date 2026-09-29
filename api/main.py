@@ -22,8 +22,10 @@ from api.routes.feed import router as feed_router
 from api.routes.offers import router as offers_router
 from api.routes.admin import router as admin_router
 
+from bot.structured_logger import get_structured_logger, emit_json_log
+
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("elitedaspechinchas.api")
+logger = get_structured_logger("elitedaspechinchas.api", component="api")
 SERVER_START_TIME = time.time()
 
 # ==========================================
@@ -115,9 +117,18 @@ async def request_timing_and_logging_middleware(request: Request, call_next):
     # Log estruturado (suprime endpoints de liveness frequentes)
     if request.url.path not in ("/health", "/ready", "/metrics", "/favicon.ico"):
         client_ip = request.client.host if request.client else "unknown"
-        logger.info(
-            f"[{request.method}] {request.url.path} status={response.status_code} "
-            f"latency={duration_ms:.2f}ms req_id={request_id} ip={client_ip}"
+        emit_json_log(
+            logger=logger,
+            level="info",
+            component="api",
+            event="request_completed",
+            message=f"[{request.method}] {request.url.path} status={response.status_code} latency={duration_ms:.2f}ms",
+            request_id=request_id,
+            path=request.url.path,
+            duration=round(duration_ms, 2),
+            status_code=response.status_code,
+            method=request.method,
+            client_ip=client_ip,
         )
     return response
 
@@ -216,15 +227,24 @@ def health_check(db: Session = Depends(get_db)):
     cache_stats = cache_service.get_stats()
     redis_status = "connected" if cache_stats.get("redis_connected") else "in_memory_fallback"
 
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    target_channel = os.getenv("TARGET_CHANNEL_ID")
+    bot_status = (
+        "configured"
+        if (bot_token and target_channel)
+        else ("partially_configured" if bot_token else "not_configured")
+    )
+
     return {
-        "status": "healthy",
+        "status": "healthy" if db_status == "connected" else "degraded",
+        "database": db_status,
+        "redis": redis_status,
+        "bot": bot_status,
+        "uptime_seconds": round(time.time() - SERVER_START_TIME, 2),
         "service": "Elite das Pechinchas Backend",
         "version": "4.0.0",
         "environment": os.getenv("ENVIRONMENT", "development"),
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "uptime_seconds": round(time.time() - SERVER_START_TIME, 2),
-        "database": db_status,
-        "redis": redis_status,
         "cache": cache_stats,
     }
 

@@ -18,14 +18,29 @@ from config import (
 from bot.listener import run_listener
 
 import time
+import threading
 
-# Configuração de Logging com formato limpo
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger("elitedaspechinchas.main")
+from bot.structured_logger import get_structured_logger, emit_json_log
+
+# Configuração de Logging Estruturado em JSON
+logger = get_structured_logger("elitedaspechinchas.main", component="listener")
+
+
+def start_heartbeat(interval_seconds: float = 300.0):
+    """Dispara uma thread de heartbeat periódico a cada 5 min registrando a operação do listener."""
+    def _heartbeat_worker():
+        while True:
+            time.sleep(interval_seconds)
+            emit_json_log(
+                logger=logger,
+                level="info",
+                component="listener",
+                event="heartbeat",
+                message="listener operational",
+            )
+    t = threading.Thread(target=_heartbeat_worker, daemon=True)
+    t.start()
+    return t
 
 
 def print_banner():
@@ -52,6 +67,8 @@ def main():
             "Preencha suas credenciais do Telegram (https://my.telegram.org/apps) para conectar o Userbot real."
         )
 
+    # Inicia heartbeat periódico a cada 5 min (300 segundos)
+    start_heartbeat(interval_seconds=300.0)
     logger.info("Iniciando escuta do Userbot Telethon com supervisor ativo...")
     restart_count = 0
     while True:
