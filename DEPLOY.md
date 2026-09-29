@@ -262,6 +262,25 @@ LOAD_TEST_CONCURRENCY=100 pytest tests/test_load.py -v -s
 LOAD_TEST_MAX_P95_MS=50 pytest tests/test_load.py -v -s
 ```
 
+### 6.3 Teste de Resiliência (Queda e Falha do Redis)
+
+Para garantir que a API continua 100% disponível servindo `/offers`, `/health` e `/coupons` mesmo se o Redis falhar, utilize o script `tests/test_resilience.py`.
+
+#### O que é validado:
+- **Sobrevivência da API**: Verifica que todas as rotas continuam respondendo com status 200 via fallback em memória (`_IN_MEMORY_CACHE`).
+- **Healthcheck Transparente**: Valida que `/health` indica `redis: in_memory_fallback` mantendo `status: healthy` com zero downtime.
+- **Simulação Local & Logs**: Valida que o `CacheService` captura o erro de conexão do Redis, emite aviso nos logs (`logger.warning`) e redireciona operações de leitura/escrita para a memória.
+
+#### Como Executar:
+
+```bash
+# Execução padrão contra a API em produção:
+pytest tests/test_resilience.py -v
+
+# Apontando para outra URL ou instância local:
+RAILWAY_API_URL="https://sua-api.up.railway.app" pytest tests/test_resilience.py -v
+```
+
 ---
 
 ## 7. Monitoramento

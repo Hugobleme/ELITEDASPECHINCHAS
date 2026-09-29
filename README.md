@@ -368,6 +368,12 @@ pytest tests/test_load.py -v -s
 LOAD_TEST_DURATION=5 pytest tests/test_load.py -v -s
 ```
 
+### Como Executar o Teste de Resiliência (Fallback do Redis)
+```bash
+# Execução padrão:
+pytest tests/test_resilience.py -v
+```
+
 ### Como Executar a Validação de Migrations Localmente
 Caso possua o Docker rodando localmente:
 ```bash
