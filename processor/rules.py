@@ -1,4 +1,6 @@
 import hashlib
+import time
+import threading
 from datetime import datetime, timedelta, timezone
 import logging
 import re
@@ -191,6 +193,17 @@ def is_link_safe(url: Optional[str]) -> Tuple[bool, str]:
     return True, ""
 
 
+_rules_memory_dedup: Dict[str, float] = {}
+_rules_dedup_lock = threading.Lock()
+MEMORY_DEDUP_WINDOW_SECONDS = 1800  # 30 minutos em memória
+
+
+def clear_rules_memory_dedup() -> None:
+    """Limpa o cache de deduplicação em memória (utilizado em testes)."""
+    with _rules_dedup_lock:
+        _rules_memory_dedup.clear()
+
+
 def is_duplicate(
     db: Session,
     telegram_msg_id: Optional[int],
@@ -199,14 +212,41 @@ def is_duplicate(
     hours: int = DEDUPLICATION_HOURS,
 ) -> Tuple[bool, str]:
     """
-    Verifica se a oferta já foi capturada por telegram_msg_id ou por título/preço nas últimas horas.
+    Verifica se a oferta já foi capturada por telegram_msg_id ou por título/preço.
+    Combina janela de 30 min em memória e até 24h no banco de dados para cobrir o boot e evitar reprocessamento.
     """
     try:
+        # 1. Verificação por telegram_msg_id com prioridade para a janela de boot (últimos 30 min)
         if telegram_msg_id:
-            existing_msg = db.query(Offer).filter(Offer.telegram_msg_id == telegram_msg_id).first()
+            cutoff_boot = (datetime.now(timezone.utc) - timedelta(minutes=30)).replace(tzinfo=None)
+            boot_recent = (
+                db.query(Offer)
+                .filter(Offer.telegram_msg_id == int(telegram_msg_id), Offer.created_at >= cutoff_boot)
+                .first()
+            )
+            if boot_recent:
+                logger.info(
+                    f"[dedup no boot] Mensagem {telegram_msg_id} já persistida no banco nas últimas 30 min (ID={boot_recent.id})."
+                )
+                return True, f"[dedup no boot] Mensagem duplicada recente (telegram_msg_id: {telegram_msg_id})"
+
+            existing_msg = db.query(Offer).filter(Offer.telegram_msg_id == int(telegram_msg_id)).first()
             if existing_msg:
                 return True, f"Mensagem duplicada já capturada (telegram_msg_id: {telegram_msg_id})"
 
+        # 2. Verificação de deduplicação rápida em memória (janela de 30 min)
+        current_hash = generate_offer_hash(title, price_current)
+        now = time.time()
+        with _rules_dedup_lock:
+            cutoff_mem = now - MEMORY_DEDUP_WINDOW_SECONDS
+            expired = [k for k, v in _rules_memory_dedup.items() if v < cutoff_mem]
+            for k in expired:
+                del _rules_memory_dedup[k]
+            if current_hash in _rules_memory_dedup:
+                return True, "Oferta idêntica encontrada no cache recente de memória (30 min)"
+            _rules_memory_dedup[current_hash] = now
+
+        # 3. Verificação no banco de dados (janela de 24h configurada)
         cutoff_time = (datetime.now(timezone.utc) - timedelta(hours=hours)).replace(tzinfo=None)
         recent_offers = (
             db.query(Offer)
@@ -217,7 +257,6 @@ def is_duplicate(
             .all()
         )
 
-        current_hash = generate_offer_hash(title, price_current)
         for off in recent_offers:
             if generate_offer_hash(off.title, off.price_current) == current_hash:
                 return True, f"Oferta idêntica encontrada nas últimas {hours}h (ID existente: {off.id})"

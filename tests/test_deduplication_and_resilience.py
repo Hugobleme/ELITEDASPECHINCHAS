@@ -4,15 +4,25 @@ from unittest.mock import patch, MagicMock
 
 from database.models import Offer, Source
 from bot.publisher import publish_to_telegram, clear_publication_cache, is_duplicate_publication
-from bot.listener import should_process_msg_id, process_incoming_payload
-from processor.tasks import publish_offer_to_channel
+from bot.listener import (
+    should_process_msg_id,
+    process_incoming_payload,
+    clear_processing_msg_ids,
+    ENABLE_WEB_POLLER,
+)
+from processor.tasks import publish_offer_to_channel, process_telegram_message
+from processor.rules import is_duplicate, clear_rules_memory_dedup
 
 
 @pytest.fixture(autouse=True)
 def clean_cache():
     clear_publication_cache()
+    clear_processing_msg_ids()
+    clear_rules_memory_dedup()
     yield
     clear_publication_cache()
+    clear_processing_msg_ids()
+    clear_rules_memory_dedup()
 
 
 def test_publisher_sliding_window_duplicate_prevention(monkeypatch, tmp_path):
@@ -157,5 +167,183 @@ async def test_poll_public_channel(monkeypatch):
     assert "https://pechin.co/998877" in m["entities_links"]
     assert m["media_url"] == "https://cdn.telesco.pe/photo123.jpg"
     assert "Fone Bluetooth Gamer" in m["text"]
+
+
+def test_web_poller_disabled_by_default():
+    """Garante que o Web Poller público HTTP fica desligado por padrão."""
+    from bot.listener import ENABLE_WEB_POLLER
+    assert ENABLE_WEB_POLLER is False
+
+
+def test_boot_deduplication_listener_skips_recent_persisted_offer(db_session, monkeypatch):
+    """
+    Garante que o reinício do listener não reprocessa ofertas já persistidas nas últimas 30 min.
+    Deve registrar log claro com [dedup no boot] e retornar status 'skipped'.
+    """
+    class NoCloseSession:
+        def __init__(self, session):
+            self._session = session
+        def __getattr__(self, name):
+            if name == "close":
+                return lambda: None
+            return getattr(self._session, name)
+
+    monkeypatch.setattr("bot.listener.SessionLocal", lambda: NoCloseSession(db_session))
+    monkeypatch.setattr("database.connection.SessionLocal", lambda: NoCloseSession(db_session))
+
+    recent_offer = Offer(
+        id="offer-boot-recent-1",
+        title="Monitor Gamer 144Hz 24 Pol",
+        price_current=799.00,
+        price_original=999.00,
+        discount_pct=20,
+        store="Kabum",
+        category="informatica",
+        image_url="https://img.com/monitor.jpg",
+        affiliate_link="https://kabum.com.br/monitor",
+        telegram_msg_id=778899,
+        created_at=(datetime.now(timezone.utc) - timedelta(minutes=10)).replace(tzinfo=None),
+    )
+    db_session.add(recent_offer)
+    db_session.commit()
+
+    payload = {
+        "text": "Monitor Gamer 144Hz 24 Pol R$ 799",
+        "telegram_msg_id": 778899,
+        "source_name": "@promocoes",
+    }
+
+    res = process_incoming_payload(payload)
+    assert res["status"] == "skipped"
+    assert "dedup no boot" in res["reason"]
+    assert res["offer_id"] == "offer-boot-recent-1"
+
+
+def test_boot_deduplication_processor_tasks_skips_recent_persisted_offer(db_session, monkeypatch):
+    """
+    Garante que a task process_telegram_message consulta o banco para mensagens recentes (< 30 min)
+    e pula o processamento com log claro e status 'skipped'.
+    """
+    class NoCloseSession:
+        def __init__(self, session):
+            self._session = session
+        def __getattr__(self, name):
+            if name == "close":
+                return lambda: None
+            return getattr(self._session, name)
+
+    monkeypatch.setattr("processor.tasks.SessionLocal", lambda: NoCloseSession(db_session))
+    monkeypatch.setattr("database.connection.SessionLocal", lambda: NoCloseSession(db_session))
+
+    recent_offer = Offer(
+        id="offer-task-boot-recent-2",
+        title="Teclado Mecânico RGB Switch Blue",
+        price_current=199.90,
+        price_original=299.90,
+        discount_pct=33,
+        store="AliExpress",
+        category="informatica",
+        image_url="https://img.com/teclado.jpg",
+        affiliate_link="https://aliexpress.com/item/1",
+        telegram_msg_id=881122,
+        created_at=(datetime.now(timezone.utc) - timedelta(minutes=5)).replace(tzinfo=None),
+    )
+    db_session.add(recent_offer)
+    db_session.commit()
+
+    raw_data = {
+        "text": "Teclado Mecânico RGB R$ 199,90",
+        "telegram_msg_id": 881122,
+        "source_name": "@canal_gamer",
+    }
+
+    result = process_telegram_message(raw_data)
+    assert result["status"] == "skipped"
+    assert "dedup no boot" in result["reason"]
+    assert result["offer_id"] == "offer-task-boot-recent-2"
+
+
+def test_rules_is_duplicate_boot_window_and_memory(db_session):
+    """
+    Garante que processor/rules.py:
+    1. Detecta duplicatas de boot para mensagens persistidas nas últimas 30 min por telegram_msg_id.
+    2. Mantém deduplicação rápida em memória para a janela de 30 min.
+    3. Mantém deduplicação no banco de dados para a janela de 24h.
+    """
+    # 1. Boot dedup (últimas 30 min via telegram_msg_id)
+    recent_offer = Offer(
+        id="offer-rules-boot-3",
+        title="Mouse Gamer Sem Fio 16000 DPI",
+        price_current=150.00,
+        price_original=250.00,
+        discount_pct=40,
+        store="Amazon",
+        category="informatica",
+        image_url="https://img.com/mouse.jpg",
+        affiliate_link="https://amzn.to/mouse",
+        telegram_msg_id=556677,
+        created_at=(datetime.now(timezone.utc) - timedelta(minutes=15)).replace(tzinfo=None),
+        is_active=True,
+    )
+    db_session.add(recent_offer)
+    db_session.commit()
+
+    is_dup, reason = is_duplicate(
+        db=db_session,
+        telegram_msg_id=556677,
+        title="Mouse Gamer Sem Fio 16000 DPI",
+        price_current=150.00,
+    )
+    assert is_dup is True
+    assert "[dedup no boot]" in reason
+
+    # 2. Dedup em memória (janela de 30 min)
+    clear_rules_memory_dedup()
+    is_dup1, _ = is_duplicate(
+        db=db_session,
+        telegram_msg_id=None,
+        title="Headset Gamer 7.1 Surround",
+        price_current=299.00,
+    )
+    assert is_dup1 is False  # Primeira vez não é duplicado, entra no cache de memória
+
+    # Segunda chamada imediata: deve ser capturada pelo cache em memória
+    is_dup2, reason2 = is_duplicate(
+        db=db_session,
+        telegram_msg_id=None,
+        title="Headset Gamer 7.1 Surround",
+        price_current=299.00,
+    )
+    assert is_dup2 is True
+    assert "memória (30 min)" in reason2
+
+    # 3. Dedup no banco de dados (janela de 24h)
+    clear_rules_memory_dedup()  # Limpa memória para validar persistência do banco
+    old_offer = Offer(
+        id="offer-rules-db-24h",
+        title="Cadeira Gamer Ergonômica",
+        price_current=899.00,
+        price_original=1299.00,
+        discount_pct=30,
+        store="Kabum",
+        category="moveis",
+        image_url="https://img.com/cadeira.jpg",
+        affiliate_link="https://kabum.com.br/cadeira",
+        telegram_msg_id=None,
+        created_at=(datetime.now(timezone.utc) - timedelta(hours=2)).replace(tzinfo=None),
+        is_active=True,
+    )
+    db_session.add(old_offer)
+    db_session.commit()
+
+    is_dup3, reason3 = is_duplicate(
+        db=db_session,
+        telegram_msg_id=None,
+        title="Cadeira Gamer Ergonômica",
+        price_current=899.00,
+        hours=24,
+    )
+    assert is_dup3 is True
+    assert "24h" in reason3
 
 

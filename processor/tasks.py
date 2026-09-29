@@ -48,6 +48,25 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
 
     db: Session = SessionLocal()
     try:
+        # Dedup no boot: consulta o banco para mensagens recentes (últimas 30 min) antes de processar
+        if telegram_msg_id:
+            cutoff_boot = (datetime.now(timezone.utc) - timedelta(minutes=30)).replace(tzinfo=None)
+            persisted_recent = (
+                db.query(Offer)
+                .filter(Offer.telegram_msg_id == int(telegram_msg_id), Offer.created_at >= cutoff_boot)
+                .first()
+            )
+            if persisted_recent:
+                logger.info(
+                    f"[dedup no boot] ⚠️ Mensagem msg_id={telegram_msg_id} já persistida no banco nas últimas 30 min (Oferta ID={persisted_recent.id}). "
+                    f"Ignorando reprocessamento."
+                )
+                return {
+                    "status": "skipped",
+                    "reason": f"dedup no boot: mensagem já persistida nas últimas 30 min (telegram_msg_id: {telegram_msg_id})",
+                    "offer_id": str(persisted_recent.id),
+                }
+
         # 1. Parsing
         parsed = parse_telegram_message(
             text=text,

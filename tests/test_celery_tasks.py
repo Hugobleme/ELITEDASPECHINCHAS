@@ -140,10 +140,10 @@ def test_process_telegram_message_deduplication(db_session: Session, monkeypatch
     assert res1["status"] == "success"
     assert res1["initial_status"] == "pending"
 
-    # Segunda ingestão com o mesmo telegram_msg_id: deve ser rejeitada por duplicidade
+    # Segunda ingestão com o mesmo telegram_msg_id: deve ser rejeitada/ignorada por duplicidade
     res2 = process_telegram_message.delay(raw_message).get()
-    assert res2["status"] == "rejected"
-    assert "duplicada" in res2["reason"].lower()
+    assert res2["status"] in ("rejected", "skipped")
+    assert "duplicada" in res2["reason"].lower() or "dedup" in res2["reason"].lower()
 
     # Confirma apenas 1 registro no banco
     count = db_session.query(Offer).filter(Offer.telegram_msg_id == 99884).count()

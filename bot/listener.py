@@ -4,7 +4,7 @@ import logging
 import asyncio
 import re
 import httpx
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List, Optional, Dict, Any
 
 from config import (
@@ -28,6 +28,13 @@ logger = get_structured_logger("elitedaspechinchas.bot.listener", component="lis
 _processing_msg_ids: Dict[int, float] = {}
 _msg_ids_lock = threading.Lock()
 MSG_ID_DEDUPLICATION_WINDOW_SECONDS = 1800  # 30 minutos
+ENABLE_WEB_POLLER = os.getenv("ENABLE_WEB_POLLER", "false").lower() in ("true", "1", "yes")
+
+
+def clear_processing_msg_ids() -> None:
+    """Limpa o cache em memória de telegram_msg_id (utilizado para testes e isolamento)."""
+    with _msg_ids_lock:
+        _processing_msg_ids.clear()
 
 
 def should_process_msg_id(msg_id: Optional[int]) -> bool:
@@ -103,7 +110,7 @@ def process_incoming_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
     msg_id = payload.get("telegram_msg_id")
     source = payload.get("source_name")
 
-    # Prevenção rigorosa de concorrência NewMessage vs Poller
+    # Prevenção rigorosa de concorrência NewMessage vs Poller em memória
     if msg_id and not should_process_msg_id(msg_id):
         emit_json_log(
             logger=logger,
@@ -115,6 +122,39 @@ def process_incoming_payload(payload: Dict[str, Any]) -> Dict[str, Any]:
             source_name=source,
         )
         return {"status": "skipped", "reason": "already_processing_or_processed", "telegram_msg_id": msg_id}
+
+    # Dedup no boot: consulta o banco para mensagens recentes (últimas 30 min) antes de processar
+    if msg_id:
+        try:
+            db_check = SessionLocal()
+            try:
+                cutoff_boot = (datetime.now(timezone.utc) - timedelta(minutes=30)).replace(tzinfo=None)
+                persisted_recent = (
+                    db_check.query(Offer)
+                    .filter(Offer.telegram_msg_id == int(msg_id), Offer.created_at >= cutoff_boot)
+                    .first()
+                )
+                if persisted_recent:
+                    emit_json_log(
+                        logger=logger,
+                        level="info",
+                        component="listener",
+                        event="boot_dedup_skipped",
+                        message=f"[dedup no boot] Mensagem ID {msg_id} já persistida no banco nas últimas 30 min (Oferta ID={persisted_recent.id}). Ignorando reprocessamento.",
+                        telegram_msg_id=msg_id,
+                        source_name=source,
+                        offer_id=str(persisted_recent.id),
+                    )
+                    return {
+                        "status": "skipped",
+                        "reason": f"dedup no boot: mensagem já persistida nas últimas 30 min (telegram_msg_id: {msg_id})",
+                        "telegram_msg_id": msg_id,
+                        "offer_id": str(persisted_recent.id),
+                    }
+            finally:
+                db_check.close()
+        except Exception as check_err:
+            logger.debug(f"[Listener] Falha ao checar dedup no boot: {check_err}")
 
     emit_json_log(
         logger=logger,
@@ -434,6 +474,15 @@ async def run_channel_poller(client, channels: List[str], interval: float = 8.0)
 
                         exists = db.query(Offer).filter(Offer.telegram_msg_id == msg.id).first()
                         if exists:
+                            emit_json_log(
+                                logger=logger,
+                                level="info",
+                                component="listener",
+                                event="boot_dedup_skipped",
+                                message=f"[dedup no boot] Oferta com msg_id={msg.id} já persistida no banco (ID={exists.id}). Ignorando reprocessamento pós-boot.",
+                                telegram_msg_id=msg.id,
+                                offer_id=str(exists.id),
+                            )
                             continue
 
                         source_name = f"@{entity.username}" if getattr(entity, "username", None) else (clean_ch if clean_ch.startswith("@") else getattr(entity, "title", clean_ch))
@@ -593,14 +642,17 @@ async def setup_event_handlers(client, channels: List[str]):
 
 async def start_userbot(client=None):
     """
-    Supervisor resiliente de captura com dupla camada de redundância:
-    - Camada Primária (Universal): Web Poller HTTP público autônomo (100% resiliente, sem necessidade de sessão MTProto).
-    - Camada Secundária (Telethon): MTProto Userbot para eventos em tempo real (se autorizado).
+    Supervisor resiliente de captura baseado em Telethon (MTProto + Poller Nativo).
+    O Web Poller HTTP público fica desligado por padrão em produção para evitar instabilidade.
     """
-    # 1. Inicia o Web Poller HTTP público imediatamente como task paralela perpétua
-    web_poller_task = asyncio.create_task(run_public_web_poller(SOURCE_CHANNELS, interval=8.0))
+    web_poller_task = None
+    if ENABLE_WEB_POLLER and os.getenv("ENVIRONMENT") != "production":
+        logger.info("[WebPoller] 🌐 Web Poller HTTP público habilitado em ambiente de teste.")
+        web_poller_task = asyncio.create_task(run_public_web_poller(SOURCE_CHANNELS, interval=8.0))
+    else:
+        logger.info("[Listener] 🛡️ Web poller desligado em produção; apenas MTProto + poller nativo ativos.")
 
-    # 2. Heartbeat periódico a cada 5 minutos
+    # Heartbeat periódico a cada 5 minutos
     async def heartbeat_loop():
         while True:
             await asyncio.sleep(300)
@@ -614,46 +666,54 @@ async def start_userbot(client=None):
 
     heartbeat_task = asyncio.create_task(heartbeat_loop())
 
-    # 3. Tenta conectar o Telethon MTProto se client fornecido
-    if client is not None:
-        try:
-            logger.info("[Listener] Tentando autenticar cliente Telethon MTProto...")
-            await client.connect()
-
-            if not await client.is_user_authorized():
-                logger.warning(
-                    "⚠️ [Listener] Sessão MTProto do Telethon não está autorizada.\n"
-                    "O Web Poller HTTP público está ativo e operando com 100% de capacidade de captura."
-                )
-            else:
-                me = await client.get_me()
-                username = f"@{me.username}" if getattr(me, "username", None) else (me.phone or "sem_username")
-                logger.info(f"✅ Userbot conectado com sucesso como: {me.first_name} ({username})")
-
-                if not getattr(client, "_handlers_registered", False):
-                    await setup_event_handlers(client, SOURCE_CHANNELS)
-                    client._handlers_registered = True
-                    logger.info(f"🎯 Monitoramento MTProto ativo em tempo real em: {', '.join(SOURCE_CHANNELS)}")
-
-                poller_task = asyncio.create_task(run_channel_poller(client, SOURCE_CHANNELS, interval=8.0))
-
-                try:
-                    await client.run_until_disconnected()
-                    logger.warning("[Listener] Conexão MTProto desconectada.")
-                finally:
-                    poller_task.cancel()
-
-        except Exception as telethon_err:
-            logger.warning(
-                f"⚠️ [Listener] Telethon MTProto indisponível ({telethon_err}). "
-                "O Web Poller HTTP público está ativo e operando com 100% de capacidade de captura."
-            )
-
-    # Mantém o processo vivo indefinidamente executando o Web Poller
     try:
-        await web_poller_task
+        if client is not None:
+            try:
+                logger.info("[Listener] Tentando autenticar cliente Telethon MTProto...")
+                await client.connect()
+
+                if not await client.is_user_authorized():
+                    logger.warning(
+                        "⚠️ [Listener] Sessão MTProto do Telethon não está autorizada. "
+                        "Aguardando credenciais no ambiente."
+                    )
+                    while True:
+                        await asyncio.sleep(60)
+                else:
+                    me = await client.get_me()
+                    username = f"@{me.username}" if getattr(me, "username", None) else (me.phone or "sem_username")
+                    logger.info(f"✅ Userbot conectado com sucesso como: {me.first_name} ({username})")
+
+                    if not getattr(client, "_handlers_registered", False):
+                        await setup_event_handlers(client, SOURCE_CHANNELS)
+                        client._handlers_registered = True
+                        logger.info(f"🎯 Monitoramento MTProto ativo em tempo real em: {', '.join(SOURCE_CHANNELS)}")
+
+                    poller_task = asyncio.create_task(run_channel_poller(client, SOURCE_CHANNELS, interval=8.0))
+
+                    try:
+                        await client.run_until_disconnected()
+                        logger.warning("[Listener] Conexão MTProto desconectada.")
+                    finally:
+                        poller_task.cancel()
+
+            except Exception as telethon_err:
+                logger.warning(
+                    f"⚠️ [Listener] Telethon MTProto indisponível ({telethon_err}). Aguardando recuperação..."
+                )
+                while True:
+                    await asyncio.sleep(60)
+        else:
+            logger.info("[Listener] Telethon client não fornecido. Listener ativo aguardando credenciais.")
+            if web_poller_task:
+                await web_poller_task
+            else:
+                while True:
+                    await asyncio.sleep(60)
     finally:
         heartbeat_task.cancel()
+        if web_poller_task and not web_poller_task.done():
+            web_poller_task.cancel()
 
 
 def run_listener():
