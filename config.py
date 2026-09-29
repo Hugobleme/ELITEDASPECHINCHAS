@@ -31,7 +31,7 @@ def _get_float(key: str, default: float) -> float:
 # 1. Credenciais do Telegram (Userbot Telethon & Bot API)
 # ------------------------------------------------------------------------------
 # Obtenha API_ID e API_HASH em: https://my.telegram.org/apps
-TELEGRAM_API_ID = _get_int("TELEGRAM_API_ID", 0)
+TELEGRAM_API_ID = _get_int("TELEGRAM_API_ID", 0) or _get_int("TELEGRAM_APT_ID", 0)
 TELEGRAM_API_HASH = os.getenv("TELEGRAM_API_HASH", "")
 TELEGRAM_SESSION_NAME = os.getenv("TELEGRAM_SESSION_NAME", "elitedaspechinchas_userbot")
 TELEGRAM_STRING_SESSION = os.getenv("TELEGRAM_STRING_SESSION", "")
