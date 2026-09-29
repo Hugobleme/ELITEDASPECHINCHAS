@@ -374,6 +374,12 @@ LOAD_TEST_DURATION=5 pytest tests/test_load.py -v -s
 pytest tests/test_resilience.py -v
 ```
 
+### Como Executar o Teste de Tags de Afiliado
+```bash
+# Execução padrão contra a API:
+pytest tests/test_affiliate_links.py -v
+```
+
 ### Como Executar a Validação de Migrations Localmente
 Caso possua o Docker rodando localmente:
 ```bash

@@ -281,6 +281,25 @@ pytest tests/test_resilience.py -v
 RAILWAY_API_URL="https://sua-api.up.railway.app" pytest tests/test_resilience.py -v
 ```
 
+### 6.4 Validação de Links de Afiliado (Tags Corretas)
+
+Para validar que todas as ofertas públicas da vitrine possuem os parâmetros e identificadores oficiais de monetização de cada loja parceira, utilize `tests/test_affiliate_links.py`.
+
+#### O que é validado:
+- **Amazon**: Presença obrigatória do parâmetro `tag=elitedaspechi-20`.
+- **Mercado Livre**: Presença obrigatória de `matt_word=elitedaspechinchas` e `matt_tool=17470999`.
+- **Shopee**: Presença obrigatória de `af_id=18337121236`, `affiliate_id=18337121236` ou `af_siteid=18337121236`.
+
+#### Como Executar:
+
+```bash
+# Execução padrão contra a API de produção:
+pytest tests/test_affiliate_links.py -v
+
+# Apontando para outra URL:
+RAILWAY_API_URL="https://sua-api.up.railway.app" pytest tests/test_affiliate_links.py -v
+```
+
 ---
 
 ## 7. Monitoramento
