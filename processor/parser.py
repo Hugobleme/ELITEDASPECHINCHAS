@@ -684,9 +684,9 @@ def parse_telegram_message(
     coupon_code = extract_coupon(text)
     coupon_validity = extract_coupon_validity(text)
 
-    # 6. Imagem
+    # 6. Imagem (preserva exclusivamente imagem real do canal de origem, sem inventar mídias)
     extracted_img = extract_image_url(text)
-    image_url = media_url or extracted_img or CATEGORY_DEFAULT_IMAGES.get(category, CATEGORY_DEFAULT_IMAGES["eletronicos"])
+    image_url = media_url or extracted_img or None
 
     # 7. Contagem de produtos na mensagem
     all_links = extract_all_urls(text)

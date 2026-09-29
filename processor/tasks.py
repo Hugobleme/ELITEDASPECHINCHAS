@@ -22,6 +22,7 @@ from processor.rules import evaluate_rules, generate_offer_hash
 from processor.notify import match_and_notify
 from bot.formatter import format_telegram_card_html
 from bot.publisher import publish_to_telegram
+from bot.media_handler import cleanup_temp_media
 from config import TARGET_CHANNEL_ID
 
 logger = logging.getLogger("elitedaspechinchas.processor.tasks")
@@ -41,7 +42,10 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
     text = raw_data.get("text", "")
     telegram_msg_id = raw_data.get("telegram_msg_id")
     source_name = raw_data.get("source_name")
-    media_url = raw_data.get("media_url")
+    media_url = raw_data.get("media_url") or raw_data.get("source_image_url")
+    source_media_type = raw_data.get("source_media_type")
+    source_media_path = raw_data.get("source_media_path")
+    source_message_id = raw_data.get("source_message_id") or telegram_msg_id
     entities_links = raw_data.get("entities_links", [])
 
     logger.info(f"[Tasks] Iniciando processamento de mensagem msg_id={telegram_msg_id} da fonte {source_name or 'NÃO INFORMADA'}")
@@ -139,6 +143,17 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
                     "offer_id": str(existing_offer.id),
                 }
 
+        # Determinação padronizada do estado e tipo inicial da mídia
+        if source_media_path and os.path.exists(source_media_path):
+            initial_media_status = "downloaded"
+            final_media_type = source_media_type or "photo"
+        elif parsed.get("image_url"):
+            initial_media_status = "detected"
+            final_media_type = source_media_type or "url"
+        else:
+            initial_media_status = "not_present"
+            final_media_type = None
+
         now_utc = datetime.now(timezone.utc)
         new_offer = Offer(
             title=parsed["title"],
@@ -150,7 +165,11 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
             store_id=store_obj.id if store_obj else None,
             category=parsed["category"],
             category_id=category_obj.id if category_obj else None,
-            image_url=parsed["image_url"],
+            image_url=parsed.get("image_url"),
+            source_media_type=final_media_type,
+            source_message_id=int(source_message_id) if source_message_id else None,
+            media_storage_key=raw_data.get("media_storage_key"),
+            media_status=initial_media_status,
             original_link=parsed["original_link"],
             affiliate_link=affiliate_link,
             coupon_code=parsed.get("coupon_code"),
@@ -200,12 +219,12 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
             else:
                 logger.info(f"[Tasks] Disparando publicação automática para oferta {offer_id}")
                 try:
-                    publish_offer_to_channel(offer_id)
+                    publish_offer_to_channel(offer_id, media_path=source_media_path)
                     logger.info(f"[Tasks] ✅ Oferta {offer_id} publicada com sucesso no canal!")
                 except Exception as direct_pub_err:
                     logger.warning(f"[Tasks] Falha na publicação direta ({direct_pub_err}). Tentando via Celery...")
                     try:
-                        publish_offer_to_channel.delay(offer_id)
+                        publish_offer_to_channel.delay(offer_id, media_path=source_media_path)
                     except Exception as celery_pub_err:
                         logger.error(f"[Tasks] Falha em ambos os métodos de publicação para oferta {offer_id}: {celery_pub_err}")
 
@@ -254,7 +273,12 @@ def task_process_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
 
 
 @celery_app.task(name="publish_offer_to_channel", bind=True, max_retries=3, default_retry_delay=15)
-def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = None) -> Dict[str, Any]:
+def publish_offer_to_channel(
+    self,
+    offer_id: str,
+    channel_id: Optional[str] = None,
+    media_path: Optional[str] = None,
+) -> Dict[str, Any]:
     """
     Publica uma oferta aprovada no canal do Telegram e atualiza seu status para 'published'.
     Dispara subsequentemente o matching de alertas para Web Push.
@@ -347,14 +371,29 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
             message=formatted_message,
             channel_id=target_channel,
             image_url=offer.image_url,
+            media_path=media_path,
             reply_markup=reply_markup,
             parse_mode="HTML",
+            offer_id=str(offer.id),
+            telegram_msg_id=offer.telegram_msg_id,
+            media_type=offer.source_media_type,
         )
 
         if not pub_result.get("success"):
+            offer.media_status = "failed"
+            db.commit()
             err = pub_result.get("error", "Falha desconhecida na Telegram Bot API")
             logger.error(f"[Publish Task] ❌ Falha ao publicar oferta {offer.id} no Telegram: {err}")
             raise Exception(f"Erro ao publicar no canal: {err}")
+
+        # Atualiza status de persistência de mídia no banco
+        if pub_result.get("mode") == "photo":
+            offer.media_status = "published"
+        elif pub_result.get("mode") == "text":
+            if pub_result.get("media_publish_failed") or offer.source_media_type or offer.image_url or media_path:
+                offer.media_status = "fallback_text"
+            else:
+                offer.media_status = "not_present"
 
         offer.status = "published"
         offer.published_at = datetime.now(timezone.utc)
@@ -365,12 +404,13 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
         except Exception as notif_err:
             logger.warning(f"[Publish Task] Notificação ignorada em fallback: {notif_err}")
 
-        logger.info(f"🚀 [Publish Task] Oferta {offer.id} publicada no canal {target_channel}!")
+        logger.info(f"🚀 [Publish Task] Oferta {offer.id} publicada no canal {target_channel} (mídia: {offer.media_status})!")
         return {
             "status": "success",
             "offer_id": str(offer.id),
             "channel": target_channel,
             "publish_result": pub_result,
+            "media_status": offer.media_status,
         }
 
     except Exception as exc:
@@ -378,13 +418,14 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
         logger.error(f"[Publish Task] Erro ao publicar oferta {offer_id}: {exc}")
         raise self.retry(exc=exc)
     finally:
+        cleanup_temp_media(media_path)
         db.close()
 
 
 @celery_app.task(name="task_publish_offer", bind=True, max_retries=3, default_retry_delay=15)
-def task_publish_offer(self, offer_id: str, channel_id: Optional[str] = None) -> Dict[str, Any]:
+def task_publish_offer(self, offer_id: str, channel_id: Optional[str] = None, media_path: Optional[str] = None) -> Dict[str, Any]:
     """Alias padronizado para publish_offer_to_channel."""
-    return publish_offer_to_channel(offer_id, channel_id)
+    return publish_offer_to_channel(offer_id, channel_id, media_path=media_path)
 
 
 @celery_app.task(name="task_batch_process", bind=True)

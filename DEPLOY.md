@@ -348,3 +348,76 @@ RAILWAY_API_URL="https://sua-api.up.railway.app" pytest tests/test_affiliate_lin
 ### Migrações falham
 - Execute manualmente: `railway run alembic upgrade head`
 - Verifique se o banco está acessível.
+
+---
+
+## 9. Diagnóstico e Observabilidade de Mídia (Telegram)
+
+Para garantir que promoções com imagem no canal de origem cheguem ao canal oficial com foto preservada (e nunca fiquem escuras sem justificativa), o pipeline implementa rastreabilidade completa de mídia.
+
+### 9.1 Ciclo de Vida do Campo `media_status`
+
+Na tabela `offers`, cada registro rastreia o ciclo de vida da imagem:
+
+| Estado | Significado | Comportamento no Canal |
+|---|---|---|
+| `not_present` | Nenhuma mídia foi detectada na mensagem de origem | Publicado com `sendMessage` (texto puro formatado). Ausência de mídia não é tratada como erro. |
+| `detected` | Foto/documento/preview detectado pelo listener/poller | Aguarda download ou validação de URL. |
+| `downloaded` | Foto baixada com sucesso em `/tmp` para upload multipart | Pronto para publicação via `sendPhoto`. |
+| `published` | Publicação com imagem concluída com sucesso | Postado no canal oficial via `sendPhoto` com legenda e botão inline. |
+| `fallback_text` | Foto detectada, mas publicação falhou de forma controlada | Publicado com `sendMessage` sem perder a oferta. Causa detalhada em log JSON. |
+| `failed` | Falha fatal na Bot API do Telegram | Erro logado e tarefa Celery reescalonada. |
+
+### 9.2 Logs Estruturados de Diagnóstico
+
+No Railway (Service Logs do Celery Worker ou Listener), filtre pelos seguintes padrões JSON:
+
+#### A. Detecção de Mídia na Captura:
+```json
+{
+  "component": "listener",
+  "event": "source_media_detected",
+  "telegram_msg_id": 99881,
+  "media_type": "photo",
+  "has_public_url": false,
+  "downloaded": true
+}
+```
+
+#### B. Falha de Imagem com Fallback Controlado:
+Se o Telegram rejeitar a foto ou a URL for inacessível, o publisher aciona o fallback textual sem derrubar o pipeline:
+```json
+{
+  "component": "publisher",
+  "event": "media_publish_error_fallback",
+  "media_publish_failed": true,
+  "status_code": 404,
+  "error": "HTTP 404 Not Found",
+  "offer_id": "uuid-da-oferta",
+  "telegram_msg_id": 99881,
+  "media_type": "photo",
+  "mode": "text"
+}
+```
+> **Nota de Segurança**: Os logs sanitizam a URL e **nunca expõem o token** da Bot API (`/bot<TOKEN>/...`).
+
+### 9.3 Políticas de Segurança e Limpeza
+
+1. **Proteção SSRF**: O sistema valida URLs antes de qualquer requisição externa, bloqueando `localhost`, `127.0.0.1`, faixas privadas (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) e endpoints de metadados (`169.254.169.254`).
+2. **Limite de Tamanho**: Controlado pela variável `MAX_MEDIA_SIZE_MB` (padrão: `10` MB). Arquivos maiores são rejeitados com segurança (`media_too_large`).
+3. **MIME Types Suportados**: Apenas `image/jpeg`, `image/png` e `image/webp`. Documentos com extensões executáveis são estritamente rejeitados.
+4. **Limpeza de Temporários**: Arquivos temporários criados para envio multipart são **sempre removidos no bloco `finally`** da tarefa de publicação, garantindo que o disco não encha em produção.
+5. **Persistência Limpa**: Nenhum binário de imagem é gravado no PostgreSQL. Apenas a URL pública e os metadados de status são persistidos.
+
+### 9.4 Como Diagnosticar Ofertas sem Imagem
+
+1. **A oferta original tinha foto?**
+   - Inspecione a coluna `source_media_type` no banco: se for `None`, a oferta original realmente era apenas texto.
+2. **A oferta caiu em fallback?**
+   - Verifique se `media_status == "fallback_text"`.
+   - Procure nos logs do Railway por `media_publish_failed=true` e o `offer_id` correspondente para verificar o código HTTP ou erro retornado pelo Telegram.
+3. **Execução dos Testes de Mídia:**
+   ```bash
+   pytest tests/test_media_pipeline.py -v
+   ```
+

@@ -13,7 +13,7 @@ class OfferSummary(BaseModel):
     discount_pct: int
     store: str
     category: str
-    image_url: str
+    image_url: Optional[str] = None
     affiliate_link: str
     coupon_code: Optional[str] = None
     status: str
