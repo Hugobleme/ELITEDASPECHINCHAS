@@ -185,6 +185,36 @@ def bulk_action_offers(payload: BulkActionPayload, db: Session = Depends(get_db)
     return {"success": True, "updated": updated_count}
 
 
+@router.post("/offers/publish-all-pending")
+def publish_all_pending(limit: int = 50, db: Session = Depends(get_db)):
+    """Publica automaticamente todas as ofertas com status 'pending' que ainda não foram postadas."""
+    pending_offers = (
+        db.query(Offer)
+        .filter(Offer.status == "pending")
+        .order_by(desc(Offer.created_at))
+        .limit(limit)
+        .all()
+    )
+    count = 0
+    now = datetime.now(timezone.utc)
+    for off in pending_offers:
+        off.status = "published"
+        off.published_at = now
+        try:
+            from processor.tasks import publish_offer_to_channel
+            publish_offer_to_channel.delay(str(off.id))
+            count += 1
+        except Exception:
+            try:
+                from processor.tasks import publish_offer_to_channel
+                publish_offer_to_channel(str(off.id))
+                count += 1
+            except Exception:
+                pass
+    db.commit()
+    return {"success": True, "published_count": count}
+
+
 @router.get("/metrics")
 def get_admin_metrics(range: str = "7d", db: Session = Depends(get_db)):
     """Retorna métricas consolidadas e KPIs de desempenho do painel admin."""

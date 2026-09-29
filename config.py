@@ -110,8 +110,8 @@ DEDUPLICATION_HOURS = _get_int("DEDUPLICATION_HOURS", 24)
 # Limite máximo de ofertas aceitas por hora de uma mesma fonte (evita spam)
 MAX_OFFERS_PER_HOUR_PER_SOURCE = _get_int("MAX_OFFERS_PER_HOUR_PER_SOURCE", 30)
 
-# Se ativado, ofertas são aprovadas automaticamente (padrão 'false'; desativado por padrão)
-AUTO_APPROVE_ENABLED = os.getenv("AUTO_APPROVE_ENABLED", "false").lower() in ("true", "1", "yes")
+# Se ativado, ofertas são aprovadas e postadas automaticamente (padrão 'true')
+AUTO_APPROVE_ENABLED = os.getenv("AUTO_APPROVE_ENABLED", "true").lower() in ("true", "1", "yes")
 AUTO_APPROVE_DISCOUNT_THRESHOLD = _get_int("AUTO_APPROVE_DISCOUNT_THRESHOLD", 0)
 
 # Configuração de modo simulado do Bot e Mocks
