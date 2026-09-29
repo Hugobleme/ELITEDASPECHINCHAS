@@ -289,7 +289,7 @@ def seed_database(session: Optional[Session] = None):
                 "category": "moda",
                 "image_url": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600",
                 "original_link": "https://shopee.com.br/product/99/88",
-                "affiliate_link": "https://shopee.com.br/product/99/88?af_siteid=elitedaspechinchas",
+                "affiliate_link": "https://shopee.com.br/product/99/88?af_siteid=18337121236",
                 "coupon_code": "NIKESHOPEE",
             },
         ]
