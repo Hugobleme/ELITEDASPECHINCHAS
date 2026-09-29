@@ -1,3 +1,4 @@
+import os
 import logging
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, Optional, List
@@ -171,16 +172,23 @@ def process_telegram_message(self, raw_data: Dict[str, Any]) -> Dict[str, Any]:
 
         # 6. Fluxo de Publicação Automática (se status='published')
         if initial_status == "published":
-            logger.info(f"[Tasks] Disparando publicação automática para oferta {offer_id}")
-            try:
-                publish_offer_to_channel(offer_id)
-                logger.info(f"[Tasks] ✅ Oferta {offer_id} publicada com sucesso no canal!")
-            except Exception as direct_pub_err:
-                logger.warning(f"[Tasks] Falha na publicação direta ({direct_pub_err}). Tentando via Celery...")
+            target_env = (os.getenv("TARGET_CHANNEL_ID") or TARGET_CHANNEL_ID or "").strip()
+            if not target_env:
+                logger.error(
+                    f"[Tasks] ❌ TARGET_CHANNEL_ID não configurado no ambiente. "
+                    f"Publicação automática da oferta {offer_id} abortada."
+                )
+            else:
+                logger.info(f"[Tasks] Disparando publicação automática para oferta {offer_id}")
                 try:
-                    publish_offer_to_channel.delay(offer_id)
-                except Exception as celery_pub_err:
-                    logger.error(f"[Tasks] Falha em ambos os métodos de publicação para oferta {offer_id}: {celery_pub_err}")
+                    publish_offer_to_channel(offer_id)
+                    logger.info(f"[Tasks] ✅ Oferta {offer_id} publicada com sucesso no canal!")
+                except Exception as direct_pub_err:
+                    logger.warning(f"[Tasks] Falha na publicação direta ({direct_pub_err}). Tentando via Celery...")
+                    try:
+                        publish_offer_to_channel.delay(offer_id)
+                    except Exception as celery_pub_err:
+                        logger.error(f"[Tasks] Falha em ambos os métodos de publicação para oferta {offer_id}: {celery_pub_err}")
 
             try:
                 match_and_notify(offer_id)
@@ -233,7 +241,6 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
     Dispara subsequentemente o matching de alertas para Web Push.
     Garante idempotência estrita para evitar publicações duplicadas.
     """
-    target_channel = channel_id or TARGET_CHANNEL_ID
     db: Session = SessionLocal()
     try:
         offer = db.query(Offer).filter(Offer.id == offer_id).first()
@@ -277,6 +284,19 @@ def publish_offer_to_channel(self, offer_id: str, channel_id: Optional[str] = No
             return {
                 "status": "skipped",
                 "reason": "identical_offer_recently_published",
+                "offer_id": str(offer.id),
+            }
+
+        target_channel = (channel_id or os.getenv("TARGET_CHANNEL_ID") or TARGET_CHANNEL_ID or "").strip()
+        if not target_channel:
+            logger.error(
+                f"[Publish Task] ❌ TARGET_CHANNEL_ID não configurado no ambiente. "
+                f"Publicação da oferta {offer.id} abortada."
+            )
+            return {
+                "status": "error",
+                "error": "TARGET_CHANNEL_ID não configurado no ambiente",
+                "message": "TARGET_CHANNEL_ID não configurado no ambiente",
                 "offer_id": str(offer.id),
             }
 

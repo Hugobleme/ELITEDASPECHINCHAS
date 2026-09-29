@@ -40,7 +40,7 @@ TELEGRAM_STRING_SESSION = os.getenv("TELEGRAM_STRING_SESSION", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 # Canal ou grupo oficial de destino das promoções (ex: @ElitedasPechinchas ou -100123456789)
-TARGET_CHANNEL_ID = os.getenv("TARGET_CHANNEL_ID", "@ElitedasPechinchas")
+TARGET_CHANNEL_ID = os.getenv("TARGET_CHANNEL_ID")
 
 # Grupos/canais de origem autorizados para captura (1 a 3 fontes)
 # Exemplo no .env: SOURCE_CHANNELS="@promos_tech,@radar_gamer,@ofertas_vip"
@@ -110,8 +110,8 @@ DEDUPLICATION_HOURS = _get_int("DEDUPLICATION_HOURS", 24)
 # Limite máximo de ofertas aceitas por hora de uma mesma fonte (evita spam)
 MAX_OFFERS_PER_HOUR_PER_SOURCE = _get_int("MAX_OFFERS_PER_HOUR_PER_SOURCE", 30)
 
-# Se ativado, ofertas com super descontos são aprovadas automaticamente (padrão 'true' em produção)
-AUTO_APPROVE_ENABLED = os.getenv("AUTO_APPROVE_ENABLED", "true").lower() in ("true", "1", "yes")
+# Se ativado, ofertas são aprovadas automaticamente (padrão 'false'; desativado por padrão)
+AUTO_APPROVE_ENABLED = os.getenv("AUTO_APPROVE_ENABLED", "false").lower() in ("true", "1", "yes")
 AUTO_APPROVE_DISCOUNT_THRESHOLD = _get_int("AUTO_APPROVE_DISCOUNT_THRESHOLD", 0)
 
 # Configuração de modo simulado do Bot e Mocks

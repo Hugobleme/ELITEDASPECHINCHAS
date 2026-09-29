@@ -100,8 +100,16 @@ def publish_to_telegram(
     Suporta imagens com legenda, botões inline interativos e fallback resiliente.
     Possui proteção integrada contra publicações duplicadas (15 min).
     """
-    target = channel_id or TARGET_CHANNEL_ID
-    token = TELEGRAM_BOT_TOKEN
+    target = (channel_id or os.getenv("TARGET_CHANNEL_ID") or TARGET_CHANNEL_ID or "").strip()
+    if not target:
+        logger.error("[Publisher] ❌ TARGET_CHANNEL_ID não configurado no ambiente. Publicação abortada.")
+        return {
+            "success": False,
+            "error": "TARGET_CHANNEL_ID não configurado no ambiente",
+            "channel": None,
+        }
+
+    token = os.getenv("TELEGRAM_BOT_TOKEN") or TELEGRAM_BOT_TOKEN
 
     # Proteção de Duplicação Imediata
     if check_duplicate and is_duplicate_publication(message, image_url):

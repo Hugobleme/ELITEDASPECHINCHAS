@@ -122,3 +122,16 @@ def test_load_simulated_messages_from_json(tmp_path):
     loaded = load_simulated_messages_from_json(str(sample_file))
     assert len(loaded) == 2
     assert loaded[0]["telegram_msg_id"] == 1
+
+
+def test_publish_to_telegram_fails_without_target_channel_id(monkeypatch):
+    """Garante que a publicação falha de forma segura com log claro se TARGET_CHANNEL_ID não estiver configurado."""
+    monkeypatch.setenv("TARGET_CHANNEL_ID", "")
+    monkeypatch.setattr("bot.publisher.TARGET_CHANNEL_ID", None)
+
+    res = publish_to_telegram(
+        message="<b>Oferta Teste Sem Canal</b>",
+        channel_id=None,
+    )
+    assert res["success"] is False
+    assert "TARGET_CHANNEL_ID não configurado no ambiente" in res["error"]
