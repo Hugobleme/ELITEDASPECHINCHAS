@@ -206,6 +206,29 @@ def replace_magalu_link(url: str, tag: str) -> str:
     return urllib.parse.urlunparse(parsed._replace(query=new_query))
 
 
+def replace_shopee_link(url: str, tag: str) -> str:
+    """
+    Substitui link de produto da Shopee pelo link com ID de afiliado oficial (af_siteid),
+    limpando parâmetros, UTMs e tags de afiliados de canais terceiros.
+    """
+    if not url:
+        return url
+
+    parsed = urllib.parse.urlparse(url)
+    query_params = urllib.parse.parse_qs(parsed.query)
+
+    # Remove identificadores antigos de afiliados terceiros e parâmetros de rastreamento
+    for key in [
+        "af_siteid", "an_id", "sub_id", "utm_source", "utm_medium",
+        "utm_campaign", "utm_content", "smtt", "pid", "c", "aff_click_id"
+    ]:
+        query_params.pop(key, None)
+
+    query_params["af_siteid"] = [tag]
+    new_query = urllib.parse.urlencode(query_params, doseq=True)
+    return urllib.parse.urlunparse(parsed._replace(query=new_query, fragment=""))
+
+
 def replace_generic_link(url: str, param_name: str, tag: str) -> str:
     """
     Injeta o parâmetro de afiliado em qualquer URL genérica preservando o restante da query.
@@ -219,7 +242,7 @@ def replace_generic_link(url: str, param_name: str, tag: str) -> str:
 
 SHORTENER_DOMAINS = [
     "amzn.to", "amzn.com", "bit.ly", "tinyurl.com", "t.co", "shp.ee",
-    "is.gd", "cutt.ly", "linkr.bio", "s.shopee.com.br", "meli.la",
+    "shope.ee", "is.gd", "cutt.ly", "linkr.bio", "s.shopee.com.br", "meli.la",
     "pechin.co", "pechinchou.com.br", "t.me"
 ]
 
@@ -296,7 +319,7 @@ def generate_affiliate_link(
         elif "kabum" in store_lower:
             affiliate_url = replace_generic_link(original_link, "tag", tag)
         elif "shopee" in store_lower:
-            affiliate_url = replace_generic_link(original_link, "af_siteid", tag)
+            affiliate_url = replace_shopee_link(original_link, tag)
         elif "aliexpress" in store_lower:
             affiliate_url = replace_generic_link(original_link, "aff_fcid", tag)
         elif "casas bahia" in store_lower or "casasbahia" in store_lower:

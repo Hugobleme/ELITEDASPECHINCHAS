@@ -113,3 +113,15 @@ def test_generate_affiliate_link_from_db_rule(db_session):
     kabum_link = "https://www.kabum.com.br/produto/777"
     result = generate_affiliate_link(kabum_link, "Kabum", db=db_session)
     assert "tag=kabum_db_tag" in result
+
+
+def test_replace_shopee_link_cleans_third_party_and_injects_id():
+    """Garante que a substituição para Shopee remove tags de outros canais e injeta o ID oficial."""
+    from processor.affiliate import replace_shopee_link
+    other_channel_url = "https://shopee.com.br/product/123/456?af_siteid=concorrente_123&utm_source=telegram&utm_campaign=blackfriday&smtt=0.0.9"
+    new_url = replace_shopee_link(other_channel_url, "18337121236")
+    assert "af_siteid=18337121236" in new_url
+    assert "concorrente_123" not in new_url
+    assert "utm_source" not in new_url
+    assert "utm_campaign" not in new_url
+    assert "smtt" not in new_url
