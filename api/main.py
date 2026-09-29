@@ -34,7 +34,8 @@ SERVER_START_TIME = time.time()
 sentry_dsn = os.getenv("SENTRY_DSN")
 if sentry_dsn and sentry_dsn.strip():
     try:
-        import sentry_sdk
+        import importlib
+        sentry_sdk = importlib.import_module("sentry_sdk")
         sentry_sdk.init(
             dsn=sentry_dsn,
             traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.2")),
