@@ -347,6 +347,17 @@ O projeto conta com uma pipeline automatizada via **GitHub Actions** (`.github/w
    - Verificação estrita de tipagem TypeScript via `npx tsc --noEmit`.
    - Build de produção Next.js via `npm run build` (sem mock e sem dependência de API ativa em build time).
    - Linting via `npm run lint` (`next lint`).
+5. **Validação End-to-End (E2E) em Produção**:
+   - `python -m pytest tests/test_production_e2e.py -v` validando healthcheck, listagem de ofertas, fluxo de auto-publicação e deduplicação no ambiente de produção.
+
+### Como Executar os Testes E2E de Produção Localmente
+```bash
+# Executar testes contra a API em produção (Railway):
+pytest tests/test_production_e2e.py -v
+
+# Ou apontando para outra URL:
+RAILWAY_API_URL="https://elitedaspechinchas-production.up.railway.app" pytest tests/test_production_e2e.py -v
+```
 
 ### Como Executar a Validação de Migrations Localmente
 Caso possua o Docker rodando localmente:

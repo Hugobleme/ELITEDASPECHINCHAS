@@ -204,6 +204,35 @@ offers - Ver ofertas recentes
 - [ ] Mensagem no grupo → Bot processa → Banco → API → Frontend
 - [ ] Clique em "Comprar Agora" redireciona com link de afiliado
 
+### 6.1 Validação Automatizada End-to-End (E2E) em Produção
+
+Para validar de forma automatizada que a API e o fluxo do bot estão 100% operacionais em produção, utilize o script `tests/test_production_e2e.py`.
+
+#### Casos de Teste Inclusos:
+- **`test_healthcheck`**: Valida que `/health` retorna status 200 com banco de dados conectado, status `healthy` e `uptime_seconds`.
+- **`test_offers_endpoint`**: Valida que `/offers` responde 200 e fornece uma lista de ofertas públicas.
+- **`test_auto_publish_flow`**: Confirma que a oferta mais recente possui status `published` e `affiliate_link` monetizado.
+- **`test_deduplication`**: Garante que o motor de regras não publicou itens duplicados (mesmo título e preço).
+
+#### Como Rodar:
+
+```bash
+# Execução rápida padrão contra a Railway de produção:
+pytest tests/test_production_e2e.py -v
+
+# Especificando uma URL customizada:
+RAILWAY_API_URL="https://elitedaspechinchas-production.up.railway.app" pytest tests/test_production_e2e.py -v
+
+# Com espera de processamento (ex: 120s após postagem manual no canal-fonte):
+E2E_WAIT_SECONDS=120 pytest tests/test_production_e2e.py -v
+
+# Validação com checagem estrita de Redis e Bot no healthcheck:
+STRICT_HEALTHCHECK=true pytest tests/test_production_e2e.py -v
+```
+
+#### Execução no CI/CD (GitHub Actions):
+O pipeline `.github/workflows/ci.yml` inclui o step automatizado **Fase 7 — Validação End-to-End (E2E) em Produção**, executando a suíte contra a API pública a cada build.
+
 ---
 
 ## 7. Monitoramento

@@ -128,3 +128,9 @@ jobs:
 
       - name: Fase 6 — Lint Next.js
         run: npm run lint
+
+      - name: Fase 7 — Validação End-to-End (E2E) em Produção
+        env:
+          RAILWAY_API_URL: ${{ vars.RAILWAY_API_URL || 'https://elitedaspechinchas-production.up.railway.app' }}
+          E2E_WAIT_SECONDS: 0
+        run: python -m pytest tests/test_production_e2e.py -v
