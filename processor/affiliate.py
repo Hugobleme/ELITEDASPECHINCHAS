@@ -1,3 +1,4 @@
+import os
 import re
 import urllib.parse
 import logging
@@ -297,6 +298,29 @@ def generate_affiliate_link(
 
     # Desencurta links (ex: amzn.to -> amazon.com.br/dp/ASIN) para garantir a troca correta de tag
     original_link = resolve_redirect_url(original_link)
+
+    # Tratamento de redes de afiliados intermediárias de terceiros (Awin, Lomadee)
+    if "awin1.com" in original_link.lower():
+        awin_tag = os.getenv("AWIN_AFFILIATE_ID") or os.getenv("AWIN_TAG")
+        parsed_awin = urllib.parse.urlparse(original_link)
+        awin_qs = urllib.parse.parse_qs(parsed_awin.query)
+        if awin_tag:
+            awin_qs["awinaffid"] = [awin_tag]
+            original_link = urllib.parse.urlunparse(parsed_awin._replace(query=urllib.parse.urlencode(awin_qs, doseq=True)))
+        elif "ued" in awin_qs and awin_qs["ued"]:
+            # Sem tag própria: extrai a URL canônica real da loja e remove o rastreio do canal concorrente
+            clean_dest = urllib.parse.unquote(awin_qs["ued"][0])
+            logger.info(f"[Affiliate Awin] Desempacotado link direto da loja sem tag concorrente: {clean_dest}")
+            original_link = clean_dest
+
+    elif "lomadee.com" in original_link.lower():
+        lomadee_tag = os.getenv("LOMADEE_AFFILIATE_ID") or os.getenv("LOMADEE_TAG")
+        parsed_lom = urllib.parse.urlparse(original_link)
+        lom_qs = urllib.parse.parse_qs(parsed_lom.query)
+        if not lomadee_tag and "url" in lom_qs and lom_qs["url"]:
+            clean_dest = urllib.parse.unquote(lom_qs["url"][0])
+            logger.info(f"[Affiliate Lomadee] Desempacotado link direto da loja sem tag concorrente: {clean_dest}")
+            original_link = clean_dest
 
     try:
         tag = get_affiliate_tag_for_store(store, db)

@@ -125,3 +125,26 @@ def test_replace_shopee_link_cleans_third_party_and_injects_id():
     assert "utm_source" not in new_url
     assert "utm_campaign" not in new_url
     assert "smtt" not in new_url
+
+
+def test_generate_affiliate_link_unwraps_awin_competitor():
+    """Garante que links da Awin com tag de concorrente são desempacotados para a URL limpa da loja."""
+    awin_competitor_url = (
+        "https://www.awin1.com/cread.php?awinmid=17652&awinaffid=667997&platform=dl"
+        "&ued=https%3A%2F%2Fwww.nike.com.br%2Fcamiseta-nike-corinthians-escudo-masculina-026150.html%3Fcor%3DID"
+    )
+    result = generate_affiliate_link(awin_competitor_url, "Nike")
+    assert "awinaffid=667997" not in result
+    assert "nike.com.br/camiseta-nike-corinthians-escudo-masculina-026150.html" in result
+
+
+def test_generate_affiliate_link_swaps_awin_when_tag_configured(monkeypatch):
+    """Garante que se AWIN_AFFILIATE_ID estiver configurado, a tag é substituída."""
+    monkeypatch.setenv("AWIN_AFFILIATE_ID", "999888")
+    awin_url = (
+        "https://www.awin1.com/cread.php?awinmid=17652&awinaffid=667997&platform=dl"
+        "&ued=https%3A%2F%2Fwww.nike.com.br%2Fproduto.html"
+    )
+    result = generate_affiliate_link(awin_url, "Nike")
+    assert "awinaffid=999888" in result
+    assert "awinaffid=667997" not in result
