@@ -13,6 +13,7 @@ from config import (
     TELEGRAM_SESSION_NAME,
     TELEGRAM_STRING_SESSION,
     SOURCE_CHANNELS,
+    ENABLE_WEB_POLLER,
 )
 from processor.tasks import process_telegram_message
 from database.connection import SessionLocal
@@ -28,7 +29,7 @@ logger = get_structured_logger("elitedaspechinchas.bot.listener", component="lis
 _processing_msg_ids: Dict[int, float] = {}
 _msg_ids_lock = threading.Lock()
 MSG_ID_DEDUPLICATION_WINDOW_SECONDS = 1800  # 30 minutos
-ENABLE_WEB_POLLER = os.getenv("ENABLE_WEB_POLLER", "false").lower() in ("true", "1", "yes")
+ENABLE_WEB_POLLER = os.getenv("ENABLE_WEB_POLLER", "true").lower() in ("true", "1", "yes")
 
 
 def clear_processing_msg_ids() -> None:
@@ -387,12 +388,16 @@ async def run_public_web_poller(channels: List[str], interval: float = 8.0):
     Garante captura ininterrupta de mensagens públicas com resiliência total a quedas de sessão MTProto.
     """
     logger.info(f"[WebPoller] 🌐 Iniciando Web Poller HTTP público autônomo (intervalo: {interval}s) para: {channels}")
+    last_web_ids: Dict[str, int] = {}
 
     # Startup catch-up: processa mensagens recentes que não estejam no banco
     for ch in channels:
         try:
             recent_msgs = await poll_public_channel(ch, limit=5)
             if recent_msgs:
+                max_mid = max(m.get("telegram_msg_id", 0) for m in recent_msgs)
+                last_web_ids[ch] = max_mid
+
                 db = SessionLocal()
                 try:
                     for msg in recent_msgs:
@@ -415,10 +420,16 @@ async def run_public_web_poller(channels: List[str], interval: float = 8.0):
             for ch in channels:
                 try:
                     new_msgs = await poll_public_channel(ch, limit=10)
-                    for msg in new_msgs:
+                    # Ordena mensagens em ordem cronológica (menor ID primeiro)
+                    sorted_msgs = sorted(new_msgs, key=lambda x: x.get("telegram_msg_id", 0))
+                    for msg in sorted_msgs:
                         mid = msg.get("telegram_msg_id")
                         if not mid:
                             continue
+                        if mid <= last_web_ids.get(ch, 0):
+                            continue
+                        last_web_ids[ch] = max(last_web_ids.get(ch, 0), mid)
+                        logger.info(f"[WebPoller] 📥 Nova mensagem capturada de {msg.get('source_name')} (ID: {mid})")
                         await asyncio.to_thread(process_incoming_payload, msg)
                 except Exception as ch_err:
                     logger.debug(f"[WebPoller] Erro ao verificar {ch}: {ch_err}")
@@ -642,15 +653,16 @@ async def setup_event_handlers(client, channels: List[str]):
 
 async def start_userbot(client=None):
     """
-    Supervisor resiliente de captura baseado em Telethon (MTProto + Poller Nativo).
-    O Web Poller HTTP público fica desligado por padrão em produção para evitar instabilidade.
+    Supervisor resiliente de captura com redundância dupla:
+    - Camada Primária: Web Poller HTTP público autônomo (100% resiliente, sem credenciais de sessão).
+    - Camada Secundária: Telethon MTProto Userbot para eventos em tempo real (quando autorizado).
     """
     web_poller_task = None
-    if ENABLE_WEB_POLLER and os.getenv("ENVIRONMENT") != "production":
-        logger.info("[WebPoller] 🌐 Web Poller HTTP público habilitado em ambiente de teste.")
+    if ENABLE_WEB_POLLER:
+        logger.info("[WebPoller] 🌐 Web Poller HTTP público autônomo ativo como motor resiliente de captura.")
         web_poller_task = asyncio.create_task(run_public_web_poller(SOURCE_CHANNELS, interval=8.0))
     else:
-        logger.info("[Listener] 🛡️ Web poller desligado em produção; apenas MTProto + poller nativo ativos.")
+        logger.info("[Listener] 🛡️ Web poller desligado via configuração; operando exclusivamente com MTProto.")
 
     # Heartbeat periódico a cada 5 minutos
     async def heartbeat_loop():
@@ -674,11 +686,12 @@ async def start_userbot(client=None):
 
                 if not await client.is_user_authorized():
                     logger.warning(
-                        "⚠️ [Listener] Sessão MTProto do Telethon não está autorizada. "
-                        "Aguardando credenciais no ambiente."
+                        "⚠️ [Listener] Sessão MTProto do Telethon não está autorizada.\n"
+                        "O Web Poller HTTP público autônomo está ativo e garantindo a captura das promoções."
                     )
-                    while True:
-                        await asyncio.sleep(60)
+                    if not web_poller_task:
+                        web_poller_task = asyncio.create_task(run_public_web_poller(SOURCE_CHANNELS, interval=8.0))
+                    await web_poller_task
                 else:
                     me = await client.get_me()
                     username = f"@{me.username}" if getattr(me, "username", None) else (me.phone or "sem_username")
@@ -699,17 +712,20 @@ async def start_userbot(client=None):
 
             except Exception as telethon_err:
                 logger.warning(
-                    f"⚠️ [Listener] Telethon MTProto indisponível ({telethon_err}). Aguardando recuperação..."
+                    f"⚠️ [Listener] Telethon MTProto indisponível ({telethon_err}).\n"
+                    "O Web Poller HTTP público autônomo está ativo e garantindo a captura das promoções."
                 )
-                while True:
-                    await asyncio.sleep(60)
-        else:
-            logger.info("[Listener] Telethon client não fornecido. Listener ativo aguardando credenciais.")
-            if web_poller_task:
+                if not web_poller_task:
+                    web_poller_task = asyncio.create_task(run_public_web_poller(SOURCE_CHANNELS, interval=8.0))
                 await web_poller_task
-            else:
-                while True:
-                    await asyncio.sleep(60)
+        else:
+            logger.info(
+                "[Listener] Telethon client não fornecido. "
+                "O Web Poller HTTP público está operando como motor principal de captura."
+            )
+            if not web_poller_task:
+                web_poller_task = asyncio.create_task(run_public_web_poller(SOURCE_CHANNELS, interval=8.0))
+            await web_poller_task
     finally:
         heartbeat_task.cancel()
         if web_poller_task and not web_poller_task.done():

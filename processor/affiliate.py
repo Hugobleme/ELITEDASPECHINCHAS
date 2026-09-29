@@ -243,7 +243,7 @@ def replace_generic_link(url: str, param_name: str, tag: str) -> str:
 SHORTENER_DOMAINS = [
     "amzn.to", "amzn.com", "bit.ly", "tinyurl.com", "t.co", "shp.ee",
     "shope.ee", "is.gd", "cutt.ly", "linkr.bio", "s.shopee.com.br", "meli.la",
-    "pechin.co", "pechinchou.com.br", "t.me"
+    "pechin.co", "pechinchou.com.br", "t.me", "link.amazon", "a.co"
 ]
 
 
@@ -260,7 +260,7 @@ def resolve_redirect_url(url: str, timeout: float = 4.0) -> str:
     path = parsed.path.lower()
 
     needs_resolution = (
-        any(s in domain for s in SHORTENER_DOMAINS)
+        any(domain == s or domain.endswith("." + s) for s in SHORTENER_DOMAINS)
         or "mercadolivre.com/sec" in f"{domain}{path}"
         or "mercadolivre.com.br/sec" in f"{domain}{path}"
     )

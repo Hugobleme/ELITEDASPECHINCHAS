@@ -139,6 +139,9 @@ SIMULATED_BOT_ENABLED = os.getenv("SIMULATED_BOT_ENABLED", "false").lower() in (
 SIMULATED_PUBLICATIONS_FILE = os.getenv("SIMULATED_PUBLICATIONS_FILE", "simulated_publications.json")
 USE_MOCK_DATA = os.getenv("USE_MOCK_DATA", "false").lower() in ("true", "1", "yes")
 
+# Web Poller HTTP público autônomo (redundância e captura contínua resiliente)
+ENABLE_WEB_POLLER = os.getenv("ENABLE_WEB_POLLER", "true").lower() in ("true", "1", "yes")
+
 # ------------------------------------------------------------------------------
 # 4. Infraestrutura & Banco
 # ------------------------------------------------------------------------------

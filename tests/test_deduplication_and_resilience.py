@@ -169,10 +169,10 @@ async def test_poll_public_channel(monkeypatch):
     assert "Fone Bluetooth Gamer" in m["text"]
 
 
-def test_web_poller_disabled_by_default():
-    """Garante que o Web Poller público HTTP fica desligado por padrão."""
+def test_web_poller_enabled_by_default():
+    """Garante que o Web Poller público HTTP fica ligado por padrão para resiliência autônoma."""
     from bot.listener import ENABLE_WEB_POLLER
-    assert ENABLE_WEB_POLLER is False
+    assert ENABLE_WEB_POLLER is True
 
 
 def test_boot_deduplication_listener_skips_recent_persisted_offer(db_session, monkeypatch):
@@ -345,5 +345,63 @@ def test_rules_is_duplicate_boot_window_and_memory(db_session):
     )
     assert is_dup3 is True
     assert "24h" in reason3
+
+
+def test_urubupromo_message_parsing_and_evaluation(db_session):
+    """
+    Garante que mensagens no padrão do @urubupromo:
+    1. Não extraem emojis de medalha (🥉, 🥈, 🥇) ou slogans como título.
+    2. Identificam corretamente o título real do produto com marca/especificação.
+    3. Passam com sucesso pelas regras de curadoria com status 'published'.
+    """
+    from processor.parser import parse_telegram_message
+    from processor.rules import evaluate_rules
+
+    raw_text = (
+        "🥉\n"
+        " QUEM NÃO TOMA NÃO CRESCE\n"
+        "Creatina Monohidratada Growth Supplements 250g\n"
+        "por 35,91 no pix\n"
+        "https://meli.la/1FwLBbW"
+    )
+
+    parsed = parse_telegram_message(
+        text=raw_text,
+        entities_links=["https://meli.la/1FwLBbW"],
+    )
+
+    assert "Creatina Monohidratada Growth Supplements 250g" in parsed["title"]
+    assert "🥉" not in parsed["title"]
+    assert "QUEM NÃO TOMA" not in parsed["title"]
+    assert parsed["price_current"] == 35.91
+    assert parsed["store"] == "Mercado Livre"
+
+    approved, reason, status = evaluate_rules(
+        parsed_data=parsed,
+        db=db_session,
+        telegram_msg_id=40680,
+        source_name="@urubupromo",
+    )
+    assert approved is True
+    assert status in ("pending", "published")
+
+
+def test_urubupromo_amazon_short_link_replacement(monkeypatch):
+    """
+    Garante que links encurtados de link.amazon do @urubupromo são unshortened
+    e têm a tag substituída pela tag oficial do Elite das Pechinchas.
+    """
+    from processor.affiliate import generate_affiliate_link
+
+    # Mock do resolve_redirect_url para simular resposta do redirect
+    monkeypatch.setattr(
+        "processor.affiliate.resolve_redirect_url",
+        lambda url, timeout=4.0: "https://www.amazon.com.br/Whisky-Chivas-Regal/dp/B075QHV5LD?tag=urutelegram-20",
+    )
+
+    aff_link = generate_affiliate_link("https://link.amazon/B055V4YVZ", store="Amazon")
+    assert "tag=elitedaspechi-20" in aff_link
+    assert "urutelegram-20" not in aff_link
+    assert "B075QHV5LD" in aff_link
 
 

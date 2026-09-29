@@ -54,6 +54,9 @@ DOMAIN_STORE_MAP = {
     "amazon.com": "Amazon",
     "amzn.to": "Amazon",
     "amzn.com": "Amazon",
+    "link.amazon": "Amazon",
+    "a.co": "Amazon",
+    "amzn.in": "Amazon",
     "mercadolivre.com.br": "Mercado Livre",
     "mercadolivre.com": "Mercado Livre",
     "produto.mercadolivre.com.br": "Mercado Livre",
@@ -169,10 +172,44 @@ def is_valid_url(url: Optional[str]) -> bool:
         return False
 
 
+def is_emoji_only_line(line: str) -> bool:
+    """Verifica se uma linha contém apenas emojis, pontuações ou símbolos (ex: 🥉, 🥇, 🚨, 🔥)."""
+    clean = re.sub(r"[\s\W_]+", "", line)
+    clean = re.sub(r"[\U00010000-\U0010ffff]", "", clean)
+    clean = re.sub(r"[\u2000-\u32ff]", "", clean)
+    return len(clean) == 0
+
+
+def is_noise_line(line: str, coupon_code: Optional[str] = None) -> bool:
+    """Identifica linhas que contêm apenas preços, URLs, cupons, avisos de frete ou instruções."""
+    clean = line.strip()
+    if not clean:
+        return True
+    if is_emoji_only_line(clean):
+        return True
+    if clean.startswith(("http://", "https://")):
+        return True
+    # Preço explícito
+    if re.search(r"^(?:por|sai\s+por|de|era)\s*r?\$?\s*[\d\.,]+", clean, re.IGNORECASE):
+        return True
+    if re.search(r"^r\$\s*[\d\.,]+", clean, re.IGNORECASE):
+        return True
+    if re.search(r"^\s*[\d\.,]+\s*(?:no pix|à vista|a vista|em \d+x|pix)?\s*$", clean, re.IGNORECASE):
+        return True
+    # Cupom ou instruções
+    if re.search(r"^(?:cupom|código|resgate|aplique|use o cupom|sem cupom|🎟)", clean, re.IGNORECASE):
+        return True
+    if coupon_code and clean.upper() == coupon_code.upper():
+        return True
+    if re.search(r"^(?:achado|frete|selecione|quantidade|exclusivo|compre|acesse|clique|link|veja|atenção|aviso|obs|saindo a)", clean, re.IGNORECASE):
+        return True
+    return False
+
+
 def clean_text_title(raw_text: str) -> str:
     """
-    Remove emojis, hashtags e termos promocionais agressivos do início do título.
-    Retorna string vazia se não houver texto válido.
+    Remove emojis, hashtags, cabeçalhos apelativos e slogans do início da mensagem,
+    extraindo com precisão o título real da oferta com especificações e marca.
     """
     if not raw_text or not raw_text.strip():
         return ""
@@ -185,52 +222,42 @@ def clean_text_title(raw_text: str) -> str:
     for line in lines:
         if line.startswith(("•", "- ", "* ")) or "•" in line[:3]:
             candidate = line.lstrip("•\u2060\ufeff-* \t").strip()
-            candidate = re.sub(r"^[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒🏆🎉📌\s\-•*`#]+", "", candidate).strip()
+            candidate = re.sub(r"^[^\w]+", "", candidate).strip()
             if (
                 len(candidate) >= 8
-                and not re.search(r"^(cupom|frete|link|compras|resgate|atenção)", candidate, re.IGNORECASE)
-                and not re.search(r"^r?\$?\s*\d+", candidate, re.IGNORECASE)
+                and not re.search(r"^(cupom|frete|link|compras|resgate|atenção|r?\$)", candidate, re.IGNORECASE)
             ):
                 return candidate
 
-    # Ignora linhas que são puramente URLs ou cabeçalhos de alerta sem produto
-    first_line = lines[0]
-    idx = 0
-    while idx < len(lines):
-        candidate = lines[idx]
-        if candidate.startswith("http://") or candidate.startswith("https://"):
-            idx += 1
-            continue
+    # 2. Extrai cupom para filtrar linhas isoladas contendo apenas o código do cupom
+    coupon = extract_coupon(raw_text)
 
-        # Remove emojis para inspecionar palavras da linha
-        candidate_words = re.sub(r"^[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒🏆🎉📌\s\-•*`#]+", "", candidate).strip()
+    # 3. Filtra linhas de ruído (emojis isolados, links, preços, avisos de frete)
+    meaningful = [l for l in lines if not is_noise_line(l, coupon)]
+    if not meaningful:
+        return ""
 
-        # Se for cabeçalho de anúncio genérico sem produto (ex: "🔥 SUPER DESCONTO NA AMAZON!", "🚨 MENOR PREÇO HISTÓRICO!", "🚨 CORRE QUE ACABA")
-        is_alert_header = bool(
-            re.search(
-                r"^(ALERTA|SUPER|OFERTA|MEGA|CORRE|PROMOÇÃO|PROMO|ACHADO|DESCONTO|IMPERDÍVEL|RELÂMPAGO|ATENÇÃO|URGENTE|MENOR|BAIXOU|HISTÓRICO|OPORTUNIDADE|SURREAL|QUEIMA|NOVIDADE)",
-                candidate_words,
-                re.IGNORECASE,
-            )
-            or re.search(
-                r"\b(MENOR PRE[CÇ]O|PRE[CÇ]O BAIXOU|SUPER DESCONTO|OFERTA REL[AÂ]MPAGO|SUPER OFERTA|CORRE|ALERTA|PRE[CÇ]O HIST[OÓ]RICO)\b",
-                candidate_words,
-                re.IGNORECASE,
-            )
+    # 4. Se a primeira linha significativa for um slogan/hook humorístico e a segunda contiver especificações do produto
+    selected_line = meaningful[0]
+    if len(meaningful) > 1:
+        first = meaningful[0]
+        second = meaningful[1]
+        first_clean = re.sub(r"^[^\w]+", "", first).strip()
+        is_hook = bool(
+            re.search(r"^(PRA |QUEM |ESSA |ESSE |AQUI |MEU |MINHA |SEU |SUA |O |A |AGORA |SÓ |SALVA |ARROZ |OLHA |CUIDADO |CORRE |ALERTA |SUPER |MEGA |DICA )", first_clean, re.IGNORECASE)
+            or re.search(r"(BULKING|CHIFRE|CARROÇA|BOQUINHA|CRESCE|FEIO|PODI|AGUENTA|ÁGUA|BARATO|PECHINCHA)", first_clean, re.IGNORECASE)
+            or (first_clean.isupper() and len(first_clean.split()) <= 6)
         )
-        has_pricing = bool(re.search(r"(R\$|\d+%)", candidate))
-        words_count = len(candidate_words.split())
+        has_product_specs = bool(
+            re.search(r"\b(\d+\s*(kg|g|ml|l|cm|mm|polegadas|pol|\"|w|v|anos|litro|litros|unidades|pecas|peças|caps|capsulas|cápsulas|gb|tb|hz))\b", second, re.IGNORECASE)
+            or re.search(r"\b(kit|fone|caixa|smart|tv|creatina|whey|aspirador|travesseiro|panela|espelho|whisky|hidratante|creme|sutiã|tenis|tênis|mochila|relogio|relógio|tábua|tabua|gloss)\b", second, re.IGNORECASE)
+            or (len(second) > len(first) and not second.isupper())
+        )
+        if is_hook or has_product_specs:
+            selected_line = second
 
-        # Se for cabeçalho curto de alerta e houver mais linhas abaixo, pula para a próxima linha
-        if is_alert_header and not has_pricing and words_count <= 8 and (idx + 1 < len(lines)):
-            idx += 1
-            continue
-
-        first_line = candidate
-        break
-
-    # Remove emojis e pontuações excessivas do início e fim
-    cleaned = re.sub(r"^[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒🏆🎉📌\s\-•*`#]+", "", first_line)
+    # 5. Remove emojis e pontuações do início e fim
+    cleaned = re.sub(r"^[^\w]+", "", selected_line)
     # Remove chamadas promocionais coladas no início do produto (ex: "CORRE QUE TÁ BARATO! 🔥 Smart TV")
     cleaned = re.sub(
         r"^(CORRE QUE T[AÁ] BARATO|SUPER OFERTA|MEGA PROMO[CÇ][AÃ]O|ALERTA DE OFERTA|SUPER DESCONTO|OFERTA REL[AÂ]MPAGO)[!:\s🔥🚨⚡💥*]+",
@@ -238,8 +265,8 @@ def clean_text_title(raw_text: str) -> str:
         cleaned,
         flags=re.IGNORECASE,
     )
-    cleaned = re.sub(r"^[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒🏆🎉📌\s\-•*`#]+", "", cleaned)
-    cleaned = re.sub(r"[🚨🔥⚡💥😱📢🏷️📦🎯👑⭐🛒🏆🎉📌\s\-•*`#]+$", "", cleaned)
+    cleaned = re.sub(r"^[^\w]+", "", cleaned)
+    cleaned = re.sub(r"[^\w\)]+$", "", cleaned)
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
     return cleaned
@@ -468,7 +495,7 @@ def detect_store(url: Optional[str], text: str = "") -> str:
             parsed = urllib.parse.urlparse(url)
             netloc = parsed.netloc.lower()
             for domain, store_name in DOMAIN_STORE_MAP.items():
-                if domain in netloc:
+                if netloc == domain or netloc.endswith("." + domain):
                     return store_name
         except Exception:
             pass
