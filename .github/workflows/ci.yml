@@ -61,7 +61,7 @@ jobs:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Fase 7 — Auditoria de Qualidade e Segurança
+      - name: Fase 1 — Auditoria de Qualidade e Segurança
         run: |
           echo "=== 1. Verificando git diff --check ==="
           git diff --check
@@ -131,6 +131,6 @@ jobs:
 
       - name: Fase 7 — Validação End-to-End (E2E) em Produção
         env:
-          RAILWAY_API_URL: ${{ vars.RAILWAY_API_URL || 'https://elitedaspechinchas-production.up.railway.app' }}
-          E2E_WAIT_SECONDS: 0
+          RAILWAY_API_URL: "https://elitedaspechinchas-production.up.railway.app"
+          E2E_WAIT_SECONDS: "0"
         run: python -m pytest tests/test_production_e2e.py -v
