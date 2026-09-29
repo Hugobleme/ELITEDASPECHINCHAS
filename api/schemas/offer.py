@@ -13,7 +13,9 @@ class OfferRead(BaseModel):
     discount_pct: int
     store: str
     category: str
-    image_url: str
+    image_url: Optional[str] = None
+    source_media_type: Optional[str] = None
+    media_status: Optional[str] = None
     original_link: Optional[str] = None
     affiliate_link: str
     coupon_code: Optional[str] = None

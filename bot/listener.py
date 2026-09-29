@@ -23,6 +23,7 @@ import threading
 import time
 
 from bot.structured_logger import get_structured_logger, emit_json_log
+from bot.media_handler import extract_source_media, cleanup_temp_media
 
 logger = get_structured_logger("elitedaspechinchas.bot.listener", component="listener")
 
@@ -207,6 +208,8 @@ def simulate_incoming_message(
     telegram_msg_id: Optional[int] = None,
     media_url: Optional[str] = None,
     entities_links: Optional[List[str]] = None,
+    source_media_type: Optional[str] = None,
+    source_media_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Função utilitária para simulação de recebimento de mensagens no ambiente de desenvolvimento/teste.
@@ -221,6 +224,11 @@ def simulate_incoming_message(
         "source_name": source_name,
         "entities_links": entities_links or [],
         "media_url": media_url,
+        "source_media_type": source_media_type or ("url" if media_url else None),
+        "source_media_path": source_media_path,
+        "source_image_url": media_url,
+        "source_chat_id": source_name,
+        "source_message_id": telegram_msg_id,
     }
 
     logger.info(f"[Listener SIMULAÇÃO] 📥 Mensagem simulada recebida de {source_name} (ID: {telegram_msg_id})")
@@ -374,6 +382,11 @@ async def poll_public_channel(channel: str, limit: int = 15) -> List[Dict[str, A
                 "source_name": f"@{slug}",
                 "entities_links": links,
                 "media_url": media_url,
+                "source_media_type": "web_preview" if media_url else None,
+                "source_media_path": None,
+                "source_image_url": media_url,
+                "source_chat_id": f"@{slug}",
+                "source_message_id": msg_id,
             })
 
         return parsed_messages[-limit:] if limit else parsed_messages
@@ -499,12 +512,18 @@ async def run_channel_poller(client, channels: List[str], interval: float = 8.0)
                         source_name = f"@{entity.username}" if getattr(entity, "username", None) else (clean_ch if clean_ch.startswith("@") else getattr(entity, "title", clean_ch))
                         logger.info(f"[Poller Startup] 📥 Processando post recente pós-boot de {source_name} (ID: {msg.id})")
                         entities_links = extract_entities_urls(msg)
+                        media_info = await extract_source_media(msg, client=client)
                         payload = {
                             "text": msg.text,
                             "telegram_msg_id": msg.id,
                             "source_name": source_name,
                             "entities_links": entities_links,
-                            "media_url": None,
+                            "media_url": media_info.get("source_image_url"),
+                            "source_media_type": media_info.get("source_media_type"),
+                            "source_media_path": media_info.get("source_media_path"),
+                            "source_image_url": media_info.get("source_image_url"),
+                            "source_chat_id": media_info.get("source_chat_id") or str(ent_id),
+                            "source_message_id": msg.id,
                         }
                         await asyncio.to_thread(process_incoming_payload, payload)
                 finally:
@@ -537,15 +556,20 @@ async def run_channel_poller(client, channels: List[str], interval: float = 8.0)
 
                         source_name = f"@{entity.username}" if getattr(entity, "username", None) else (clean_ch if clean_ch.startswith("@") else getattr(entity, "title", clean_ch))
 
-                        logger.info(f"[Poller] 📥 Nova mensagem descoberta de {source_name} (ID: {msg.id})")
                         entities_links = extract_entities_urls(msg)
+                        media_info = await extract_source_media(msg, client=client)
 
                         payload = {
                             "text": msg.text,
                             "telegram_msg_id": msg.id,
                             "source_name": source_name,
                             "entities_links": entities_links,
-                            "media_url": None,
+                            "media_url": media_info.get("source_image_url"),
+                            "source_media_type": media_info.get("source_media_type"),
+                            "source_media_path": media_info.get("source_media_path"),
+                            "source_image_url": media_info.get("source_image_url"),
+                            "source_chat_id": media_info.get("source_chat_id") or str(ent_id),
+                            "source_message_id": msg.id,
                         }
                         try:
                             await asyncio.to_thread(process_incoming_payload, payload)
@@ -636,13 +660,19 @@ async def setup_event_handlers(client, channels: List[str]):
             last_processed_ids[base_id] = max(last_processed_ids.get(base_id, 0), msg.id)
 
         entities_links = extract_entities_urls(msg)
+        media_info = await extract_source_media(msg, client=client)
 
         payload = {
             "text": text,
             "telegram_msg_id": msg.id,
             "source_name": source_name,
             "entities_links": entities_links,
-            "media_url": None,
+            "media_url": media_info.get("source_image_url"),
+            "source_media_type": media_info.get("source_media_type"),
+            "source_media_path": media_info.get("source_media_path"),
+            "source_image_url": media_info.get("source_image_url"),
+            "source_chat_id": media_info.get("source_chat_id") or str(chat_id),
+            "source_message_id": msg.id,
         }
 
         try:
