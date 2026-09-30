@@ -41,11 +41,13 @@ def test_alembic_migrations_upgrade_and_downgrade():
         assert "push_subscriptions" in tables
         assert "notifications" in tables
 
-        # Verifica presença de coupon_code em offers
+        # Verifica presença de coupon_code e media_status em offers
         offer_columns = [c["name"] for c in inspector.get_columns("offers")]
         assert "coupon_code" in offer_columns
         assert "affiliate_link" in offer_columns
         assert "status" in offer_columns
+        assert "media_status" in offer_columns
+        assert "source_media_type" in offer_columns
 
         # 2. Executa downgrade até a base
         command.downgrade(alembic_cfg, "base")
@@ -172,3 +174,32 @@ def test_alembic_migrations_postgresql():
 
     finally:
         engine.dispose()
+
+
+def test_all_migration_revision_ids_within_postgres_32_char_limit():
+    """
+    PostgreSQL alembic_version.version_num é VARCHAR(32) por padrão.
+    Qualquer migration com revision_id > 32 caracteres causa DataError: StringDataRightTruncation em produção.
+    Este teste audita estaticamente todos os arquivos de migração para garantir conformidade.
+    """
+    import glob
+    import importlib.util
+
+    versions_dir = os.path.join(os.path.dirname(__file__), "..", "database", "migrations", "versions")
+    migration_files = glob.glob(os.path.join(versions_dir, "*.py"))
+
+    assert len(migration_files) > 0, "Nenhum arquivo de migração encontrado."
+
+    for file_path in migration_files:
+        module_name = os.path.splitext(os.path.basename(file_path))[0]
+        spec = importlib.util.spec_from_file_location(module_name, file_path)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+
+        rev_id = getattr(mod, "revision", None)
+        assert rev_id is not None, f"Arquivo {file_path} não possui variável 'revision'."
+        assert len(rev_id) <= 32, (
+            f"Revision ID '{rev_id}' em {os.path.basename(file_path)} possui {len(rev_id)} caracteres! "
+            f"O limite do PostgreSQL alembic_version.version_num é 32 caracteres."
+        )
+
