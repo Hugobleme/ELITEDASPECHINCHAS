@@ -41,11 +41,6 @@ export default function AdminSidebar() {
       href: '/admin/metricas',
       icon: <BarChart3 className="h-4 w-4" />,
     },
-    {
-      label: 'Fontes Telegram',
-      href: '/admin/fontes',
-      icon: <Radio className="h-4 w-4" />,
-    },
   ];
 
   return (
@@ -67,17 +62,16 @@ export default function AdminSidebar() {
           </div>
         </div>
 
-        {/* Card de Status da Automação Telegram */}
-        <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/60 p-3 dark:border-emerald-950 dark:bg-emerald-950/20">
-          <div className="flex items-center gap-2 text-xs font-bold text-emerald-800 dark:text-emerald-300">
+        {/* Card de Curadoria do Catálogo */}
+        <div className="rounded-xl border border-violet-200/80 bg-violet-50/60 p-3 dark:border-violet-950 dark:bg-violet-950/20">
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-800 dark:text-violet-300">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-violet-500" />
             </span>
-            <span>Bot Telethon Conectado</span>
+            <span>Gestão da Vitrine Web</span>
           </div>
-          <p className="mt-1 text-[11px] text-emerald-700/90 dark:text-emerald-400/80">
-            Links trocados automaticamente para o seu afiliado antes de salvar.
+          <p className="mt-1 text-[11px] text-violet-700/90 dark:text-violet-400/80">
+            Painel ativo para curadoria, criação e publicação de ofertas no site.
           </p>
         </div>
 

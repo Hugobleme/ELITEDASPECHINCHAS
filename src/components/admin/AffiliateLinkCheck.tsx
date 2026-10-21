@@ -44,7 +44,7 @@ export default function AffiliateLinkCheck({
         {/* Link Original Capturado */}
         <div className="space-y-1 lg:col-span-5">
           <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-            Link Original (Telegram / Auditoria):
+            Link Original (Auditoria):
           </span>
           <div
             className="truncate rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-mono text-[11px] text-slate-500 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400"

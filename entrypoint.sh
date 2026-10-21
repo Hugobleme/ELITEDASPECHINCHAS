@@ -61,12 +61,7 @@ case "$COMMAND" in
         echo "⚙️ Iniciando Celery Worker (processor.celery_app)..."
         exec celery -A processor.celery_app worker --loglevel=info
         ;;
-    listener|telegram-bot|bot)
-        wait_for_postgres
-        wait_for_redis
-        echo "🤖 Iniciando Automação Telethon Userbot (main.py)..."
-        exec python main.py
-        ;;
+
     *)
         # Executa comando customizado (ex: python seed.py, pytest, bash)
         wait_for_postgres

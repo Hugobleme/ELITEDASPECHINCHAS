@@ -8,8 +8,6 @@ from sqlalchemy.pool import StaticPool
 # Configura ambiente como 'test' para os testes automatizados
 os.environ.setdefault("ENVIRONMENT", "test")
 os.environ.setdefault("AUTO_APPROVE_ENABLED", "false")
-os.environ["TELEGRAM_BOT_TOKEN"] = ""
-os.environ["SIMULATED_BOT_ENABLED"] = "true"
 
 from database.connection import Base, get_db
 from database.models import User, Offer
@@ -79,6 +77,11 @@ def test_user(db_session):
 def auth_headers(test_user):
     token = create_access_token({"sub": str(test_user.id), "email": test_user.email})
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def admin_headers(auth_headers):
+    return auth_headers
 
 
 @pytest.fixture

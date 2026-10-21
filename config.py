@@ -24,52 +24,11 @@ def _get_float(key: str, default: float) -> float:
         return default
 
 # ==============================================================================
-# CONFIGURAÇÕES CENTRAIS — ELITE DAS PECHINCHAS (AUTOMAÇÃO & INGESTÃO TELEGRAM)
+# CONFIGURAÇÕES CENTRAIS — ELITE DAS PECHINCHAS (SITE & AFILIADOS)
 # ==============================================================================
 
 # ------------------------------------------------------------------------------
-# 1. Credenciais do Telegram (Userbot Telethon & Bot API)
-# ------------------------------------------------------------------------------
-# Obtenha API_ID e API_HASH em: https://my.telegram.org/apps
-TELEGRAM_API_ID = _get_int("TELEGRAM_API_ID", 0) or _get_int("TELEGRAM_APT_ID", 0)
-TELEGRAM_API_HASH = os.getenv("TELEGRAM_API_HASH", "")
-TELEGRAM_SESSION_NAME = os.getenv("TELEGRAM_SESSION_NAME", "elitedaspechinchas_userbot")
-TELEGRAM_STRING_SESSION = os.getenv("TELEGRAM_STRING_SESSION", "")
-
-# Bot Oficial para postagem no canal próprio (obtido no @BotFather)
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-
-# Canal ou grupo oficial de destino das promoções (ex: @ElitedasPechinchas ou -100123456789)
-TARGET_CHANNEL_ID = os.getenv("TARGET_CHANNEL_ID")
-
-# Grupos/canais de origem autorizados para captura (1 a 3 fontes)
-# Exemplo no .env: SOURCE_CHANNELS="@pechinchou,@urubupromo"
-raw_sources = os.getenv("SOURCE_CHANNELS", "@pechinchou,@urubupromo")
-configured_sources: List[str] = []
-for ch in raw_sources.split(","):
-    clean = ch.strip()
-    if not clean:
-        continue
-    if clean.startswith("https://t.me/"):
-        clean = "@" + clean.replace("https://t.me/", "").strip("/")
-    elif clean.startswith("http://t.me/"):
-        clean = "@" + clean.replace("http://t.me/", "").strip("/")
-    elif clean.startswith("t.me/"):
-        clean = "@" + clean.replace("t.me/", "").strip("/")
-    elif not clean.startswith("@") and not clean.startswith("-100"):
-        clean = f"@{clean}"
-    if clean not in configured_sources:
-        configured_sources.append(clean)
-
-# Garante que canais oficiais padrão estejam sempre presentes
-for default_ch in ["@pechinchou", "@urubupromo"]:
-    if default_ch not in configured_sources:
-        configured_sources.append(default_ch)
-
-SOURCE_CHANNELS: List[str] = configured_sources
-
-# ------------------------------------------------------------------------------
-# 2. Tags e Regras de Afiliados por Loja
+# 1. Tags e Regras de Afiliados por Loja
 # ------------------------------------------------------------------------------
 MERCADOLIVRE_TAG = os.getenv("MERCADOLIVRE_TAG", "elitedaspechinchas")
 MERCADOLIVRE_TOOL_ID = os.getenv("MERCADOLIVRE_TOOL_ID", "17470999")
@@ -134,13 +93,8 @@ MAX_OFFERS_PER_HOUR_PER_SOURCE = _get_int("MAX_OFFERS_PER_HOUR_PER_SOURCE", 30)
 AUTO_APPROVE_ENABLED = os.getenv("AUTO_APPROVE_ENABLED", "true").lower() in ("true", "1", "yes")
 AUTO_APPROVE_DISCOUNT_THRESHOLD = _get_int("AUTO_APPROVE_DISCOUNT_THRESHOLD", 0)
 
-# Configuração de modo simulado do Bot e Mocks
-SIMULATED_BOT_ENABLED = os.getenv("SIMULATED_BOT_ENABLED", "false").lower() in ("true", "1", "yes")
-SIMULATED_PUBLICATIONS_FILE = os.getenv("SIMULATED_PUBLICATIONS_FILE", "simulated_publications.json")
+# Configuração de Mocks para desenvolvimento offline
 USE_MOCK_DATA = os.getenv("USE_MOCK_DATA", "false").lower() in ("true", "1", "yes")
-
-# Web Poller HTTP público autônomo (redundância e captura contínua resiliente)
-ENABLE_WEB_POLLER = os.getenv("ENABLE_WEB_POLLER", "true").lower() in ("true", "1", "yes")
 
 # ------------------------------------------------------------------------------
 # 4. Infraestrutura & Banco

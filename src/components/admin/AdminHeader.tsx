@@ -35,7 +35,6 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
     if (pathname === '/admin') return 'Visão Geral & Métricas';
     if (pathname.startsWith('/admin/ofertas')) return 'Fila de Curadoria';
     if (pathname.startsWith('/admin/metricas')) return 'Métricas de Engajamento';
-    if (pathname.startsWith('/admin/fontes')) return 'Fontes do Telegram';
     return 'Painel Administrativo';
   };
 
@@ -48,7 +47,6 @@ export default function AdminHeader({ title }: AdminHeaderProps) {
       badge: pendingCount > 0 ? pendingCount : undefined,
     },
     { label: 'Métricas', href: '/admin/metricas', icon: <BarChart3 className="h-4 w-4" /> },
-    { label: 'Fontes Telegram', href: '/admin/fontes', icon: <Radio className="h-4 w-4" /> },
   ];
 
   return (

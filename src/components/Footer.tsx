@@ -7,31 +7,29 @@ import { Flame, ShieldCheck, Heart, Sparkles, Send, Bell } from 'lucide-react';
 export default function Footer() {
   return (
     <footer className="mt-24 border-t border-slate-200/80 bg-slate-50/50 text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
-      {/* Telegram Community Invite Banner */}
+      {/* Site Value Proposition Banner */}
       <div className="border-b border-slate-200/80 bg-white/70 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/60">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row sm:px-6">
           <div className="flex items-center gap-3.5 text-center sm:text-left">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-sky-500/10 text-sky-600 dark:bg-sky-500/20 dark:text-sky-400">
-              <Send className="h-5 w-5 stroke-[2.5]" />
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400">
+              <Sparkles className="h-5 w-5 stroke-[2.5]" />
             </div>
             <div>
               <h4 className="text-sm font-black text-slate-900 dark:text-white">
-                Receba ofertas e bugs de preço em tempo real
+                Economize com inteligência nas melhores lojas
               </h4>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Canal exclusivo no Telegram para quem quer economizar de verdade antes que esgote.
+                Acompanhe o catálogo atualizado com cupons exclusivos e os maiores descontos da internet.
               </p>
             </div>
           </div>
-          <a
-            href="https://t.me"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex w-full min-h-[42px] items-center justify-center gap-2 rounded-xl bg-sky-500 px-5 py-2.5 text-xs font-black text-white shadow-md shadow-sky-500/20 transition-all hover:bg-sky-600 active:scale-95 sm:w-auto"
+          <Link
+            href="/cupons"
+            className="inline-flex w-full min-h-[42px] items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-xs font-black text-white shadow-md shadow-violet-600/20 transition-all hover:bg-violet-700 active:scale-95 sm:w-auto"
           >
             <Bell className="h-4 w-4" />
-            <span>Entrar no Grupo VIP</span>
-          </a>
+            <span>Explorar Cupons</span>
+          </Link>
         </div>
       </div>
 

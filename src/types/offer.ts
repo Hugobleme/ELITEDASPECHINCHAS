@@ -11,8 +11,8 @@ export interface Offer {
   image_url: string;
   original_link?: string; // Auditoria interna (visível no admin)
   affiliate_link: string; // Link com a tag de afiliado (gerado automaticamente no backend)
-  telegram_msg_id?: number; // Identificador da mensagem no grupo para deduplicação
-  source_name?: string; // Nome do grupo de origem no Telegram
+  telegram_msg_id?: number; // Metadado histórico de deduplicação (legado)
+  source_name?: string; // Metadado histórico de canal/origem (legado)
   status: OfferStatus;
   published_at: string | null;
   created_at: string;
@@ -20,6 +20,20 @@ export interface Offer {
   installments?: string; // Informações de parcelamento (ex: 10x de R$ 219,90 sem juros)
   free_shipping?: boolean; // Se conta com frete grátis
   temperature?: number; // Pontuação de temperatura da comunidade (ex: +280°)
+}
+
+export interface OfferCreatePayload {
+  title: string;
+  price_current: number;
+  price_original?: number;
+  discount_pct?: number;
+  store: string;
+  category?: string;
+  image_url?: string;
+  original_link: string;
+  affiliate_link?: string;
+  coupon_code?: string;
+  status?: OfferStatus;
 }
 
 export interface OffersFilterParams {

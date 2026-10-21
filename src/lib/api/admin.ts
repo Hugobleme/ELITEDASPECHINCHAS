@@ -1,6 +1,7 @@
-import { Offer } from '@/types/offer';
+import { Offer, OfferCreatePayload } from '@/types/offer';
 import {
   AdminMetrics,
+  ContentSource,
   TelegramSource,
   AdminOfferUpdatePayload,
   AdminOffersFilterParams,
@@ -20,6 +21,7 @@ export async function getAdminOffers(
   const {
     status = 'pending',
     store,
+    category,
     source,
     min_discount = 0,
     page = 1,
@@ -32,6 +34,7 @@ export async function getAdminOffers(
       const query = new URLSearchParams();
       if (status && status !== 'all') query.set('status', status);
       if (store) query.set('store', store);
+      if (category && category !== 'todas') query.set('category', category);
       if (source) query.set('source', source);
       if (min_discount > 0) query.set('min_discount', String(min_discount));
       if (page) query.set('page', String(page));
@@ -63,6 +66,10 @@ export async function getAdminOffers(
 
   if (store && store !== 'todas') {
     filtered = filtered.filter((o) => o.store.toLowerCase().includes(store.toLowerCase()));
+  }
+
+  if (category && category !== 'todas') {
+    filtered = filtered.filter((o) => o.category?.toLowerCase() === category.toLowerCase());
   }
 
   if (source && source !== 'todas') {
@@ -116,6 +123,56 @@ export async function getAdminOfferById(
 
   const found = mockStore.offers.find((o) => o.id === id);
   return found || null;
+}
+
+/**
+ * Cria uma nova oferta manualmente no sistema (curadoria web).
+ */
+export async function createAdminOffer(
+  payload: OfferCreatePayload,
+  token?: string
+): Promise<Offer> {
+  if (API_BASE_URL) {
+    try {
+      const res = await fetchWithTimeout(`${API_BASE_URL}/offers`, {
+        method: 'POST',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) return await res.json();
+    } catch {
+      console.warn('[Admin API] Falha remota ao criar oferta. Criando no mock store.');
+    }
+  }
+
+  const now = new Date().toISOString();
+  const price_orig = payload.price_original || payload.price_current;
+  const disc_pct =
+    payload.discount_pct !== undefined
+      ? payload.discount_pct
+      : price_orig > payload.price_current
+      ? Math.round(((price_orig - payload.price_current) / price_orig) * 100)
+      : 0;
+
+  const newOffer: Offer = {
+    id: `admin-off-${Date.now()}`,
+    title: payload.title,
+    price_current: payload.price_current,
+    price_original: price_orig,
+    discount_pct: disc_pct,
+    store: payload.store,
+    category: payload.category || 'eletronicos',
+    image_url: payload.image_url || 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600',
+    original_link: payload.original_link,
+    affiliate_link: payload.affiliate_link || payload.original_link,
+    coupon_code: payload.coupon_code,
+    status: payload.status || 'published',
+    published_at: payload.status === 'published' ? now : null,
+    created_at: now,
+  };
+
+  mockStore.offers.unshift(newOffer);
+  return newOffer;
 }
 
 /**

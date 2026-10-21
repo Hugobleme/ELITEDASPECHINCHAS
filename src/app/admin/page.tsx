@@ -61,15 +61,15 @@ export default function AdminDashboardPage() {
       <div className="overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 p-6 text-white shadow-xl sm:p-8">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 px-3 py-1 text-xs font-bold text-emerald-300 backdrop-blur-md">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Automação Telethon Conectada & Operando</span>
+            <div className="inline-flex items-center gap-2 rounded-full bg-violet-500/20 px-3 py-1 text-xs font-bold text-violet-300 backdrop-blur-md">
+              <span className="h-2 w-2 rounded-full bg-violet-400" />
+              <span>Catálogo & Vitrine Web Ativos</span>
             </div>
             <h2 className="text-xl font-black sm:text-2xl lg:text-3xl">
               Central de Curadoria & Métricas
             </h2>
             <p className="text-xs text-slate-300 sm:text-sm">
-              Capturando mensagens dos grupos do Telegram e convertendo automaticamente para seu link de afiliado.
+              Gerencie ofertas, cupons e métricas da vitrine pública com links de afiliados oficiais.
             </p>
           </div>
 
@@ -220,42 +220,37 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          {/* Resumo dos Canais Telegram */}
+          {/* Ações Rápidas do Painel */}
           <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
               <div className="flex items-center gap-2">
-                <Radio className="h-4 w-4 text-blue-500" />
+                <Sparkles className="h-4 w-4 text-violet-500" />
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
-                  Fontes Monitoradas
+                  Ações Rápidas
                 </h4>
               </div>
-              <Link
-                href="/admin/fontes"
-                className="text-[11px] font-bold text-blue-600 hover:underline dark:text-blue-400"
-              >
-                Gerenciar
-              </Link>
             </div>
 
             <div className="mt-4 space-y-3 text-xs">
-              <div className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-950/60">
-                <span className="font-bold text-slate-800 dark:text-slate-200">Promos VIP Tech</span>
+              <Link
+                href="/admin/ofertas"
+                className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 hover:bg-slate-100 dark:bg-slate-950/60 dark:hover:bg-slate-900 transition-colors"
+              >
+                <span className="font-bold text-slate-800 dark:text-slate-200">Gerenciar Ofertas</span>
+                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-extrabold text-violet-800 dark:bg-violet-950 dark:text-violet-300">
+                  Acessar
+                </span>
+              </Link>
+              <Link
+                href="/"
+                target="_blank"
+                className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 hover:bg-slate-100 dark:bg-slate-950/60 dark:hover:bg-slate-900 transition-colors"
+              >
+                <span className="font-bold text-slate-800 dark:text-slate-200">Ver Vitrine Pública</span>
                 <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                  Ativo
+                  Abrir ↗
                 </span>
-              </div>
-              <div className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-950/60">
-                <span className="font-bold text-slate-800 dark:text-slate-200">Achados & Cupons BR</span>
-                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                  Ativo
-                </span>
-              </div>
-              <div className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 dark:bg-slate-950/60">
-                <span className="font-bold text-slate-800 dark:text-slate-200">Radar Gamer BR</span>
-                <span className="rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-extrabold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
-                  Pausado
-                </span>
-              </div>
+              </Link>
             </div>
           </div>
         </div>

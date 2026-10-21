@@ -14,7 +14,6 @@ export function OrganizationJsonLd() {
     logo: `${BASE_URL}/favicon.svg`,
     description: 'A melhor curadoria de promoções, cupons de desconto e pechinchas da internet brasileira.',
     sameAs: [
-      'https://t.me/elitedaspechinchas',
       'https://instagram.com/elitedaspechinchas',
     ],
   };

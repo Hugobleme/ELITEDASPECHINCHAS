@@ -246,7 +246,7 @@ export const MOCK_PENDING_OFFERS: Offer[] = [
   },
 ];
 
-// Grupos-fonte do Telegram monitorados pela automação Telethon em Python
+// Histórico de fontes / canais de ofertas (legado)
 export const MOCK_TELEGRAM_SOURCES: TelegramSource[] = [
   {
     id: 'src-01',

@@ -11,10 +11,10 @@ Um ecossistema completo para agregação, curadoria e recomendação de ofertas 
 
 ```mermaid
 flowchart TD
-    subgraph Ingestao["1. Automação Python"]
-        TG[Grupos Telegram] -->|Telethon Userbot| BOT[Captura & Parser]
-        BOT -->|Troca Automática| AF[Gera Link Afiliado]
-        AF -->|status: pending| DB[(PostgreSQL)]
+    subgraph Ingestao["1. Curadoria e Gestão Web"]
+        ADMIN[Painel Admin / Curador] -->|Cadastro / Importação| ADM_API[FastAPI POST /offers]
+        ADM_API -->|Troca Automática de Afiliado| AF[Motor de Afiliados]
+        AF --> DB[(PostgreSQL)]
     end
 
     subgraph Backend_API["2. FastAPI Backend (Fases 1, 2 e 3)"]
@@ -28,11 +28,12 @@ flowchart TD
     subgraph Notificacoes["3. Celery + Redis Worker"]
         ADM -->|Ao publicar oferta| QUEUE[Fila Celery: match_and_notify]
         QUEUE -->|pywebpush| PUSH[Notificação Web Push no Navegador]
+        CRON[Tarefas Agendadas] -->|Limpeza & Deduplicação| DB
     end
 
     subgraph Web_App["4. Web App Next.js 14"]
-        VITRINE[Vitrine Pública]
-        PAINEL[Painel de Curadoria Admin]
+        VITRINE[Vitrine Pública & Cupons]
+        PAINEL[Painel de Curadoria & Nova Oferta]
     end
 
     DB <--> Backend_API
@@ -120,39 +121,36 @@ flowchart TD
 
 ---
 
-## 🤖 Automação de Captura & Ingestão (Telethon + Celery)
+## 🏷️ Curadoria e Gestão de Ofertas no Site (Web Curation + Celery)
 
-A camada de automação é responsável por monitorar grupos-fonte no Telegram, realizar o parsing das mensagens, aplicar filtros de curadoria/deduplicação, trocar as tags de afiliados e persistir as ofertas no banco para posterior curadoria ou publicação automática.
+A plataforma opera com foco 100% web, provendo ferramentas completas para cadastro, moderação, deduplicação, injeção de links de afiliado e disparo de notificações Web Push.
 
-### Fluxo de Ingestão em 5 Etapas:
-1. **Captura em Tempo Real (`bot/listener.py`)**:
-   - Userbot Telethon escuta mensagens dos grupos/canais autorizados configurados em `SOURCE_CHANNELS`.
-   - Extrai texto, ID da mensagem, hyperlinks (`MessageEntityTextUrl`) e mídia.
-   - Enfileira a mensagem no Celery via task assíncrona `process_telegram_message`.
-2. **Parser Inteligente (`processor/parser.py`)**:
-   - Extrai título limpo, preço atual, preço original e calcula o `% OFF`.
-   - Reconhece cupons de desconto (`CUPOM: ...`, `Use o cupom ...`).
-   - Identifica a loja de origem por domínio e heurística textual (Amazon, Mercado Livre, Magalu, Shopee, Kabum, etc.).
-   - Classifica automaticamente na categoria correta (smartphones, informatica, games, moda, etc.).
-3. **Motor de Regras & Deduplicação (`processor/rules.py`)**:
-   - **Desconto Mínimo**: Rejeita ofertas com desconto abaixo de `MIN_DISCOUNT_PERCENT` (padrão 10%).
-   - **Deduplicação Dupla**: Verifica unicidade por `telegram_msg_id` e por hash de conteúdo (`título + preço`) nas últimas 24 horas.
-   - **Rate Limit**: Limita o volume de postagens por fonte para evitar inundações de spam.
-4. **Substituição Automática de Afiliado (`processor/affiliate.py`)**:
-   - Converte URLs da Amazon extraindo o ASIN (`/dp/ASIN?tag=minhatag-20`).
-   - Limpa parâmetros de outros afiliados no Mercado Livre e injeta a tag própria.
-   - Redireciona links Magalu para a vitrine do parceiro (`magazinevoce.com.br/parceiro/...`).
+### Fluxo de Ingestão e Curadoria Web:
+1. **Cadastro Direto via Painel Administrativo (`/admin/ofertas` -> "Nova Oferta")**:
+   - Curadores podem cadastrar ofertas e cupons diretamente pela interface web com cálculo em tempo real de desconto e preview.
+   - Suporte a ingestão automatizada via API REST (`POST /offers`) com payload estruturado e validação Pydantic.
+2. **Parser e Sanitização de Dados (`processor/parser.py`)**:
+   - Extrai e higieniza títulos, detecta padrões de cupons (`CUPOM: ...`, `Use o código ...`), normaliza valores numéricos e categoriza automaticamente.
+   - Identifica lojas de origem por domínio e regras heurísticas (Amazon, Mercado Livre, Magalu, Shopee, Kabum, etc.).
+3. **Substituição Automática de Afiliado (`processor/affiliate.py`)**:
+   - Converte URLs da Amazon extraindo o ASIN (`/dp/ASIN?tag=elitedaspechi-20`).
+   - Higieniza e substitui parâmetros de terceiros no Mercado Livre injetando `matt_word` e `matt_tool`.
+   - Redireciona links Magalu para a vitrine oficial do parceiro.
    - Injeta parâmetros oficiais para Kabum, Shopee e AliExpress.
-   - Fallback tolerante: se a loja não tiver regra, mantém o link original e encaminha para revisão.
-5. **Persistência & Publicação (`processor/tasks.py`)**:
-   - Salva no banco com status `pending` (para aprovação na curadoria `/admin/ofertas`) ou `published` (se auto-aprovação estiver ligada).
-   - Ao ser publicada, dispara `publish_offer_to_channel` (publica no canal oficial via Bot API) e `match_and_notify` (envia Web Push aos alertas cadastrados pelos usuários).
+   - Fallback tolerante: links não suportados são mantidos intactos para curadoria manual.
+4. **Motor de Regras & Deduplicação (`processor/rules.py`)**:
+   - **Desconto Mínimo**: Filtra ofertas abaixo do piso de desconto configurado.
+   - **Deduplicação**: Previne cadastros idênticos por hash de conteúdo (`título + preço`) nas últimas 24 horas.
+   - **Manutenção Agendada**: Tarefas Celery limpam ofertas expiradas (`task_cleanup_expired`) e deduplicam a base periodicamente (`task_deduplicate`).
+5. **Notificações Web Push em Tempo Real (`processor/notify.py`)**:
+   - Ao publicar uma oferta (com status `published`), a tarefa Celery `match_and_notify` cruza instantaneamente a oferta com os alertas cadastrados pelos usuários.
+   - Dispara notificações nativas no navegador dos usuários inscritos via `pywebpush` (VAPID).
 
 ---
 
 ## 🐳 Subir com Docker (Stack Completa)
 
-A aplicação conta com orquestração completa via **Docker Compose** que sobe todos os 6 serviços interconectados em uma rede privada com um único comando.
+A aplicação conta com orquestração completa via **Docker Compose** que sobe todos os serviços interconectados em uma rede privada com um único comando.
 
 ### 🧩 Serviços Orquestrados no `docker-compose.yml`
 
@@ -161,8 +159,7 @@ A aplicação conta com orquestração completa via **Docker Compose** que sobe 
 | **`postgres`** | `postgres:16-alpine` | `5432` | Banco de dados relacional com volume persistente `postgres_data` e healthcheck. |
 | **`redis`** | `redis:7-alpine` | `6379` | Broker de mensagens Celery e cache com persistência e healthcheck. |
 | **`api`** | `Dockerfile.backend` | `8000` | FastAPI (Uvicorn), aplica migrações Alembic automaticamente no start e expõe OpenAPI Swagger. |
-| **`worker`** | `Dockerfile.backend` | — | Celery Worker que consome tarefas de parsing, motor de regras, troca de afiliados e Web Push. |
-| **`listener`** | `Dockerfile.backend` | — | Userbot Telethon que monitora canais-fonte em tempo real com volume persistente para o `.session`. |
+| **`worker`** | `Dockerfile.backend` | — | Celery Worker que consome tarefas de motor de regras, troca de afiliados e Web Push. |
 | **`web`** | `Dockerfile.frontend` | `3000` | Frontend Next.js 14 App Router construído em imagem multi-stage Node 20. |
 
 ---
@@ -173,7 +170,7 @@ A aplicação conta com orquestração completa via **Docker Compose** que sobe 
 ```bash
 cp .env.example .env
 ```
-> Preencha suas credenciais do Telegram (`TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_BOT_TOKEN`), tags de afiliados e chaves JWT/VAPID no `.env`.
+> Preencha suas tags de afiliados (`AMAZON_TAG`, `MERCADOLIVRE_TAG`, etc.) e chaves JWT/VAPID no `.env`.
 
 #### 2. Subir todos os serviços com build:
 ```bash
@@ -184,20 +181,13 @@ Para rodar em segundo plano (modo detached):
 docker compose up -d --build
 ```
 
-#### 3. Popular o banco de dados com fontes e regras iniciais (Seed):
+#### 3. Popular o banco de dados com dados iniciais (Seed):
 Em outro terminal (com os containers rodando):
 ```bash
 docker compose exec api python seed.py
 ```
 
-#### 4. Autenticação Inicial do Userbot Telethon (Primeira Execução):
-Na primeira execução, o Telegram exige autenticação do número de telefone via código SMS/Telegram. Execute o container em modo interativo para digitar seu telefone e código:
-```bash
-docker compose run --rm listener python main.py
-```
-> **Nota de Persistência:** A sessão fica gravada no volume persistente `telethon_sessions` (`/app/sessions`). Uma vez autenticado, o container `listener` iniciará automaticamente 24h sem pedir código novamente.
-
-#### 5. Verificar o status dos serviços e healthchecks:
+#### 4. Verificar o status dos serviços e healthchecks:
 ```bash
 docker compose ps
 ```
@@ -215,17 +205,16 @@ Acessos locais:
    - O frontend Next.js pode ser hospedado diretamente na **Vercel**, configurando a variável de ambiente `NEXT_PUBLIC_API_URL` apontando para o seu domínio da API (ex: `https://api.elitedaspechinchas.com.br`).
    - Em sua VPS (ex: Hetzner, DigitalOcean, AWS), execute apenas a infraestrutura e backend 24/7 omitindo o container web:
      ```bash
-     docker compose up -d postgres redis api worker listener
+     docker compose up -d postgres redis api worker
      ```
 
 2. **Deploy All-in-One (VPS Única)**:
-   - Execute todos os 6 containers via `docker compose up -d`.
+   - Execute todos os containers via `docker compose up -d`.
    - Utilize um reverse proxy como **Nginx** ou **Caddy** com SSL automático (Let's Encrypt) roteando `elitedaspechinchas.com.br` para a porta 3000 e `api.elitedaspechinchas.com.br` para a porta 8000.
 
 ---
 
 ## ⚙️ Guia de Execução Local (Sem Docker)
-
 
 ### 1. Criar e Ativar Ambiente Virtual
 ```bash
@@ -247,48 +236,43 @@ Copie o arquivo `.env.example` para `.env` e preencha suas chaves:
 cp .env.example .env
 ```
 Variáveis principais:
-- `TELEGRAM_API_ID` e `TELEGRAM_API_HASH`: obtidos em https://my.telegram.org/apps
-- `TELEGRAM_BOT_TOKEN`: obtido com o @BotFather no Telegram
-- `TARGET_CHANNEL_ID`: canal de destino das ofertas (ex: `@elitedaspechinchas`)
-- `SOURCE_CHANNELS`: canais monitorados separados por vírgula (ex: `@grupo1,@grupo2`)
-- Tags de afiliados: `AMAZON_TAG`, `MERCADOLIVRE_TAG`, etc.
+- Chaves de segurança: `JWT_SECRET`, `SECRET_KEY`
+- Notificações Web Push: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_CLAIMS_EMAIL`
+- Conexões: `DATABASE_URL`, `REDIS_URL`
+- Tags de afiliados: `AMAZON_TAG`, `MERCADOLIVRE_TAG`, `MAGALU_TAG`, etc.
 
 ### 4. Executar Migrações e Inicializar Dados (Seed)
 ```bash
 # Executa migrações do banco
 alembic upgrade head
 
-# Popula fontes e regras iniciais de afiliados
+# Popula dados e regras iniciais de afiliados
 python seed.py
 ```
 
-### 5. Iniciar o Worker Celery (Processamento + Notificações)
+### 5. Iniciar o Worker Celery (Processamento + Web Push)
 Certifique-se de que o Redis está rodando:
 ```bash
 celery -A processor.celery_app worker --loglevel=info
 ```
 
-### 6. Iniciar o Listener do Userbot Telethon
-Em um terminal separado:
-```bash
-python main.py
-```
-
-### 7. Iniciar a API FastAPI
+### 6. Iniciar a API FastAPI
+Em outro terminal:
 ```bash
 uvicorn api.main:app --reload --port 8000
 ```
 Documentação Swagger interativa: **http://localhost:8000/docs**
 
-### 8. Executar a Suíte de Testes
+### 7. Executar a Suíte de Testes
 ```bash
 pytest tests/ -v
 ```
 Foram implementados testes unitários e de integração cobrindo:
+- `tests/test_site_only_validation.py`: validação estrita da arquitetura exclusiva do site (zero Telegram, zero vazamentos).
 - `tests/test_parser.py`: extração de preços, lojas, categorias e cupons.
 - `tests/test_affiliate.py`: substituição e sanitização de links por loja.
 - `tests/test_rules.py`: motor de regras, pisos de desconto e deduplicação 24h.
-- `tests/test_bot_formatter_publisher.py`: renderização de cards e publicação.
+- `tests/test_celery_tasks.py`: tarefas assíncronas do Celery (limpeza, deduplicação, alertas).
 - `tests/test_auth.py`, `tests/test_favorites.py`, `tests/test_alerts_matching.py`: rotas de usuário e Web Push.
 
 
@@ -400,6 +384,6 @@ O ecossistema está **100% online e operando em produção**:
 - ⚙️ **Backend API (Railway)**: [https://elitedaspechinchas-production.up.railway.app](https://elitedaspechinchas-production.up.railway.app)
 - 📖 **Documentação Swagger**: [https://elitedaspechinchas-production.up.railway.app/docs](https://elitedaspechinchas-production.up.railway.app/docs)
 - 🐘 **PostgreSQL 16 & Redis 7**: Gerenciados e conectados na Railway
-- 📦 **Celery Worker & Telegram Listener**: Preparados para processamento assíncrono e captura de ofertas
+- 📦 **Celery Worker**: Preparado para processamento assíncrono, limpeza de ofertas e disparo de Web Push
 - 📋 **Guia Operacional**: Consulte o manual completo em [`DEPLOY.md`](DEPLOY.md).
 

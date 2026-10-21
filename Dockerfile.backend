@@ -28,8 +28,6 @@ RUN chmod +x /app/entrypoint.sh
 # Copia todo o código fonte
 COPY . /app
 
-# Cria diretório de sessões persistentes do Telethon
-RUN mkdir -p /app/sessions
 
 # Expõe porta da API FastAPI
 EXPOSE 8000

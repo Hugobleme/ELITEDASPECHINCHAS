@@ -31,7 +31,7 @@ from database.models import (
     AffiliateRule,
     User,
 )
-from config import SOURCE_CHANNELS, DEFAULT_AFFILIATE_TAGS, AFFILIATE_PARAM_NAMES
+from config import DEFAULT_AFFILIATE_TAGS, AFFILIATE_PARAM_NAMES
 from api.security import get_password_hash
 from api.services.mock_data import PYTHON_MOCK_COUPONS, PYTHON_MOCK_CATEGORIES, PYTHON_MOCK_STORES
 
@@ -129,11 +129,12 @@ def seed_database(session: Optional[Session] = None):
         db.commit()
 
         # ======================================================================
-        # 3. Fontes de Monitoramento (sources)
+        # 3. Fontes de Catálogo / Origem (sources legadas)
         # ======================================================================
-        print("\n📡 3. Populando Fontes de Monitoramento...")
+        print("\n📡 3. Populando Fontes de Origem...")
         sources_count = 0
-        for channel in SOURCE_CHANNELS:
+        legacy_sources = ["@promosviptech", "@achadosecuponsbr", "@radargamerbr"]
+        for channel in legacy_sources:
             clean_ch = channel.strip()
             if not clean_ch:
                 continue

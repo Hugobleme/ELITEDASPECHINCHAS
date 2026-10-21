@@ -11,6 +11,7 @@ from sqlalchemy import desc, func
 
 from database.connection import get_db
 from database.models import Offer, Source
+from api.services.cache import cache_service
 
 logger = logging.getLogger(__name__)
 
@@ -133,14 +134,17 @@ def publish_offer(offer_id: str, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(offer)
 
-    # Dispara a notificação assíncrona e publicação no canal Telegram oficial
+    # Invalida cache da vitrine
+    cache_service.invalidate_prefix("offers:")
+    cache_service.invalidate_prefix("categories:")
+    cache_service.invalidate_prefix("stores:")
+
+    # Dispara a notificação assíncrona Web Push aos alertas casados
     try:
         from processor.notify import match_and_notify
-        from processor.tasks import publish_offer_to_channel
 
         match_and_notify.delay(str(offer.id))
-        publish_offer_to_channel.delay(str(offer.id))
-        logger.info(f"[Publish] Celery tasks disparadas para oferta {offer.id}")
+        logger.info(f"[Publish] Web Push task disparada para oferta {offer.id}")
     except Exception as exc:
         logger.warning(f"[Publish] Celery não disponível ou offline: {str(exc)}")
 
@@ -166,10 +170,8 @@ def bulk_action_offers(payload: BulkActionPayload, db: Session = Depends(get_db)
             offer.published_at = now
             try:
                 from processor.notify import match_and_notify
-                from processor.tasks import publish_offer_to_channel
 
                 match_and_notify.delay(str(offer.id))
-                publish_offer_to_channel.delay(str(offer.id))
             except Exception:
                 pass
         elif payload.action == "approve":
@@ -182,6 +184,7 @@ def bulk_action_offers(payload: BulkActionPayload, db: Session = Depends(get_db)
         updated_count += 1
 
     db.commit()
+    cache_service.invalidate_prefix("offers:")
     return {"success": True, "updated": updated_count}
 
 
@@ -200,18 +203,15 @@ def publish_all_pending(limit: int = 50, db: Session = Depends(get_db)):
     for off in pending_offers:
         off.status = "published"
         off.published_at = now
+        count += 1
         try:
-            from processor.tasks import publish_offer_to_channel
-            publish_offer_to_channel.delay(str(off.id))
-            count += 1
+            from processor.notify import match_and_notify
+            match_and_notify.delay(str(off.id))
         except Exception:
-            try:
-                from processor.tasks import publish_offer_to_channel
-                publish_offer_to_channel(str(off.id))
-                count += 1
-            except Exception:
-                pass
+            pass
+
     db.commit()
+    cache_service.invalidate_prefix("offers:")
     return {"success": True, "published_count": count}
 
 
@@ -317,27 +317,17 @@ def get_admin_metrics(range: str = "7d", db: Session = Depends(get_db)):
 
 @router.get("/sources")
 def get_admin_sources(db: Session = Depends(get_db)):
-    """Retorna grupos e canais fontes monitorados."""
+    """Retorna grupos e canais fontes cadastrados no banco."""
     sources = db.query(Source).all()
-    if not sources:
-        default_sources = [
-            Source(name="Promos VIP Tech", channel_username="@promosviptech", is_active=True),
-            Source(name="Achados & Cupons BR", channel_username="@achadosecuponsbr", is_active=True),
-            Source(name="Radar Gamer BR", channel_username="@radargamerbr", is_active=True),
-        ]
-        db.add_all(default_sources)
-        db.commit()
-        sources = db.query(Source).all()
-
     return [
         {
             "id": s.id,
             "name": s.name,
             "channel_username": s.channel_username,
             "is_active": s.is_active,
-            "total_captured": 142,
+            "total_captured": 0,
             "last_activity_at": s.created_at.isoformat() if s.created_at else datetime.now(timezone.utc).isoformat(),
-            "description": f"Canal de monitoramento {s.name}",
+            "description": f"Fonte {s.name}",
         }
         for s in sources
     ]
@@ -349,7 +339,7 @@ def update_admin_source(
     payload: SourceTogglePayload,
     db: Session = Depends(get_db),
 ):
-    """Pausa ou reativa monitoramento de um canal fonte do Telegram."""
+    """Atualiza status de uma fonte cadastrada."""
     source = db.query(Source).filter(Source.id == source_id).first()
     if not source:
         raise HTTPException(status_code=404, detail="Fonte não encontrada.")
@@ -363,7 +353,7 @@ def update_admin_source(
         "name": source.name,
         "channel_username": source.channel_username,
         "is_active": source.is_active,
-        "total_captured": 142,
+        "total_captured": 0,
         "last_activity_at": datetime.now(timezone.utc).isoformat(),
-        "description": f"Canal de monitoramento {source.name}",
+        "description": f"Fonte {source.name}",
     }

@@ -244,7 +244,7 @@ def replace_generic_link(url: str, param_name: str, tag: str) -> str:
 SHORTENER_DOMAINS = [
     "amzn.to", "amzn.com", "bit.ly", "tinyurl.com", "t.co", "shp.ee",
     "shope.ee", "is.gd", "cutt.ly", "linkr.bio", "s.shopee.com.br", "meli.la",
-    "pechin.co", "pechinchou.com.br", "t.me", "link.amazon", "a.co"
+    "pechin.co", "pechinchou.com.br", "link.amazon", "a.co"
 ]
 
 

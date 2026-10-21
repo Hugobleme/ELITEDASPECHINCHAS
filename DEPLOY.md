@@ -4,27 +4,19 @@ Guia completo para colocar o projeto em produção.
 
 ---
 
-## Arquitetura de Produção
-
-```
+## Arquitetura de Produ```
 ┌─────────────────┐     ┌──────────────────────────────────────┐
-│   Vercel         │     │   Railway                            │
-│   (Frontend)     │────▶│   ┌─────────┐  ┌─────────┐         │
-│   Next.js 14     │     │   │ FastAPI  │  │ Celery  │         │
-│   App Router     │     │   │  API     │  │ Worker  │         │
-└─────────────────┘     │   └────┬────┘  └────┬────┘         │
-                         │        │            │               │
-                         │   ┌────▼────────────▼────┐         │
-                         │   │   PostgreSQL          │         │
-                         │   │   Redis               │         │
-                         │   └──────────────────────┘         │
-                         │                                     │
-                         │   ┌─────────────┐                  │
-                         │   │ Telegram    │                  │
-                         │   │ Listener    │                  │
-                         │   │ (main.py)   │                  │
-                         │   └─────────────┘                  │
-                         └──────────────────────────────────────┘
+│   Vercel        │     │   Railway                            │
+│   (Frontend)    │────▶│   ┌─────────┐  ┌─────────┐           │
+│   Next.js 14    │     │   │ FastAPI │  │ Celery  │           │
+│   App Router    │     │   │  API    │  │ Worker  │           │
+└─────────────────┘     │   └────┬────┘  └────┬────┘           │
+                        │        │            │                 │
+                        │   ┌────▼────────────▼────┐           │
+                        │   │   PostgreSQL         │           │
+                        │   │   Redis              │           │
+                        │   └──────────────────────┘           │
+                        └──────────────────────────────────────┘
 ```
 
 ---
@@ -82,15 +74,12 @@ No serviço do backend (Settings → Variables):
 | `JWT_SECRET` | Gere com: `openssl rand -hex 32` |
 | `SECRET_KEY` | Gere com: `openssl rand -hex 32` |
 | `CORS_ORIGINS` | `https://SEU-APP.vercel.app,https://elitedaspechinchas.com.br` |
-| `TELEGRAM_BOT_TOKEN` | Token do [@BotFather](https://t.me/BotFather) |
-| `TARGET_CHANNEL_ID` | `@SeuCanal` ou `-100XXXXXXXXXX` |
-| `SOURCE_CHANNELS` | `@canal1,@canal2` |
-| `TELEGRAM_API_ID` | De [my.telegram.org/apps](https://my.telegram.org/apps) |
-| `TELEGRAM_API_HASH` | De [my.telegram.org/apps](https://my.telegram.org/apps) |
-| `AMAZON_TAG` | Sua tag Amazon Associates |
+| `VAPID_PUBLIC_KEY` | Chave pública VAPID para Web Push |
+| `VAPID_PRIVATE_KEY` | Chave privada VAPID para Web Push |
+| `VAPID_CLAIMS_EMAIL` | Email de contato do remetente Push (ex: `admin@elitedaspechinchas.com.br`) |
+| `AMAZON_TAG` | Sua tag Amazon Associates (ex: `elitedaspechi-20`) |
 | `MERCADOLIVRE_TAG` | Sua tag Mercado Livre |
 | `MAGALU_TAG` | Sua tag Magazine Luiza |
-| `SIMULATED_BOT_ENABLED` | `false` |
 | `USE_MOCK_DATA` | `false` |
 
 ### 2.5 Start Command
@@ -125,84 +114,71 @@ curl https://SEU-APP.up.railway.app/offers
 
 ---
 
-## 4. Telegram Listener — Railway (Terceiro Serviço)
+## 4. Manual Operacional de Desativação e Revogação do Telegram
 
-### 4.1 Setup
-1. No mesmo projeto Railway → **+ New** → **GitHub Repo** → mesmo repositório.
-2. Settings → Start Command: `python main.py`
-3. Copie as mesmas variáveis de ambiente do backend + credenciais Telegram.
+Conforme a decisão arquitetural do projeto, **todas as integrações com Telegram (bots, userbots e canais) foram completamente descontinuadas**. Siga o checklist operacional abaixo para revogar credenciais externas e desligar serviços órfãos:
 
-### 4.2 Primeira Execução (Autenticação Telethon)
-Na primeira vez, o Telethon pedirá o código de verificação do Telegram.
-- Use `railway logs` para ver o prompt.
-- Use `railway shell` para interagir e inserir o código.
+### 4.1 Revogação do Bot Token (@BotFather)
+1. No Telegram, abra uma conversa com o [@BotFather](https://t.me/BotFather).
+2. Envie o comando `/revoke`.
+3. Selecione o bot que era utilizado (`EliteDasPechinchasBot` ou similar) para revogar e invalidar o token de forma imediata e irreversível.
+4. *(Opcional)* Caso deseje remover o bot definitivamente, envie `/deletebot` e confirme.
 
-### 4.3 Validação
-- Logs mostram: `✅ Userbot conectado com sucesso como: ...`
-- Logs mostram: `🎯 Monitoramento ativo em tempo real em: ...`
+### 4.2 Encerramento das Sessões Ativas do Userbot (Telethon)
+Para invalidar chaves criptográficas de sessão (arquivos `.session` ou sessões em memória):
+1. No aplicativo Telegram (no celular ou computador associado ao número usado pelo Userbot):
+2. Acesse: **Configurações (Settings) → Dispositivos (Devices)**.
+3. Na lista de sessões ativas, localize a sessão associada ao Telethon (geralmente identificada pelo nome da aplicação, IP do servidor Railway/VPS ou "Telethon").
+4. Toque/clique na sessão e selecione **"Encerrar sessão" (Terminate session)**.
+5. Uma vez encerrada, qualquer tentativa de reconexão usando arquivos residuais será sumariamente rejeitada pelo Telegram.
 
----
-
-## 5. Telegram Bot — Setup no BotFather
-
-### 5.1 Criar Bot
-1. Abra [@BotFather](https://t.me/BotFather) no Telegram.
-2. Envie `/newbot`.
-3. Nome: `Elite das Pechinchas`.
-4. Username: `EliteDasPechinchasBot` (ou outro disponível).
-5. Copie o token gerado → `TELEGRAM_BOT_TOKEN`.
-
-### 5.2 Configurar Bot
-```
-/setdescription - Encontre as melhores ofertas e promoções do Brasil!
-/setabouttext - Bot oficial do Elite das Pechinchas
-/setcommands - 
-start - Iniciar o bot
-help - Ajuda
-offers - Ver ofertas recentes
-```
-
-### 5.3 Criar Canal
-1. Crie um canal no Telegram (público ou privado).
-2. Adicione o bot como **administrador** com permissão de postar.
-3. Copie o ID do canal (use [@userinfobot](https://t.me/userinfobot) ou encaminhe mensagem).
-
-### 5.4 Obter API ID/HASH
-1. Acesse [my.telegram.org/apps](https://my.telegram.org/apps).
-2. Faça login com seu número de telefone.
-3. Crie um aplicativo → copie `api_id` e `api_hash`.
+### 4.3 Limpeza de Serviços e Variáveis no Railway / VPS
+1. **Excluir o Serviço `listener`**:
+   - No painel da Railway, se houver um serviço separado rodando `main.py` / `listener`, acesse suas configurações (**Settings**) e clique em **Delete Service**.
+2. **Remover Variáveis de Ambiente**:
+   - No serviço da API e do Celery Worker, delete do painel de variáveis:
+     - `TELEGRAM_BOT_TOKEN`
+     - `TELEGRAM_API_ID`
+     - `TELEGRAM_API_HASH`
+     - `TARGET_CHANNEL_ID`
+     - `SOURCE_CHANNELS`
+     - `TELEGRAM_SESSION_NAME`
+     - `TELEGRAM_STRING_SESSION`
+     - `SIMULATED_BOT_ENABLED`
+3. **Limpeza Local**:
+   - Certifique-se de que nenhum arquivo `.session` ou `.session-journal` permaneça no diretório raiz ou de produção.
 
 ---
 
-## 6. Validação End-to-End
+## 5. Validação End-to-End
 
 ### Checklist de Produção
 
 #### Frontend
-- [ ] Site acessível na URL da Vercel
-- [ ] Home carrega ofertas reais (não mocks)
-- [ ] Busca funciona
-- [ ] Filtros por categoria e loja funcionam
-- [ ] Links de afiliado clicáveis e com tag correta
-- [ ] Páginas de cupons carregam
+- [ ] Site acessível na URL da Vercel (`https://elitedaspechinchas.vercel.app`)
+- [ ] Vitrine inicial carrega ofertas ativas com paginação e busca
+- [ ] Filtro por categorias e lojas funciona com dados reais
+- [ ] Botão de compra redireciona com tag de afiliado correta (Amazon, Mercado Livre, Shopee, Magalu)
+- [ ] Páginas de cupons carregam e permitem copiar código
+- [ ] Painel Administrativo (`/admin/ofertas`): botão "Nova Oferta" abre modal de cadastro
+- [ ] Cadastro de nova oferta calcula desconto dinâmico e valida campos obrigatórios
+- [ ] Cadastro e login de usuários funcionam (JWT e Google OAuth)
+- [ ] Usuários podem favoritar ofertas e gerenciar alertas de preço
+- [ ] Inscrição em Web Push funciona no navegador
 
 #### Backend
-- [ ] `GET /health` → 200 OK
-- [ ] `GET /offers` → retorna dados do banco
-- [ ] `GET /coupons` → retorna cupons reais
-- [ ] `GET /stores` → retorna lojas
-- [ ] `GET /categories` → retorna categorias
-- [ ] Swagger `/docs` funcional
-
-#### Bot Telegram
-- [ ] Bot online e respondendo `/start`
-- [ ] Listener conectado aos grupos fonte
-- [ ] Mensagem de teste processada com sucesso
-- [ ] Oferta publicada no canal com formatação correta
+- [ ] `GET /health` → 200 OK (`{"status":"healthy","database":"connected","redis":"connected"}`)
+- [ ] `GET /offers` → retorna listagem paginada de ofertas do PostgreSQL
+- [ ] `POST /offers` → cadastra nova oferta, higieniza links e aplica regras
+- [ ] `GET /coupons` → retorna cupons cadastrados
+- [ ] `GET /stores` e `GET /categories` → retornam metadados atualizados
+- [ ] Documentação Swagger `/docs` acessível e funcional
+- [ ] Celery Worker processa tarefas em background (`match_and_notify`, limpeza e deduplicação)
 
 #### Fluxo Completo
-- [ ] Mensagem no grupo → Bot processa → Banco → API → Frontend
-- [ ] Clique em "Comprar Agora" redireciona com link de afiliado
+- [ ] Cadastro de oferta via Painel Admin ou API → Aplicação de tags de afiliados → Persistência no PostgreSQL
+- [ ] Ao publicar oferta: Celery executa `match_and_notify` e dispara notificação Web Push aos usuários com alertas compatíveis
+- [ ] Clique em "Comprar Agora" na vitrine redireciona com parâmetros oficiais de monetização
 
 ### 6.1 Validação Automatizada End-to-End (E2E) em Produção
 
@@ -341,83 +317,20 @@ RAILWAY_API_URL="https://sua-api.up.railway.app" pytest tests/test_affiliate_lin
 - Verifique que `DATABASE_URL` está correto.
 - Se usar Railway Postgres, a variável é injetada automaticamente.
 
-### Bot não conecta
-- Verifique `TELEGRAM_API_ID` e `TELEGRAM_API_HASH`.
-- Na primeira execução, precisa autenticar interativamente.
-
 ### Migrações falham
 - Execute manualmente: `railway run alembic upgrade head`
 - Verifique se o banco está acessível.
 
 ---
 
-## 9. Diagnóstico e Observabilidade de Mídia (Telegram)
+## 8. Observabilidade de Imagens da Vitrine Web
 
-Para garantir que promoções com imagem no canal de origem cheguem ao canal oficial com foto preservada (e nunca fiquem escuras sem justificativa), o pipeline implementa rastreabilidade completa de mídia.
+Para assegurar uma vitrine visualmente rica e estável, o catálogo de ofertas gerencia URLs de imagens de produtos com validação e fallback:
 
-### 9.1 Ciclo de Vida do Campo `media_status`
-
-Na tabela `offers`, cada registro rastreia o ciclo de vida da imagem:
-
-| Estado | Significado | Comportamento no Canal |
-|---|---|---|
-| `not_present` | Nenhuma mídia foi detectada na mensagem de origem | Publicado com `sendMessage` (texto puro formatado). Ausência de mídia não é tratada como erro. |
-| `detected` | Foto/documento/preview detectado pelo listener/poller | Aguarda download ou validação de URL. |
-| `downloaded` | Foto baixada com sucesso em `/tmp` para upload multipart | Pronto para publicação via `sendPhoto`. |
-| `published` | Publicação com imagem concluída com sucesso | Postado no canal oficial via `sendPhoto` com legenda e botão inline. |
-| `fallback_text` | Foto detectada, mas publicação falhou de forma controlada | Publicado com `sendMessage` sem perder a oferta. Causa detalhada em log JSON. |
-| `failed` | Falha fatal na Bot API do Telegram | Erro logado e tarefa Celery reescalonada. |
-
-### 9.2 Logs Estruturados de Diagnóstico
-
-No Railway (Service Logs do Celery Worker ou Listener), filtre pelos seguintes padrões JSON:
-
-#### A. Detecção de Mídia na Captura:
-```json
-{
-  "component": "listener",
-  "event": "source_media_detected",
-  "telegram_msg_id": 99881,
-  "media_type": "photo",
-  "has_public_url": false,
-  "downloaded": true
-}
-```
-
-#### B. Falha de Imagem com Fallback Controlado:
-Se o Telegram rejeitar a foto ou a URL for inacessível, o publisher aciona o fallback textual sem derrubar o pipeline:
-```json
-{
-  "component": "publisher",
-  "event": "media_publish_error_fallback",
-  "media_publish_failed": true,
-  "status_code": 404,
-  "error": "HTTP 404 Not Found",
-  "offer_id": "uuid-da-oferta",
-  "telegram_msg_id": 99881,
-  "media_type": "photo",
-  "mode": "text"
-}
-```
-> **Nota de Segurança**: Os logs sanitizam a URL e **nunca expõem o token** da Bot API (`/bot<TOKEN>/...`).
-
-### 9.3 Políticas de Segurança e Limpeza
-
-1. **Proteção SSRF**: O sistema valida URLs antes de qualquer requisição externa, bloqueando `localhost`, `127.0.0.1`, faixas privadas (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`) e endpoints de metadados (`169.254.169.254`).
-2. **Limite de Tamanho**: Controlado pela variável `MAX_MEDIA_SIZE_MB` (padrão: `10` MB). Arquivos maiores são rejeitados com segurança (`media_too_large`).
-3. **MIME Types Suportados**: Apenas `image/jpeg`, `image/png` e `image/webp`. Documentos com extensões executáveis são estritamente rejeitados.
-4. **Limpeza de Temporários**: Arquivos temporários criados para envio multipart são **sempre removidos no bloco `finally`** da tarefa de publicação, garantindo que o disco não encha em produção.
-5. **Persistência Limpa**: Nenhum binário de imagem é gravado no PostgreSQL. Apenas a URL pública e os metadados de status são persistidos.
-
-### 9.4 Como Diagnosticar Ofertas sem Imagem
-
-1. **A oferta original tinha foto?**
-   - Inspecione a coluna `source_media_type` no banco: se for `None`, a oferta original realmente era apenas texto.
-2. **A oferta caiu em fallback?**
-   - Verifique se `media_status == "fallback_text"`.
-   - Procure nos logs do Railway por `media_publish_failed=true` e o `offer_id` correspondente para verificar o código HTTP ou erro retornado pelo Telegram.
-3. **Execução dos Testes de Mídia:**
-   ```bash
-   pytest tests/test_media_pipeline.py -v
-   ```
+### 8.1 Políticas de Mídia e Otimização Web
+1. **Domínios Autorizados (`next.config.js`)**: O Next.js Image Optimization está configurado para permitir domínios de lojistas homologados (`m.media-amazon.com`, `http2.mlstatic.com`, `images.kabum.com.br`, `magazineluiza.com.br`, `cf.shopee.com.br`, etc.).
+2. **Proteção SSRF**: O sistema valida URLs externas antes de qualquer consumo interno, bloqueando IPs privados (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.1`) e metadados de cloud (`169.254.169.254`).
+3. **MIME Types Suportados**: Formatos padrão para e-commerce (`image/jpeg`, `image/png`, `image/webp`).
+4. **Fallback Visual sem Erros**: Se uma oferta for cadastrada sem imagem ou a URL do parceiro estiver fora do ar, o frontend Next.js exibe automaticamente um placeholder temático elegante baseado na categoria e loja, sem quebrar o layout da vitrine.
+5. **Persistência Eficiente**: O banco de dados armazena apenas a URL pública sanitizada (`image_url`), mantendo o banco leve e sem blob overhead.
 

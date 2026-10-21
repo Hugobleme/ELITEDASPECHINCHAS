@@ -12,15 +12,18 @@ export interface AdminAuthResponse {
   user: AdminUser;
 }
 
-export interface TelegramSource {
+export interface ContentSource {
   id: string;
   name: string;
-  channel_username: string;
+  channel_username?: string;
   is_active: boolean;
   total_captured: number;
   last_activity_at: string;
   description?: string;
 }
+
+/** @deprecated Mantido apenas para compatibilidade de tipos legados */
+export type TelegramSource = ContentSource;
 
 export interface AdminMetrics {
   total_pending: number;
@@ -49,6 +52,7 @@ export interface AdminOfferUpdatePayload {
 export interface AdminOffersFilterParams {
   status?: OfferStatus | 'all';
   store?: string;
+  category?: string;
   source?: string;
   min_discount?: number;
   page?: number;

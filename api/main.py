@@ -22,7 +22,7 @@ from api.routes.feed import router as feed_router
 from api.routes.offers import router as offers_router
 from api.routes.admin import router as admin_router
 
-from bot.structured_logger import get_structured_logger, emit_json_log
+from utils.structured_logger import get_structured_logger, emit_json_log
 
 logging.basicConfig(level=logging.INFO)
 logger = get_structured_logger("elitedaspechinchas.api", component="api")
@@ -228,19 +228,10 @@ def health_check(db: Session = Depends(get_db)):
     cache_stats = cache_service.get_stats()
     redis_status = "connected" if cache_stats.get("redis_connected") else "in_memory_fallback"
 
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-    target_channel = os.getenv("TARGET_CHANNEL_ID")
-    bot_status = (
-        "configured"
-        if (bot_token and target_channel)
-        else ("partially_configured" if bot_token else "not_configured")
-    )
-
     return {
         "status": "healthy" if db_status == "connected" else "degraded",
         "database": db_status,
         "redis": redis_status,
-        "bot": bot_status,
         "uptime_seconds": round(time.time() - SERVER_START_TIME, 2),
         "service": "Elite das Pechinchas Backend",
         "version": "4.0.0",

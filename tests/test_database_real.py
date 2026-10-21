@@ -15,7 +15,7 @@ from sqlalchemy.orm import Session
 from database.models import Store, Category, Coupon, Offer, ProcessedMessage, Source
 from database.connection import check_db_connection
 from seed import seed_database
-from processor.tasks import task_deduplicate, task_cleanup_expired, process_telegram_message
+from processor.tasks import task_deduplicate, task_cleanup_expired
 
 
 def test_models_creation_and_relations(db_session: Session):
@@ -290,18 +290,8 @@ def test_task_cleanup_expired(db_session: Session, monkeypatch):
     assert updated_off.is_active is False
 
 
-def test_processed_message_audit_trail(db_session: Session, monkeypatch):
-    """Testa que process_telegram_message registra auditoria em ProcessedMessage."""
-    class NoCloseSession:
-        def __init__(self, session):
-            self._session = session
-        def __getattr__(self, name):
-            if name == "close":
-                return lambda: None
-            return getattr(self._session, name)
-
-    monkeypatch.setattr("processor.tasks.SessionLocal", lambda: NoCloseSession(db_session))
-
+def test_processed_message_model(db_session: Session):
+    """Testa que a tabela histórica ProcessedMessage aceita registros para auditoria."""
     src = Source(
         id="src-audit-1",
         name="Canal Teste Ingest",
@@ -311,43 +301,31 @@ def test_processed_message_audit_trail(db_session: Session, monkeypatch):
     db_session.add(src)
     db_session.commit()
 
-    # 1. Mensagem Aprovada
-    raw_msg_ok = {
-        "text": (
-            "🔥 Mouse Gamer Logitech G203\n"
-            "De R$ 169,90 por R$ 89,90\n"
-            "Link: https://www.amazon.com.br/dp/B08MKB1234"
-        ),
-        "telegram_msg_id": 112233,
-        "source_name": "@canal_teste_audit",
-        "media_url": "https://example.com/mouse.jpg",
-        "entities_links": [],
-    }
-    res_ok = process_telegram_message(raw_msg_ok)
-    assert res_ok["status"] == "success"
+    # Registra mensagem processada com sucesso
+    audit_ok = ProcessedMessage(
+        telegram_message_id=112233,
+        source_name=src.name,
+        status="success",
+        processed_at=datetime.now(timezone.utc),
+    )
+    db_session.add(audit_ok)
 
-    # Confirma que ProcessedMessage com status 'success' foi gravado
-    audit_ok = db_session.query(ProcessedMessage).filter(ProcessedMessage.telegram_message_id == 112233).first()
-    assert audit_ok is not None
-    assert audit_ok.status == "success"
-    assert audit_ok.offer_id is not None
+    # Registra mensagem rejeitada
+    audit_bad = ProcessedMessage(
+        telegram_message_id=445566,
+        source_name=src.name,
+        status="rejected",
+        reason="Desconto abaixo do mínimo",
+        processed_at=datetime.now(timezone.utc),
+    )
+    db_session.add(audit_bad)
+    db_session.commit()
 
-    # 2. Mensagem Rejeitada (desconto abaixo do mínimo)
-    raw_msg_bad = {
-        "text": (
-            "Oferta fraca: Livro de receitas\n"
-            "De R$ 50,00 por R$ 49,00\n"
-            "Link: https://www.amazon.com.br/dp/B08BOOK1234"
-        ),
-        "telegram_msg_id": 445566,
-        "source_name": "@canal_teste_audit",
-        "media_url": None,
-        "entities_links": [],
-    }
-    res_bad = process_telegram_message(raw_msg_bad)
-    assert res_bad["status"] == "rejected"
+    saved_ok = db_session.query(ProcessedMessage).filter(ProcessedMessage.telegram_message_id == 112233).first()
+    assert saved_ok is not None
+    assert saved_ok.status == "success"
 
-    audit_bad = db_session.query(ProcessedMessage).filter(ProcessedMessage.telegram_message_id == 445566).first()
-    assert audit_bad is not None
-    assert audit_bad.status == "rejected"
-    assert "desconto" in audit_bad.reason.lower()
+    saved_bad = db_session.query(ProcessedMessage).filter(ProcessedMessage.telegram_message_id == 445566).first()
+    assert saved_bad is not None
+    assert saved_bad.status == "rejected"
+    assert "desconto" in saved_bad.reason.lower()

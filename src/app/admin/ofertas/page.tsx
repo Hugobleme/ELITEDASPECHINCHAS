@@ -3,52 +3,53 @@
 import React, { useState } from 'react';
 import {
   useAdminOffers,
+  useCreateAdminOffer,
   useUpdateAdminOffer,
   usePublishAdminOffer,
   useBulkAdminOffers,
 } from '@/hooks/useAdminOffers';
-import { useStores } from '@/hooks/useTaxonomies';
-import { useAdminSources } from '@/hooks/useAdminSources';
+import { useStores, useCategories } from '@/hooks/useTaxonomies';
 import CurationCard from '@/components/admin/CurationCard';
 import BulkActionBar from '@/components/admin/BulkActionBar';
 import OfferEditModal from '@/components/admin/OfferEditModal';
-import { Offer, OfferStatus } from '@/types/offer';
+import OfferCreateModal from '@/components/admin/OfferCreateModal';
+import { Offer, OfferStatus, OfferCreatePayload } from '@/types/offer';
 import {
   Inbox,
   Filter,
   Search,
   RotateCcw,
   CheckCircle2,
-  Send,
-  Trash2,
+  PlusCircle,
   Percent,
   Store,
-  Radio,
-  SlidersHorizontal,
+  Layers,
+  Sparkles,
 } from 'lucide-react';
 
 export default function AdminOffersPage() {
   const [activeStatus, setActiveStatus] = useState<OfferStatus | 'all'>('pending');
   const [selectedStore, setSelectedStore] = useState('');
-  const [selectedSource, setSelectedSource] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [minDiscount, setMinDiscount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Seleção múltipla para ações em lote
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const { data: stores = [] } = useStores();
-  const { data: sources = [] } = useAdminSources();
+  const { data: categories = [] } = useCategories();
 
   const { data, isLoading } = useAdminOffers({
     status: activeStatus,
     store: selectedStore,
-    source: selectedSource,
     min_discount: minDiscount,
     search: searchQuery,
   });
 
+  const createOffer = useCreateAdminOffer();
   const updateOffer = useUpdateAdminOffer();
   const publishOffer = usePublishAdminOffer();
   const bulkAction = useBulkAdminOffers();
@@ -82,6 +83,10 @@ export default function AdminOffersPage() {
     await updateOffer.mutateAsync({ id, payload: { status: 'rejected' } });
   };
 
+  const handleCreateOffer = async (newOfferData: OfferCreatePayload) => {
+    await createOffer.mutateAsync(newOfferData);
+  };
+
   const handleSaveEdit = async (id: string, updatedData: Partial<Offer>) => {
     await updateOffer.mutateAsync({ id, payload: updatedData });
   };
@@ -104,7 +109,7 @@ export default function AdminOffersPage() {
 
   const handleResetFilters = () => {
     setSelectedStore('');
-    setSelectedSource('');
+    setSelectedCategory('');
     setMinDiscount(0);
     setSearchQuery('');
   };
@@ -119,15 +124,25 @@ export default function AdminOffersPage() {
 
   return (
     <div className="space-y-6">
-      {/* Top Banner Explicativo da Curadoria */}
-      <div className="rounded-2xl border border-violet-200/80 bg-violet-50/70 p-4 dark:border-violet-950 dark:bg-violet-950/20">
-        <div className="flex items-center gap-2 text-xs font-bold text-violet-900 dark:text-violet-300">
-          <CheckCircle2 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-          <span>Fila de Curadoria Ativa — Alimentação Automática pelo Telegram</span>
+      {/* Top Banner Explicativo da Curadoria com Ação de Nova Oferta */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-violet-200/80 bg-violet-50/70 p-4 dark:border-violet-950 dark:bg-violet-950/20">
+        <div>
+          <div className="flex items-center gap-2 text-xs font-bold text-violet-900 dark:text-violet-300">
+            <CheckCircle2 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            <span>Gestão e Curadoria da Vitrine Web — ELITEDASPECHINCHAS</span>
+          </div>
+          <p className="mt-1 text-xs text-violet-800/90 dark:text-violet-400/90">
+            Gerencie o catálogo de ofertas, aprove promoções pendentes, edite detalhes e publique diretamente no site com tags de afiliados automáticas.
+          </p>
         </div>
-        <p className="mt-1 text-xs text-violet-800/90 dark:text-violet-400/90">
-          Cada oferta abaixo foi capturada do Telegram e já possui o link substituído automaticamente pela sua tag de afiliado. Aprove ou publique com 1 clique para enviar diretamente à vitrine!
-        </p>
+        <button
+          type="button"
+          onClick={() => setIsCreateModalOpen(true)}
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-violet-500/20 hover:opacity-95 active:scale-95 transition-all"
+        >
+          <PlusCircle className="h-4 w-4" />
+          <span>Nova Oferta</span>
+        </button>
       </div>
 
       {/* Abas por Status */}
@@ -184,16 +199,16 @@ export default function AdminOffersPage() {
               ))}
             </select>
 
-            {/* Filtro por Fonte Telegram */}
+            {/* Filtro por Categoria */}
             <select
-              value={selectedSource}
-              onChange={(e) => setSelectedSource(e.target.value)}
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
               className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 sm:flex-none dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
             >
-              <option value="">Todos os Canais</option>
-              {sources.map((src) => (
-                <option key={src.id} value={src.name}>
-                  {src.name}
+              <option value="">Todas as Categorias</option>
+              {categories.map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {c.name}
                 </option>
               ))}
             </select>
@@ -215,7 +230,7 @@ export default function AdminOffersPage() {
               />
             </div>
 
-            {(selectedStore || selectedSource || minDiscount > 0 || searchQuery) && (
+            {(selectedStore || selectedCategory || minDiscount > 0 || searchQuery) && (
               <button
                 type="button"
                 onClick={handleResetFilters}
@@ -297,6 +312,14 @@ export default function AdminOffersPage() {
         onClose={() => setEditingOffer(null)}
         onSave={handleSaveEdit}
         isSaving={updateOffer.isPending}
+      />
+
+      {/* Modal de Criação Manual de Ofertas */}
+      <OfferCreateModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onCreate={handleCreateOffer}
+        isCreating={createOffer.isPending}
       />
     </div>
   );

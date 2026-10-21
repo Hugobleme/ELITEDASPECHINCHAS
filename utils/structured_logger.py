@@ -3,7 +3,7 @@ Módulo de Observabilidade e Logs Estruturados — Elite das Pechinchas
 Fornece formatação padronizada em JSON com campos obrigatórios:
 - timestamp (ISO-8601 UTC)
 - level (INFO, WARNING, ERROR, etc.)
-- component (listener, publisher, api, worker, etc.)
+- component (api, worker, cache, etc.)
 - event (identificador de ação/evento)
 - request_id (quando disponível)
 - path (para requisições HTTP)
@@ -75,7 +75,7 @@ class StructuredJsonFormatter(logging.Formatter):
         return json.dumps(data, ensure_ascii=False)
 
 
-def get_structured_logger(name: str, component: str = "bot") -> logging.Logger:
+def get_structured_logger(name: str, component: str = "app") -> logging.Logger:
     """
     Retorna uma instância de logger com StructuredJsonFormatter configurado no handler.
     """

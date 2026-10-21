@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Share2, Check, MessageCircle, Send, Copy, X } from 'lucide-react';
+import { Share2, Check, MessageCircle, Copy, X } from 'lucide-react';
 
 interface ShareButtonProps {
   title: string;
@@ -44,12 +44,7 @@ export default function ShareButton({ title, className = '' }: ShareButtonProps)
     setIsOpen(false);
   };
 
-  const handleTelegram = () => {
-    const url = getUrl();
-    const message = `🔥 Olha essa pechincha na Elite das Pechinchas: ${title}`;
-    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(message)}`, '_blank');
-    setIsOpen(false);
-  };
+
 
   const handleNativeShare = async () => {
     const url = getUrl();
@@ -74,7 +69,7 @@ export default function ShareButton({ title, className = '' }: ShareButtonProps)
         type="button"
         onClick={handleNativeShare}
         className={`inline-flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 shadow-sm transition-all hover:border-slate-300 hover:bg-slate-50 active:scale-95 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 ${className}`}
-        title="Compartilhar no WhatsApp, Telegram ou copiar link"
+        title="Compartilhar no WhatsApp ou copiar link"
       >
         <Share2 className="h-4 w-4 text-violet-500" />
         <span>Compartilhar</span>
@@ -106,17 +101,7 @@ export default function ShareButton({ title, className = '' }: ShareButtonProps)
               <span>WhatsApp</span>
             </button>
 
-            {/* Telegram */}
-            <button
-              type="button"
-              onClick={handleTelegram}
-              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-sky-700 hover:bg-sky-50 dark:text-sky-400 dark:hover:bg-sky-950/40 transition-colors text-left"
-            >
-              <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-sky-500 text-white shadow-sm">
-                <Send className="h-3.5 w-3.5" />
-              </div>
-              <span>Telegram</span>
-            </button>
+
 
             {/* Copiar Link */}
             <button

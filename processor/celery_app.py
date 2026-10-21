@@ -19,11 +19,10 @@ celery_app.conf.update(
     task_track_started=True,
     task_time_limit=300,
     task_routes={
-        "publish_offer_to_channel": {"queue": "high_priority"},
-        "task_publish_offer": {"queue": "high_priority"},
-        "process_telegram_message": {"queue": "default"},
-        "task_process_message": {"queue": "default"},
-        "task_batch_process": {"queue": "default"},
+        "match_and_notify": {"queue": "high_priority"},
+        "task_check_price_alerts": {"queue": "default"},
+        "task_send_weekly_newsletter": {"queue": "low_priority"},
+        "task_deduplicate": {"queue": "default"},
         "task_cleanup_expired": {"queue": "low_priority"},
     },
 )

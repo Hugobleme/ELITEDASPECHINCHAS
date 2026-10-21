@@ -2,7 +2,7 @@
 Testes para as rotas modulares de ofertas e curadoria (/offers, /categories, /stores, /admin).
 """
 import pytest
-from database.models import Offer
+from database.models import Offer, Source
 
 
 def test_list_offers_empty(client):
@@ -88,15 +88,13 @@ def test_admin_publish_offer(client, db_session):
     db_session.add(pending_offer)
     db_session.commit()
 
-    with patch("processor.notify.match_and_notify.delay") as mock_notify, \
-         patch("processor.tasks.publish_offer_to_channel.delay") as mock_publish:
+    with patch("processor.notify.match_and_notify.delay") as mock_notify:
         response = client.post(f"/admin/offers/{pending_offer.id}/publish")
         assert response.status_code == 200
         data = response.json()
         assert data["status"] == "published"
         assert data["published_at"] is not None
         mock_notify.assert_called_once_with("pending-off-01")
-        mock_publish.assert_called_once_with("pending-off-01")
 
 
 def test_admin_list_and_filter_offers(client, db_session, sample_offer):
@@ -143,6 +141,10 @@ def test_admin_metrics(client, db_session, sample_offer):
 
 
 def test_admin_sources_and_toggle(client, db_session):
+    src = Source(name="Fonte Teste", channel_username="@fonte_teste", is_active=True)
+    db_session.add(src)
+    db_session.commit()
+
     res = client.get("/admin/sources")
     assert res.status_code == 200
     sources = res.json()

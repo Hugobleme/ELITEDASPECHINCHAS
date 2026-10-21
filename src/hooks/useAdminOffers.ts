@@ -4,11 +4,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   getAdminOffers,
   getAdminOfferById,
+  createAdminOffer,
   updateAdminOffer,
   publishAdminOffer,
   bulkActionAdminOffers,
 } from '@/lib/api';
 import { AdminOffersFilterParams, AdminOfferUpdatePayload } from '@/types/admin';
+import { OfferCreatePayload } from '@/types/offer';
 import { useAuth } from '@/contexts/AuthContext';
 import { queryKeys } from '@/lib/query-keys';
 
@@ -69,6 +71,20 @@ export function useBulkAdminOffers() {
   return useMutation({
     mutationFn: ({ ids, action }: { ids: string[]; action: 'approve' | 'reject' | 'publish' }) =>
       bulkActionAdminOffers(ids, action, token || undefined),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.offersRoot() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.admin.metricsRoot() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.offers.all() });
+    },
+  });
+}
+
+export function useCreateAdminOffer() {
+  const queryClient = useQueryClient();
+  const { token } = useAuth();
+
+  return useMutation({
+    mutationFn: (payload: OfferCreatePayload) => createAdminOffer(payload, token || undefined),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.offersRoot() });
       queryClient.invalidateQueries({ queryKey: queryKeys.admin.metricsRoot() });

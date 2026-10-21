@@ -48,7 +48,6 @@ export default function CurationCard({
     image_url,
     original_link,
     affiliate_link,
-    telegram_msg_id,
     source_name,
     created_at,
     status,
@@ -62,7 +61,7 @@ export default function CurationCard({
           : 'border-slate-200/80 hover:border-slate-300 dark:border-slate-800 dark:hover:border-slate-700'
       }`}
     >
-      {/* Top Bar: Checkbox + Origem Telegram + Data de Captura */}
+      {/* Top Bar: Checkbox + Loja + Data */}
       <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-slate-800">
         <div className="flex items-center gap-2.5">
           <input
