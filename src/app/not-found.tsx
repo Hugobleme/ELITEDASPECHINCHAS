@@ -33,7 +33,7 @@ export default function NotFound() {
 
         <Link
           href="/cupons"
-          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 transition-all active:scale-95 cursor-pointer"
+          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-white/[0.08] dark:bg-[#13131b] dark:text-zinc-200 dark:hover:bg-white/[0.05] transition-all active:scale-95 cursor-pointer"
         >
           <Ticket className="h-4 w-4 text-violet-500" />
           <span>Explorar Cupons Verificados</span>
@@ -41,7 +41,7 @@ export default function NotFound() {
       </div>
 
       {/* Categorias Sugeridas */}
-      <div className="rounded-3xl border border-slate-200/80 bg-slate-50/50 p-6 sm:p-8 dark:border-zinc-800/80 dark:bg-zinc-900/40">
+      <div className="rounded-3xl border border-slate-200/80 bg-white/60 p-6 sm:p-8 dark:border-white/[0.08] dark:bg-[#13131b]/60 backdrop-blur-sm">
         <div className="flex items-center justify-center gap-2 mb-4">
           <Sparkles className="h-4 w-4 text-violet-500" />
           <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
@@ -54,7 +54,7 @@ export default function NotFound() {
             <Link
               key={cat.slug}
               href={`/categoria/${cat.slug}`}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-violet-400 hover:text-violet-600 dark:border-zinc-800 dark:bg-zinc-850 dark:text-zinc-300 dark:hover:border-violet-500 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-violet-400 hover:text-violet-600 dark:border-white/[0.08] dark:bg-[#13131b] dark:text-zinc-300 dark:hover:border-violet-500 transition-colors"
             >
               <span>{cat.name}</span>
               {cat.count && (

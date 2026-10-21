@@ -82,11 +82,11 @@ export function PriceAlertModal() {
       onClick={closeAlertModal}
     >
       <div
-        className="relative w-full max-w-lg bg-white dark:bg-[#121217] rounded-3xl shadow-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[calc(100dvh-2rem)]"
+        className="relative w-full max-w-lg bg-white dark:bg-[#13131b] rounded-3xl shadow-2xl border border-slate-200/90 dark:border-white/[0.08] overflow-hidden flex flex-col max-h-[calc(100dvh-2rem)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 dark:border-zinc-800/80 shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 dark:border-white/[0.06] shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-violet-500/10 dark:bg-violet-500/20 text-violet-500 flex items-center justify-center shadow-sm shrink-0">
               <Bell className="w-5 h-5 fill-current" />

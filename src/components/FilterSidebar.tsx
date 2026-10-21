@@ -309,7 +309,7 @@ export default function FilterSidebar({
     <>
       {/* Desktop Sidebar: FIXA na tela, sem scroll interno, tudo visível */}
       <aside className="hidden w-72 shrink-0 lg:block">
-        <div className="sticky top-20 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-card dark:border-zinc-800 dark:bg-[#121217]">
+        <div className="sticky top-20 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-card dark:border-white/[0.08] dark:bg-[#13131b]">
           {content}
         </div>
       </aside>
@@ -324,14 +324,14 @@ export default function FilterSidebar({
           />
 
           {/* Drawer Panel */}
-          <div className="relative ml-auto flex h-full w-full max-w-xs sm:max-w-sm flex-col bg-white shadow-2xl dark:bg-[#121217] animate-in slide-in-from-right duration-200">
+          <div className="relative ml-auto flex h-full w-full max-w-xs sm:max-w-sm flex-col bg-white shadow-2xl dark:bg-[#13131b] animate-in slide-in-from-right duration-200 border-l dark:border-white/[0.08]">
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-5 sm:p-6">
               {content}
             </div>
 
             {/* Pinned Bottom CTA with safe-area padding */}
-            <div className="sticky bottom-0 z-10 border-t border-slate-200/80 bg-white/95 backdrop-blur-md p-4 pb-safe dark:border-zinc-800 dark:bg-[#121217]/95">
+            <div className="sticky bottom-0 z-10 border-t border-slate-200/80 bg-white/95 backdrop-blur-md p-4 pb-safe dark:border-white/[0.08] dark:bg-[#13131b]/95">
               <button
                 type="button"
                 onClick={onCloseMobile}

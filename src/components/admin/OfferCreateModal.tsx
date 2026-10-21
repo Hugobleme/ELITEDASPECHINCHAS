@@ -113,21 +113,21 @@ export default function OfferCreateModal({
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
       {/* Modal Card */}
-      <div className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-xl flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:rounded-3xl sm:p-7">
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+      <div className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-xl flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xl dark:border-white/[0.08] dark:bg-[#13131b] sm:rounded-3xl sm:p-7">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 pb-4 dark:border-white/[0.08]">
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-400">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-950/60 dark:text-violet-400">
               <PlusCircle className="h-5 w-5" />
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">Cadastrar Nova Oferta</h3>
-              <p className="text-[11px] text-slate-500">Publicação direta na vitrine ELITEDASPECHINCHAS</p>
+              <p className="text-[11px] text-slate-500 dark:text-zinc-400">Publicação direta na vitrine ELITEDASPECHINCHAS</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+            className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/[0.05]"
             aria-label="Fechar modal"
           >
             <X className="h-5 w-5" />
@@ -308,7 +308,7 @@ export default function OfferCreateModal({
             </div>
 
             {/* Opção de Publicação Imediata */}
-            <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-950">
+            <div className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-slate-50 p-3 dark:border-white/[0.08] dark:bg-[#0c0c14]">
               <input
                 type="checkbox"
                 id="publishImmediately"
@@ -316,26 +316,26 @@ export default function OfferCreateModal({
                 onChange={(e) => setPublishImmediately(e.target.checked)}
                 className="h-4 w-4 rounded accent-violet-600"
               />
-              <label htmlFor="publishImmediately" className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <label htmlFor="publishImmediately" className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
                 Publicar imediatamente na vitrine pública do site (status: <span className="font-bold text-emerald-600 dark:text-emerald-400">published</span>)
               </label>
             </div>
           </div>
 
           {/* Footer de Ações */}
-          <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-3 border-t border-slate-100 pt-4 dark:border-white/[0.08]">
             <button
               type="button"
               onClick={onClose}
               disabled={isCreating}
-              className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="rounded-xl px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-white/[0.05] cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isCreating}
-              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-violet-500/20 hover:opacity-95 active:scale-95 disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-violet-500/20 hover:from-violet-500 hover:to-fuchsia-500 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               <PlusCircle className="h-4 w-4" />
               <span>{isCreating ? 'Cadastrando...' : 'Cadastrar Oferta'}</span>

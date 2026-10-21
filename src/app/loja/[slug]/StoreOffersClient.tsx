@@ -66,9 +66,9 @@ export default function StoreOffersClient({
     <div className="space-y-8">
       {/* Seção de Cupons Ativos da Loja */}
       {storeCoupons.length > 0 && (
-        <section aria-labelledby="store-coupons-heading" className="rounded-3xl border border-slate-200/80 bg-white/70 p-5 sm:p-6 dark:border-zinc-800 dark:bg-[#121217] space-y-4">
+        <section aria-labelledby="store-coupons-heading" className="rounded-3xl border border-slate-200/80 bg-white/80 p-5 sm:p-6 dark:border-white/[0.08] dark:bg-[#13131b] backdrop-blur-sm space-y-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-red-500 to-pink-500 text-white shadow-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-sm">
               <Ticket className="h-4 w-4" />
             </div>
             <div>
@@ -104,13 +104,13 @@ export default function StoreOffersClient({
         />
 
         <div className="flex-1 space-y-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white/80 backdrop-blur-md p-3.5 shadow-subtle dark:border-slate-800 dark:bg-slate-900/80">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-3.5 shadow-subtle dark:border-white/[0.08] dark:bg-[#13131b]/90">
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setIsMobileFilterOpen(true)}
                 aria-label="Abrir filtros de categoria"
-                className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 min-h-[44px] cursor-pointer lg:hidden dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
+                className="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 min-h-[44px] cursor-pointer lg:hidden dark:border-white/[0.08] dark:bg-[#1a1a26] dark:text-zinc-200 dark:hover:bg-white/[0.05]"
               >
                 <SlidersHorizontal className="h-4 w-4 text-violet-500" />
                 <span>Filtros</span>
@@ -121,12 +121,12 @@ export default function StoreOffersClient({
                 )}
               </button>
 
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-semibold text-slate-500 dark:text-zinc-400">
                 {isLoading ? (
                   'Carregando promoções...'
                 ) : (
                   <>
-                    <strong className="text-slate-900 dark:text-slate-100">{allOffers.length}</strong> ofertas na{' '}
+                    <strong className="text-slate-900 dark:text-zinc-100">{allOffers.length}</strong> ofertas na{' '}
                     {storeName}
                   </>
                 )}

@@ -120,18 +120,21 @@ export default function CuponsClient() {
       </div>
 
       {/* Hero Banner de Cupons */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-950/80 via-zinc-900 to-zinc-950 p-6 sm:p-8 md:p-10 text-white border border-violet-500/20 shadow-xl shadow-violet-500/10">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-950 via-[#0f0c1e] to-[#07060d] p-6 sm:p-8 md:p-10 text-white border border-violet-500/30 shadow-2xl shadow-violet-950/40">
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-violet-600/25 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-fuchsia-600/20 blur-3xl" />
 
         <div className="relative z-10 max-w-2xl space-y-3">
-          <div className="inline-flex items-center gap-2 rounded-full bg-violet-500/20 px-3 py-1 text-xs font-bold text-violet-300 border border-violet-500/30">
-            <Ticket className="h-3.5 w-3.5 text-violet-400" />
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] backdrop-blur-md px-3.5 py-1 text-xs font-bold text-violet-300 border border-violet-400/30 shadow-xs">
+            <Ticket className="h-3.5 w-3.5 text-fuchsia-400" />
             <span>Central de Cupons Verificados</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
-            Cupons de Desconto em Destaque
+            Cupons de Desconto em{' '}
+            <span className="bg-gradient-to-r from-violet-400 via-fuchsia-300 to-pink-400 bg-clip-text text-transparent">
+              Destaque
+            </span>
           </h1>
 
           <p className="text-xs sm:text-sm text-zinc-300 max-w-xl leading-relaxed">
@@ -152,7 +155,7 @@ export default function CuponsClient() {
       </div>
 
       {/* Filtros e Busca */}
-      <div className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-card dark:border-zinc-800 dark:bg-[#121217]">
+      <div className="space-y-4 rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-card dark:border-white/[0.08] dark:bg-[#13131b]">
         {/* Barra de Busca + Seletor de Ordenação */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <div className="relative flex-1">
@@ -162,9 +165,9 @@ export default function CuponsClient() {
               placeholder="Buscar por loja (Amazon, Mercado Livre...), código ou desconto..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-10 text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100 dark:placeholder:text-zinc-500 min-h-[44px]"
+              className="w-full rounded-xl border border-slate-200/90 bg-slate-50 py-2.5 pl-10 pr-10 text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-violet-500/15 dark:border-white/[0.08] dark:bg-[#0c0c14] dark:text-zinc-100 dark:placeholder:text-zinc-500 min-h-[44px]"
             />
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
             {search && (
               <button
                 type="button"
@@ -184,7 +187,7 @@ export default function CuponsClient() {
               aria-label="Ordenar cupons"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-700 focus:border-violet-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 min-h-[44px]"
+              className="rounded-xl border border-slate-200/90 bg-slate-50 px-3 py-2.5 text-xs font-bold text-slate-700 focus:border-violet-500 focus:outline-none dark:border-white/[0.08] dark:bg-[#0c0c14] dark:text-zinc-200 min-h-[44px]"
             >
               <option value="relevance">Mais Relevantes</option>
               <option value="discount">Maior Desconto</option>
@@ -208,8 +211,8 @@ export default function CuponsClient() {
                   onClick={() => handleStoreChange(store)}
                   className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold transition-all min-h-[38px] cursor-pointer ${
                     isSelected
-                      ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-md shadow-violet-500/25'
-                      : 'border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800'
+                      ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-md shadow-violet-500/25'
+                      : 'border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-100 dark:border-white/[0.08] dark:bg-[#1a1a26] dark:text-zinc-300 dark:hover:bg-[#222234] dark:hover:text-white'
                   }`}
                 >
                   {store !== 'todas' && <StoreLogo storeName={store} size="xs" />}
@@ -235,8 +238,8 @@ export default function CuponsClient() {
                   onClick={() => handleCategoryChange(cat)}
                   className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3.5 py-1.5 text-xs font-bold capitalize transition-all min-h-[36px] cursor-pointer ${
                     isSelected
-                      ? 'bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white shadow-md shadow-fuchsia-500/25'
-                      : 'border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800'
+                      ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-md shadow-violet-500/25'
+                      : 'border border-slate-200/80 bg-white text-slate-600 hover:bg-slate-100 dark:border-white/[0.08] dark:bg-[#1a1a26] dark:text-zinc-300 dark:hover:bg-[#222234] dark:hover:text-white'
                   }`}
                 >
                   <Tag className="h-3 w-3" />

@@ -80,11 +80,11 @@ export function UserAuthModal() {
       onClick={closeAuthModal}
     >
       <div 
-        className="relative w-full max-w-md bg-white dark:bg-[#121217] rounded-3xl shadow-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden flex flex-col max-h-[calc(100dvh-2rem)]"
+        className="relative w-full max-w-md bg-white dark:bg-[#13131b] rounded-3xl shadow-2xl border border-slate-200/90 dark:border-white/[0.08] overflow-hidden flex flex-col max-h-[calc(100dvh-2rem)]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header com Abas */}
-        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 dark:border-zinc-800/80 shrink-0">
+        <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 dark:border-white/[0.06] shrink-0">
           <div className="flex space-x-4">
             <button
               type="button"

@@ -98,18 +98,19 @@ export default function StorePage({ params }: StorePageProps) {
       </nav>
 
       {/* Banner da Loja com Logo e Link Oficial */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-800/80 bg-gradient-to-br from-slate-900 via-slate-900 to-slate-850 p-6 sm:p-8 text-white shadow-card">
+      <div className="relative overflow-hidden rounded-3xl border border-violet-500/25 bg-gradient-to-br from-violet-950 via-[#0f0c1e] to-[#07060d] p-6 sm:p-8 text-white shadow-2xl">
         <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-violet-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-12 -bottom-12 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <StoreLogo
               storeName={storeName}
               size="lg"
-              className="h-16 w-16 rounded-2xl shadow-lg shrink-0 border border-white/10"
+              className="h-16 w-16 rounded-2xl shadow-xl shrink-0 border border-white/15 bg-white p-2"
             />
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300">
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2.5 py-0.5 text-[11px] font-bold text-emerald-300 border border-emerald-500/30">
                   <ShieldCheck className="h-3 w-3" />
                   Loja Parceira Verificada
                 </span>
@@ -117,7 +118,7 @@ export default function StorePage({ params }: StorePageProps) {
               <h1 className="text-2xl sm:text-3xl font-black mt-1 tracking-tight">
                 Ofertas na {storeName}
               </h1>
-              <p className="text-xs text-slate-400 sm:text-sm mt-0.5">
+              <p className="text-xs text-slate-300 sm:text-sm mt-0.5">
                 Descontos monitorados e cupons ativos para economizar na {storeName}
               </p>
             </div>
@@ -128,7 +129,7 @@ export default function StorePage({ params }: StorePageProps) {
             href={storeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 text-white px-5 py-3 text-xs sm:text-sm font-bold border border-white/20 transition-all hover:scale-105 active:scale-95 shrink-0 min-h-[44px]"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 text-white px-5 py-3 text-xs sm:text-sm font-bold border border-white/20 transition-all hover:scale-105 active:scale-95 shrink-0 min-h-[44px] backdrop-blur-md"
           >
             <span>Visitar {storeName}</span>
             <ExternalLink className="h-4 w-4" />

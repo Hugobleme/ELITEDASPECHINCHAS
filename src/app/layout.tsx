@@ -101,7 +101,7 @@ export default function RootLayout({
         <QueryProvider>
           <UserAuthProvider>
             <PriceAlertModalProvider>
-              <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors dark:bg-[#0b0f19] dark:text-slate-100">
+              <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900 transition-colors dark:bg-[#0a0a0f] dark:text-zinc-100">
                 <Header />
                 <main className="flex-1">{children}</main>
                 <Footer />

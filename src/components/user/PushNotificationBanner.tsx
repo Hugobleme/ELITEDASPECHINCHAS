@@ -45,7 +45,7 @@ export function PushNotificationBanner() {
 
   return (
     <div className="fixed bottom-4 right-4 z-40 max-w-md w-[calc(100vw-2rem)] animate-in slide-in-from-bottom-5 fade-in duration-300">
-      <div className="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white/95 backdrop-blur-xl p-4 sm:p-5 shadow-card dark:border-slate-800 dark:bg-slate-900/95">
+      <div className="relative overflow-hidden rounded-2xl border border-slate-200/90 bg-white/95 backdrop-blur-xl p-4 sm:p-5 shadow-2xl dark:border-white/[0.08] dark:bg-[#13131b]/95">
         {/* Glow de fundo */}
         <div className="pointer-events-none absolute right-0 top-0 -mr-10 -mt-10 h-32 w-32 rounded-full bg-violet-500/15 blur-2xl" />
 

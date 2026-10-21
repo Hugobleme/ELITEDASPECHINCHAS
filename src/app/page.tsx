@@ -105,25 +105,89 @@ export default function HomePage() {
   const hasActiveFilters =
     Boolean(selectedStore) || (selectedCategory && selectedCategory !== 'todas') || minDiscount > 0;
 
+  const trendingTags = ['iPhone 15', 'Air Fryer', 'PlayStation 5', 'Notebook', 'Kindle', 'Smart TV'];
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 space-y-8">
-      {/* Hero Banner Inspirado em Plataformas Modernas */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-950/80 via-zinc-900 to-zinc-950 p-6 sm:p-8 md:p-10 text-white border border-violet-500/20 shadow-2xl shadow-violet-500/10">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-72 w-72 rounded-full bg-violet-600/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-16 -left-16 h-72 w-72 rounded-full bg-fuchsia-600/15 blur-3xl" />
+      {/* Hero Banner Ultra Premium com Aura Radiante e Métricas de Confiança */}
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-950 via-[#0f0c1e] to-[#07060d] p-6 sm:p-9 md:p-12 text-white border border-violet-500/30 shadow-2xl shadow-violet-950/40">
+        {/* Orbes de Luz Ambiente Suave */}
+        <div className="pointer-events-none absolute -right-20 -top-20 h-96 w-96 rounded-full bg-violet-600/25 blur-[90px]" />
+        <div className="pointer-events-none absolute -bottom-20 -left-20 h-96 w-96 rounded-full bg-fuchsia-600/20 blur-[90px]" />
+        <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-purple-500/10 blur-[80px]" />
 
-        <div className="relative z-10">
-          <div className="max-w-2xl space-y-2.5">
-            <div className="inline-flex items-center gap-2 rounded-full bg-violet-500/20 px-3 py-1 text-xs font-bold text-violet-300 border border-violet-500/30">
-              <Flame className="h-3.5 w-3.5 text-violet-400" />
-              <span>Ofertas Verificadas em Tempo Real</span>
+        <div className="relative z-10 space-y-6">
+          <div className="max-w-3xl space-y-3.5">
+            {/* Pill de Status Live */}
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.08] backdrop-blur-md px-3.5 py-1.5 text-xs font-bold text-violet-300 border border-violet-400/30 shadow-xs">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span className="tracking-wide">Monitoramento em Tempo Real • 100% Verificado</span>
             </div>
-            <h1 className="text-xl xs:text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight leading-tight text-white drop-shadow-sm">
-              Descontos Reais e Cupons Verificados
+
+            {/* Headline de Alto Impacto com Gradiente */}
+            <h1 className="text-2xl xs:text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight leading-[1.15] text-white">
+              Descontos Reais e Cupons{' '}
+              <span className="bg-gradient-to-r from-violet-400 via-fuchsia-300 to-pink-400 bg-clip-text text-transparent">
+                Atualizados 24 Horas
+              </span>
             </h1>
-            <p className="text-xs font-medium text-zinc-300 sm:text-sm leading-relaxed max-w-xl">
-              Monitoramos os maiores e-commerces 24 horas por dia para você nunca mais pagar o preço cheio nas suas compras online.
+
+            <p className="text-xs sm:text-sm font-medium text-zinc-300 leading-relaxed max-w-2xl">
+              Rastreamos as maiores quedas de preço da Amazon, Mercado Livre, Shopee, Magalu e Kabum. Compare histórico, ative cupons de carrinho e nunca mais pague o valor cheio.
             </p>
+          </div>
+
+          {/* 3 Métricas de Confiança e Valor (Cards Glassmorphic) */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 max-w-3xl">
+            <div className="flex items-center gap-3 rounded-2xl bg-white/[0.06] backdrop-blur-md p-3.5 border border-white/[0.08]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/20 text-violet-300">
+                <Flame className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-white tracking-tight">+2.500 Ofertas</div>
+                <div className="text-[11px] text-zinc-400 truncate">Testadas e verificadas</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-2xl bg-white/[0.06] backdrop-blur-md p-3.5 border border-white/[0.08]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/20 text-emerald-300">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-white tracking-tight">Lojas Oficiais</div>
+                <div className="text-[11px] text-zinc-400 truncate">Links diretos e seguros</div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-2xl bg-white/[0.06] backdrop-blur-md p-3.5 border border-white/[0.08]">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-fuchsia-500/20 text-fuchsia-300">
+                <Ticket className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-xs font-bold text-white tracking-tight">Cupons Exclusivos</div>
+                <div className="text-[11px] text-zinc-400 truncate">Desconto no carrinho</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tags de Tendências Rápidas */}
+          <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+            <span className="font-bold text-zinc-400 flex items-center gap-1.5 shrink-0">
+              <TrendingDown className="h-3.5 w-3.5 text-fuchsia-400" />
+              Tendências:
+            </span>
+            {trendingTags.map((tag) => (
+              <Link
+                key={tag}
+                href={`/busca?q=${encodeURIComponent(tag)}`}
+                className="rounded-lg bg-white/[0.08] hover:bg-violet-500/25 px-2.5 py-1 text-[11px] font-bold text-zinc-200 hover:text-white border border-white/[0.08] hover:border-violet-400/40 transition-all cursor-pointer"
+              >
+                {tag}
+              </Link>
+            ))}
           </div>
         </div>
       </div>
@@ -132,15 +196,15 @@ export default function HomePage() {
       {!hasActiveFilters && !isForYou && featuredOffers.length > 0 && (
         <section aria-labelledby="featured-offers-heading" className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-sm">
-                <Flame className="h-4 w-4 fill-current" />
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white shadow-md shadow-orange-500/20">
+                <Flame className="h-5 w-5 fill-current" />
               </div>
               <div>
-                <h2 id="featured-offers-heading" className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                <h2 id="featured-offers-heading" className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
                   Ofertas em Destaque
                 </h2>
-                <p className="text-xs text-slate-400 dark:text-zinc-500">
+                <p className="text-xs text-slate-500 dark:text-zinc-400">
                   Os maiores descontos e produtos mais votados pela comunidade
                 </p>
               </div>
@@ -157,17 +221,17 @@ export default function HomePage() {
 
       {/* SEÇÃO 2: Cupons do Dia (Apenas exibido quando não houver filtros ativos e na aba principal) */}
       {!hasActiveFilters && !isForYou && dailyCoupons.length > 0 && (
-        <section aria-labelledby="daily-coupons-heading" className="rounded-3xl border border-slate-200/80 bg-white/70 p-5 sm:p-6 dark:border-zinc-800 dark:bg-[#121217] space-y-4">
+        <section aria-labelledby="daily-coupons-heading" className="rounded-3xl border border-slate-200/90 bg-white p-5 sm:p-6 dark:border-white/[0.08] dark:bg-[#13131b] shadow-xs space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-red-500 to-pink-500 text-white shadow-sm">
-                <Ticket className="h-4 w-4" />
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-fuchsia-600 to-pink-600 text-white shadow-md shadow-fuchsia-500/20">
+                <Ticket className="h-5 w-5" />
               </div>
               <div>
-                <h2 id="daily-coupons-heading" className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+                <h2 id="daily-coupons-heading" className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
                   Cupons do Dia
                 </h2>
-                <p className="text-xs text-slate-400 dark:text-zinc-500">
+                <p className="text-xs text-slate-500 dark:text-zinc-400">
                   Códigos exclusivos testados hoje com desconto direto no carrinho
                 </p>
               </div>
@@ -193,14 +257,14 @@ export default function HomePage() {
       {/* SEÇÃO 3: Últimas Ofertas com Filtros e Vitrine Completa */}
       <section aria-labelledby="latest-offers-heading" className="space-y-6">
         {/* Barra de Seleção de Feed: Todas vs Para Você */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200/80 dark:border-zinc-800/80 pb-3.5">
-          <div className="flex w-full sm:w-auto p-1 rounded-2xl bg-slate-100/90 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-200/80 dark:border-white/[0.08] pb-3.5">
+          <div className="flex w-full sm:w-auto p-1 rounded-2xl bg-slate-100/90 dark:bg-[#13131b] border border-slate-200/80 dark:border-white/[0.08]">
             <button
               type="button"
               onClick={() => setActiveTab('all')}
               className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 !isForYou
-                  ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-md shadow-violet-500/25'
+                  ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-md shadow-violet-500/25'
                   : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -213,7 +277,7 @@ export default function HomePage() {
               onClick={() => setActiveTab('for_you')}
               className={`flex-1 sm:flex-initial inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 isForYou
-                  ? 'bg-gradient-to-r from-fuchsia-600 to-pink-600 text-white shadow-md shadow-fuchsia-500/25'
+                  ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-md shadow-violet-500/25'
                   : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
@@ -227,7 +291,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setIsPrefModalOpen(true)}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-purple-200 dark:border-purple-900/50 bg-purple-50 dark:bg-purple-950/40 text-xs font-bold text-purple-700 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer min-h-[44px]"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-violet-200 dark:border-violet-900/50 bg-violet-50 dark:bg-violet-950/40 text-xs font-bold text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 transition-colors cursor-pointer min-h-[44px]"
               >
                 <Sliders className="w-3.5 h-3.5" />
                 <span>Personalizar Interesses</span>
@@ -254,7 +318,7 @@ export default function HomePage() {
           {/* Content Area */}
           <div className="flex-1 space-y-6">
             {/* Controls Bar: Total counter + Mobile Filter Button + Sort */}
-            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 shadow-card dark:border-zinc-800 dark:bg-[#121217]">
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/90 bg-white p-3.5 shadow-card dark:border-white/[0.08] dark:bg-[#13131b]">
               <div className="flex items-center gap-2.5">
                 <button
                   type="button"

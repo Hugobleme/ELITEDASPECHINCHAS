@@ -55,26 +55,26 @@ export function UserMenu() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1 pl-1.5 pr-3 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm cursor-pointer"
+        className="flex items-center gap-2 p-1 pl-1.5 pr-3 rounded-full border border-slate-200/90 dark:border-white/[0.08] bg-white dark:bg-[#13131b] hover:bg-slate-50 dark:hover:bg-[#1a1a26] transition-all shadow-sm cursor-pointer"
         aria-expanded={isOpen}
       >
         <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-500 text-white font-black text-xs flex items-center justify-center shadow-sm">
           {initials}
         </div>
-        <span className="hidden md:inline-block text-xs font-bold text-slate-800 dark:text-slate-100 max-w-[100px] truncate">
+        <span className="hidden md:inline-block text-xs font-bold text-slate-800 dark:text-zinc-100 max-w-[100px] truncate">
           {user.name.split(' ')[0]}
         </span>
         <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2.5 w-64 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/80 dark:border-slate-800/80 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 mt-2.5 w-64 bg-white/95 dark:bg-[#13131b]/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/80 dark:border-white/[0.08] py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
           {/* Cabeçalho do usuário */}
-          <div className="px-4 py-3 border-b border-slate-100 dark:border-slate-800/80">
+          <div className="px-4 py-3 border-b border-slate-100 dark:border-white/[0.06]">
             <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
               {user.name}
             </p>
-            <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 truncate">
+            <p className="text-[11px] font-medium text-slate-400 dark:text-zinc-500 truncate">
               {user.email}
             </p>
           </div>
@@ -83,7 +83,7 @@ export function UserMenu() {
             <Link
               href="/favoritos"
               onClick={() => setIsOpen(false)}
-              className="flex items-center justify-between px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-colors"
+              className="flex items-center justify-between px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-slate-100/80 dark:hover:bg-[#1a1a26] transition-colors"
             >
               <div className="flex items-center gap-2.5">
                 <Heart className="w-4 h-4 text-rose-500" />
@@ -99,7 +99,7 @@ export function UserMenu() {
             <Link
               href="/alertas"
               onClick={() => setIsOpen(false)}
-              className="flex items-center justify-between px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-colors"
+              className="flex items-center justify-between px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-slate-100/80 dark:hover:bg-[#1a1a26] transition-colors"
             >
               <div className="flex items-center gap-2.5">
                 <Bell className="w-4 h-4 text-violet-500" />
@@ -118,14 +118,14 @@ export function UserMenu() {
                 setIsOpen(false);
                 setIsPrefOpen(true);
               }}
-              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100/80 dark:hover:bg-slate-800/80 transition-colors text-left cursor-pointer"
+              className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-slate-100/80 dark:hover:bg-[#1a1a26] transition-colors text-left cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-purple-500" />
+              <Sparkles className="w-4 h-4 text-fuchsia-400" />
               <span>Personalizar Feed</span>
             </button>
           </div>
 
-          <div className="pt-1.5 border-t border-slate-100 dark:border-slate-800/80">
+          <div className="pt-1.5 border-t border-slate-100 dark:border-white/[0.06]">
             <button
               type="button"
               onClick={() => {

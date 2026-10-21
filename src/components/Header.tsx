@@ -44,7 +44,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-950/95 transition-colors">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/85 backdrop-blur-xl dark:border-white/[0.08] dark:bg-[#0a0a0f]/85 transition-colors">
       {/* Top Navbar */}
       <div className="mx-auto max-w-7xl px-3 py-2.5 sm:px-6 sm:py-3">
         {/* Row 1: Logo & Actions on Mobile, or Inline with Search on Desktop */}
@@ -55,7 +55,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
             aria-expanded={isMobileMenuOpen}
-            className="md:hidden flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="md:hidden flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-[#181822] transition-colors cursor-pointer"
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -69,7 +69,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
               <span className="text-base sm:text-xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
                 ELITEDAS<span className="bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">PECHINCHAS</span>
               </span>
-              <span className="hidden text-[10px] font-bold uppercase tracking-wider text-slate-400 sm:block">
+              <span className="hidden text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 sm:block">
                 Promoções e cupons verificados
               </span>
             </div>
@@ -86,18 +86,18 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
                 type="text"
                 id="header-search-desktop"
                 aria-label="Buscar promoções e cupons"
-                placeholder="Buscar produtos, marcas, celulares, tvs..."
+                placeholder="Buscar produtos, marcas, celulares, notebooks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-100/90 py-2.5 pl-10 pr-10 text-sm font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-violet-500/15 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-violet-500 dark:focus:bg-slate-900"
+                className="w-full rounded-2xl border border-slate-200/90 bg-slate-100/90 py-2.5 pl-10 pr-10 text-sm font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-violet-500/15 dark:border-white/[0.08] dark:bg-[#13131b]/90 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-violet-500 dark:focus:bg-[#13131b]"
               />
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={handleClear}
                   aria-label="Limpar busca"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -111,9 +111,9 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
             <Link
               href="/cupons"
               title="Cupons de Desconto Verificados"
-              className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/30 dark:hover:text-red-400 border border-slate-200/80 dark:border-zinc-800 transition-colors min-h-[44px]"
+              className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-violet-50 hover:text-violet-600 dark:hover:bg-violet-950/30 dark:hover:text-violet-300 border border-slate-200/80 dark:border-white/[0.08] transition-colors min-h-[44px]"
             >
-              <Ticket className="w-4 h-4 text-red-500" />
+              <Ticket className="w-4 h-4 text-fuchsia-500" />
               <span>Cupons</span>
             </Link>
 
@@ -122,7 +122,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
               href="/favoritos"
               title="Meus Favoritos"
               aria-label="Meus Favoritos"
-              className="relative p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-rose-400 dark:hover:bg-slate-850 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
+              className="relative p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-rose-400 dark:hover:bg-[#181822] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
             >
               <Heart className="w-5 h-5" />
               {favorites.length > 0 && (
@@ -138,14 +138,14 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
               href="/alertas"
               title="Meus Alertas de Preço"
               aria-label="Meus Alertas de Preço"
-              className="p-2 rounded-xl text-slate-500 hover:text-violet-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-violet-400 dark:hover:bg-slate-850 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
+              className="p-2 rounded-xl text-slate-500 hover:text-violet-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-violet-400 dark:hover:bg-[#181822] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
             >
               <Bell className="w-5 h-5" />
             </Link>
 
             <ThemeToggle />
 
-            <div className="h-5 w-[1px] bg-slate-200 dark:border-slate-800 dark:bg-slate-800 mx-0.5 hidden xs:block" />
+            <div className="h-5 w-[1px] bg-slate-200 dark:bg-white/[0.1] mx-0.5 hidden xs:block" />
 
             <UserMenu />
           </div>
@@ -243,7 +243,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
 
       {/* Categories Subbar */}
       {showCategorySubbar && (
-        <div className="border-t border-slate-100 bg-slate-50/60 px-4 dark:border-slate-800/60 dark:bg-slate-900/40 sm:px-6">
+        <div className="border-t border-slate-200/60 bg-slate-50/80 px-4 dark:border-white/[0.06] dark:bg-[#0c0c14]/80 backdrop-blur-md sm:px-6">
           <div className="mx-auto max-w-7xl">
             <CategoryChips />
           </div>

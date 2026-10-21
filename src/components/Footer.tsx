@@ -6,9 +6,9 @@ import { Flame, ShieldCheck, Heart, Sparkles, Send, Bell } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="mt-24 border-t border-slate-200/80 bg-slate-50/50 text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-400">
+    <footer className="mt-24 border-t border-slate-200/80 bg-slate-50/60 text-slate-600 dark:border-white/[0.06] dark:bg-[#07070b] dark:text-zinc-400">
       {/* Site Value Proposition Banner */}
-      <div className="border-b border-slate-200/80 bg-white/70 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/60">
+      <div className="border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-white/[0.06] dark:bg-[#0d0d14]/80">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row sm:px-6">
           <div className="flex items-center gap-3.5 text-center sm:text-left">
             <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400">
@@ -18,14 +18,14 @@ export default function Footer() {
               <h4 className="text-sm font-black text-slate-900 dark:text-white">
                 Economize com inteligência nas melhores lojas
               </h4>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-zinc-400">
                 Acompanhe o catálogo atualizado com cupons exclusivos e os maiores descontos da internet.
               </p>
             </div>
           </div>
           <Link
             href="/cupons"
-            className="inline-flex w-full min-h-[42px] items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-xs font-black text-white shadow-md shadow-violet-600/20 transition-all hover:bg-violet-700 active:scale-95 sm:w-auto"
+            className="inline-flex w-full min-h-[42px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-5 py-2.5 text-xs font-black text-white shadow-md shadow-violet-500/25 transition-all hover:opacity-95 active:scale-95 sm:w-auto"
           >
             <Bell className="h-4 w-4" />
             <span>Explorar Cupons</span>
@@ -125,17 +125,17 @@ export default function Footer() {
         </div>
 
         {/* Transparency Notice */}
-        <div className="mt-10 rounded-2xl border border-slate-200/80 bg-white/60 p-4 dark:border-slate-800/80 dark:bg-slate-900/40">
-          <div className="flex items-start sm:items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
+        <div className="mt-10 rounded-2xl border border-slate-200/90 bg-white p-4 dark:border-white/[0.06] dark:bg-[#13131b]">
+          <div className="flex items-start sm:items-center gap-2.5 text-xs text-slate-500 dark:text-zinc-400">
             <ShieldCheck className="h-4 w-4 shrink-0 text-violet-500 mt-0.5 sm:mt-0" />
             <p className="leading-relaxed">
-              <strong className="text-slate-700 dark:text-slate-300">Transparência & Afiliados:</strong> Este site contém links de afiliados. Quando você clica e realiza uma compra através de nossas indicações, podemos receber uma pequena comissão das lojas parceiras sem absolutamente nenhum custo extra para você. Os preços exibidos dependem da disponibilidade dos lojistas.
+              <strong className="text-slate-700 dark:text-zinc-300">Transparência & Afiliados:</strong> Este site contém links de afiliados. Quando você clica e realiza uma compra através de nossas indicações, podemos receber uma pequena comissão das lojas parceiras sem absolutamente nenhum custo extra para você. Os preços exibidos dependem da disponibilidade dos lojistas.
             </p>
           </div>
         </div>
 
         {/* Rodapé inferior com copyright */}
-        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-slate-200/80 pt-6 text-center text-xs text-slate-400 sm:flex-row dark:border-slate-800">
+        <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-slate-200/80 pt-6 text-center text-xs text-slate-400 sm:flex-row dark:border-white/[0.06]">
           <p>© {new Date().getFullYear()} Elite das Pechinchas. Todos os direitos reservados.</p>
           <div className="flex items-center gap-1.5 font-medium">
             <Sparkles className="h-3.5 w-3.5 text-amber-500" />

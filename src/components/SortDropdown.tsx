@@ -19,7 +19,7 @@ export default function SortDropdown({ value, onChange }: SortDropdownProps) {
           id="sort-select"
           value={value}
           onChange={(e) => onChange(e.target.value as 'recent' | 'discount' | 'price')}
-          className="cursor-pointer appearance-none rounded-xl border border-slate-200/80 bg-white py-2 pl-3.5 pr-8 text-xs font-bold text-slate-700 shadow-sm transition-all hover:border-slate-300 focus:border-violet-500 focus:outline-none focus:ring-1 focus:ring-violet-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200"
+          className="cursor-pointer appearance-none rounded-xl border border-slate-200/90 bg-white py-2 pl-3.5 pr-8 text-xs font-bold text-slate-700 shadow-sm transition-all hover:border-violet-300 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-white/[0.08] dark:bg-[#13131b] dark:text-zinc-200 dark:hover:border-violet-500/40"
         >
           <option value="recent">Mais Recentes</option>
           <option value="discount">Maior Desconto (% OFF)</option>

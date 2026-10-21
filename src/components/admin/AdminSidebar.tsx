@@ -44,11 +44,11 @@ export default function AdminSidebar() {
   ];
 
   return (
-    <aside className="hidden w-64 flex-col justify-between border-r border-slate-200/80 bg-white p-5 lg:flex dark:border-slate-800 dark:bg-slate-950">
+    <aside className="hidden w-64 flex-col justify-between border-r border-slate-200/80 bg-white p-5 lg:flex dark:border-white/[0.08] dark:bg-[#0d0d14]">
       <div className="space-y-6">
         {/* Logo Admin */}
         <div className="flex items-center gap-2 px-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-md shadow-violet-500/30">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-md shadow-violet-500/30">
             <Flame className="h-5 w-5 fill-white stroke-white" />
           </div>
           <div>
@@ -63,7 +63,7 @@ export default function AdminSidebar() {
         </div>
 
         {/* Card de Curadoria do Catálogo */}
-        <div className="rounded-xl border border-violet-200/80 bg-violet-50/60 p-3 dark:border-violet-950 dark:bg-violet-950/20">
+        <div className="rounded-xl border border-violet-200/80 bg-violet-50/60 p-3 dark:border-violet-500/25 dark:bg-violet-950/30">
           <div className="flex items-center gap-2 text-xs font-bold text-violet-800 dark:text-violet-300">
             <span className="relative flex h-2.5 w-2.5">
               <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-violet-500" />
@@ -88,8 +88,8 @@ export default function AdminSidebar() {
                 href={item.href}
                 className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-bold transition-all ${
                   isActive
-                    ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-violet-500/25'
-                    : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-900'
+                    ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-sm shadow-violet-500/25'
+                    : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-white/[0.05]'
                 }`}
               >
                 <div className="flex items-center gap-2.5">
@@ -115,12 +115,12 @@ export default function AdminSidebar() {
       </div>
 
       {/* Footer da Sidebar */}
-      <div className="space-y-3 border-t border-slate-100 pt-4 dark:border-slate-800">
+      <div className="space-y-3 border-t border-slate-100 pt-4 dark:border-white/[0.08]">
         {/* Link para Vitrine Pública */}
         <Link
           href="/"
           target="_blank"
-          className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300"
+          className="flex items-center justify-between rounded-xl border border-slate-200/80 bg-slate-50 px-3.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 dark:border-white/[0.08] dark:bg-[#13131b] dark:text-zinc-300 dark:hover:bg-white/[0.05]"
         >
           <div className="flex items-center gap-2">
             <Zap className="h-3.5 w-3.5 text-violet-500" />

@@ -62,10 +62,10 @@ export default function OfferEditModal({
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
 
       {/* Modal Card */}
-      <div className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-800 dark:bg-slate-900 sm:rounded-3xl sm:p-7">
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+      <div className="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col rounded-2xl border border-slate-200/80 bg-white p-5 shadow-2xl dark:border-white/[0.08] dark:bg-[#13131b] sm:rounded-3xl sm:p-7">
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 pb-4 dark:border-white/[0.08]">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-sm">
               <Sparkles className="h-4 w-4" />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">Editar Promoção</h3>
@@ -73,7 +73,7 @@ export default function OfferEditModal({
           <button
             type="button"
             onClick={onClose}
-            className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800"
+            className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-white/[0.05]"
             aria-label="Fechar modal"
           >
             <X className="h-5 w-5" />
@@ -170,18 +170,18 @@ export default function OfferEditModal({
           </div>
 
           {/* Sticky Actions Footer */}
-          <div className="flex shrink-0 flex-col-reverse justify-end gap-2 border-t border-slate-100 pt-4 xs:flex-row dark:border-slate-800">
+          <div className="flex shrink-0 flex-col-reverse justify-end gap-2 border-t border-slate-100 pt-4 xs:flex-row dark:border-white/[0.08]">
             <button
               type="button"
               onClick={onClose}
-              className="flex min-h-[40px] items-center justify-center rounded-xl px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+              className="flex min-h-[40px] items-center justify-center rounded-xl px-4 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-white/[0.05] cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-violet-500/25 hover:from-violet-500 hover:to-fuchsia-500 active:scale-95 disabled:opacity-50"
+              className="inline-flex min-h-[40px] items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-violet-500/25 hover:from-violet-500 hover:to-fuchsia-500 active:scale-95 disabled:opacity-50 cursor-pointer"
             >
               <Save className="h-4 w-4" />
               <span>{isSaving ? 'Salvando...' : 'Salvar Alterações'}</span>

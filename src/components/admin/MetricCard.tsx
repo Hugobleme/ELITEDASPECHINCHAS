@@ -19,34 +19,34 @@ interface MetricCardProps {
 
 const COLOR_MAP = {
   violet: {
-    bg: 'bg-violet-50 dark:bg-violet-950/30',
+    bg: 'bg-violet-50 dark:bg-violet-950/40',
     text: 'text-violet-600 dark:text-violet-400',
-    border: 'hover:border-violet-300 dark:hover:border-violet-500/40',
+    border: 'hover:border-violet-300 dark:hover:border-violet-500/50',
   },
   orange: {
-    bg: 'bg-violet-50 dark:bg-violet-950/30',
+    bg: 'bg-violet-50 dark:bg-violet-950/40',
     text: 'text-violet-600 dark:text-violet-400',
-    border: 'hover:border-violet-300 dark:hover:border-violet-500/40',
+    border: 'hover:border-violet-300 dark:hover:border-violet-500/50',
   },
   emerald: {
-    bg: 'bg-emerald-50 dark:bg-emerald-950/30',
+    bg: 'bg-emerald-50 dark:bg-emerald-950/40',
     text: 'text-emerald-600 dark:text-emerald-400',
-    border: 'hover:border-emerald-300 dark:hover:border-emerald-500/40',
+    border: 'hover:border-emerald-300 dark:hover:border-emerald-500/50',
   },
   blue: {
-    bg: 'bg-blue-50 dark:bg-blue-950/30',
+    bg: 'bg-blue-50 dark:bg-blue-950/40',
     text: 'text-blue-600 dark:text-blue-400',
-    border: 'hover:border-blue-300 dark:hover:border-blue-500/40',
+    border: 'hover:border-blue-300 dark:hover:border-blue-500/50',
   },
   purple: {
-    bg: 'bg-purple-50 dark:bg-purple-950/30',
+    bg: 'bg-purple-50 dark:bg-purple-950/40',
     text: 'text-purple-600 dark:text-purple-400',
-    border: 'hover:border-purple-300 dark:hover:border-purple-500/40',
+    border: 'hover:border-purple-300 dark:hover:border-purple-500/50',
   },
   amber: {
-    bg: 'bg-amber-50 dark:bg-amber-950/30',
+    bg: 'bg-amber-50 dark:bg-amber-950/40',
     text: 'text-amber-600 dark:text-amber-400',
-    border: 'hover:border-amber-300 dark:hover:border-amber-500/40',
+    border: 'hover:border-amber-300 dark:hover:border-amber-500/50',
   },
 };
 
@@ -63,8 +63,8 @@ export default function MetricCard({
 
   const content = (
     <div
-      className={`relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-200 dark:border-slate-800 dark:bg-slate-900/90 ${
-        href ? `hover:-translate-y-0.5 hover:shadow-md ${scheme.border}` : ''
+      className={`relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-card transition-all duration-200 dark:border-white/[0.08] dark:bg-[#13131b] ${
+        href ? `hover:-translate-y-0.5 hover:shadow-card-hover ${scheme.border}` : ''
       }`}
     >
       <div className="flex items-center justify-between">

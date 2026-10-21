@@ -40,7 +40,7 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
-      className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-violet-500/40 dark:hover:bg-slate-800 dark:hover:text-violet-400"
+      className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 transition-all hover:border-violet-300 hover:bg-violet-50 hover:text-violet-600 dark:border-white/[0.08] dark:bg-[#13131b] dark:text-zinc-300 dark:hover:border-violet-500/40 dark:hover:bg-[#1a1a26] dark:hover:text-violet-400 cursor-pointer"
       aria-label={isDark ? 'Ativar tema claro' : 'Ativar tema escuro'}
       title={isDark ? 'Mudar para tema claro' : 'Mudar para tema escuro'}
     >

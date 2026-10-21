@@ -46,10 +46,10 @@ export default function CouponCard({ coupon, className = '' }: CouponCardProps) 
 
   return (
     <div
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/85 bg-white p-4 sm:p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-violet-400/60 hover:shadow-card-hover dark:border-zinc-800/80 dark:bg-[#121217] dark:hover:border-violet-500/50 ${className}`}
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-violet-400/60 hover:shadow-card-hover dark:border-white/[0.08] dark:bg-[#13131b] dark:hover:border-violet-500/50 ${className}`}
     >
       {/* Top row: Loja + Verified badge */}
-      <div className="flex items-center justify-between gap-2 border-b border-slate-100/90 pb-3 dark:border-zinc-800/60">
+      <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-white/[0.06]">
         <div className="flex items-center gap-2.5 min-w-0">
           <StoreLogo storeName={coupon.store} size="sm" className="rounded-lg shadow-xs" />
           <div className="truncate">
@@ -92,10 +92,10 @@ export default function CouponCard({ coupon, className = '' }: CouponCardProps) 
       </div>
 
       {/* Bottom: Bloco de Cupom e Ação */}
-      <div className="mt-2 pt-3 border-t border-slate-100/90 dark:border-zinc-800/60 space-y-2">
+      <div className="mt-2 pt-3 border-t border-slate-100 dark:border-white/[0.06] space-y-2">
         <div className="flex items-center gap-2">
           {/* Caixa do Código com estilo tracejado */}
-          <div className="flex-1 flex items-center justify-between rounded-xl border border-dashed border-violet-400/80 bg-violet-50/60 px-3 py-2 text-xs font-mono font-black text-violet-700 dark:border-violet-600/60 dark:bg-violet-950/30 dark:text-violet-300 select-all">
+          <div className="flex-1 flex items-center justify-between rounded-xl border border-dashed border-violet-400/80 bg-violet-50/60 px-3 py-2 text-xs font-mono font-black text-violet-700 dark:border-violet-500/40 dark:bg-violet-950/40 dark:text-violet-300 select-all">
             <span className="tracking-wider truncate">{coupon.code}</span>
             <button
               type="button"
@@ -114,7 +114,7 @@ export default function CouponCard({ coupon, className = '' }: CouponCardProps) 
             className={`min-h-[38px] px-3.5 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 active:scale-95 ${
               copied
                 ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/25'
-                : 'bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white shadow-sm shadow-violet-500/25'
+                : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-sm shadow-violet-500/25'
             }`}
           >
             {copied ? (

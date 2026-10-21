@@ -34,11 +34,11 @@ function OfferCardComponent({ offer }: OfferCardProps) {
   } = offer;
 
   return (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/85 bg-white shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-400/40 hover:shadow-card-hover dark:border-zinc-800/80 dark:bg-[#121217] dark:hover:border-violet-500/50 dark:hover:shadow-card-hover-dark">
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-500/40 hover:shadow-card-hover dark:border-white/[0.08] dark:bg-[#13131b] dark:hover:border-violet-500/50 dark:hover:shadow-card-hover-dark">
       {/* Top Header: Store, Temperature & Relative Time */}
-      <div className="relative flex items-center justify-between gap-1.5 border-b border-slate-100/90 px-3.5 py-2.5 dark:border-zinc-800/60">
+      <div className="relative flex items-center justify-between gap-1.5 border-b border-slate-100 px-3.5 py-2.5 dark:border-white/[0.06]">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-zinc-800/90 dark:text-zinc-300 truncate max-w-[130px]">
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-[#1a1a26] dark:text-zinc-200 dark:border dark:border-white/[0.06] truncate max-w-[130px]">
             <StoreLogo storeName={store} size="xs" />
             <span className="truncate">{store}</span>
           </span>
@@ -53,7 +53,7 @@ function OfferCardComponent({ offer }: OfferCardProps) {
       {/* Product Image + Discount Badge */}
       <Link
         href={`/oferta/${id}`}
-        className="relative block aspect-[4/3] w-full overflow-hidden bg-white p-4 transition-colors dark:bg-[#0d0d12]"
+        className="relative block aspect-[4/3] w-full overflow-hidden bg-slate-50/50 p-4 transition-colors border-b border-slate-100/80 dark:border-white/[0.04] dark:bg-[#0d0d14]"
       >
         {/* Desconto Chamativo no canto */}
         {discount_pct > 0 && (
@@ -64,7 +64,7 @@ function OfferCardComponent({ offer }: OfferCardProps) {
 
         {/* Botão de Favoritar flutuante */}
         <div className="absolute right-3 top-3 z-20">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm backdrop-blur-md transition-all hover:scale-110 hover:bg-white dark:bg-zinc-800/90 dark:hover:bg-zinc-800">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 shadow-sm backdrop-blur-md transition-all hover:scale-110 hover:bg-white dark:bg-[#1a1a26]/90 dark:hover:bg-[#222234] dark:border dark:border-white/[0.1]">
             <FavoriteButton offerId={id} size="sm" />
           </div>
         </div>
@@ -96,14 +96,14 @@ function OfferCardComponent({ offer }: OfferCardProps) {
           {/* Pricing Block */}
           <div className="mt-3 space-y-1">
             {price_original > price_current && (
-              <div className="text-xs font-medium text-slate-400 line-through dark:text-slate-500">
+              <div className="text-xs font-medium text-slate-400 line-through dark:text-zinc-500">
                 De {formatBRL(price_original)}
               </div>
             )}
             <div className="flex flex-wrap items-baseline justify-between gap-1">
               <div className="flex items-baseline gap-1.5">
                 <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Por</span>
-                <span className="text-xl font-black tracking-tight text-emerald-600 dark:text-emerald-400">
+                <span className="text-xl sm:text-2xl font-black tracking-tight text-emerald-600 dark:text-emerald-400">
                   {formatBRL(price_current)}
                 </span>
               </div>
@@ -115,7 +115,7 @@ function OfferCardComponent({ offer }: OfferCardProps) {
               )}
             </div>
             {installments && (
-              <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+              <div className="text-[11px] font-medium text-slate-500 dark:text-zinc-400">
                 ou {installments}
               </div>
             )}
@@ -128,11 +128,11 @@ function OfferCardComponent({ offer }: OfferCardProps) {
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-4 grid grid-cols-2 gap-2 pt-1 border-t border-slate-100/90 dark:border-slate-800/60">
+        <div className="mt-4 grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 dark:border-white/[0.06]">
           <Link
             href={`/oferta/${id}`}
             aria-label={`Ver detalhes de ${title}`}
-            className="flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-slate-50/80 px-3 py-2 text-xs font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-100 min-h-[42px] active:scale-95 dark:border-slate-800 dark:bg-slate-800/80 dark:text-slate-300 dark:hover:bg-slate-700/80"
+            className="flex items-center justify-center gap-1 rounded-xl border border-slate-200/90 bg-slate-50/80 px-3 py-2 text-xs font-bold text-slate-700 transition-all hover:border-violet-300 hover:bg-violet-50/60 hover:text-violet-700 min-h-[42px] active:scale-95 dark:border-white/[0.08] dark:bg-[#1a1a26] dark:text-zinc-200 dark:hover:border-violet-500/40 dark:hover:bg-[#222234] dark:hover:text-white"
           >
             <span>Detalhes</span>
             <ChevronRight className="h-3 w-3 opacity-60" />
