@@ -19,14 +19,14 @@ interface MetricCardProps {
 
 const COLOR_MAP = {
   violet: {
-    bg: 'bg-violet-50 dark:bg-violet-950/40',
-    text: 'text-violet-600 dark:text-violet-400',
-    border: 'hover:border-violet-300 dark:hover:border-violet-500/50',
+    bg: 'bg-amber-500/10 dark:bg-amber-500/20',
+    text: 'text-amber-600 dark:text-amber-400',
+    border: 'hover:border-amber-400 dark:hover:border-amber-500/50',
   },
   orange: {
-    bg: 'bg-violet-50 dark:bg-violet-950/40',
-    text: 'text-violet-600 dark:text-violet-400',
-    border: 'hover:border-violet-300 dark:hover:border-violet-500/50',
+    bg: 'bg-amber-500/10 dark:bg-amber-500/20',
+    text: 'text-amber-600 dark:text-amber-400',
+    border: 'hover:border-amber-400 dark:hover:border-amber-500/50',
   },
   emerald: {
     bg: 'bg-emerald-50 dark:bg-emerald-950/40',
@@ -39,14 +39,14 @@ const COLOR_MAP = {
     border: 'hover:border-blue-300 dark:hover:border-blue-500/50',
   },
   purple: {
-    bg: 'bg-purple-50 dark:bg-purple-950/40',
-    text: 'text-purple-600 dark:text-purple-400',
-    border: 'hover:border-purple-300 dark:hover:border-purple-500/50',
+    bg: 'bg-amber-500/10 dark:bg-amber-500/20',
+    text: 'text-amber-600 dark:text-amber-400',
+    border: 'hover:border-amber-400 dark:hover:border-amber-500/50',
   },
   amber: {
-    bg: 'bg-amber-50 dark:bg-amber-950/40',
+    bg: 'bg-amber-500/10 dark:bg-amber-500/20',
     text: 'text-amber-600 dark:text-amber-400',
-    border: 'hover:border-amber-300 dark:hover:border-amber-500/50',
+    border: 'hover:border-amber-400 dark:hover:border-amber-500/50',
   },
 };
 
@@ -57,13 +57,13 @@ export default function MetricCard({
   icon,
   trend,
   href,
-  colorScheme = 'violet',
+  colorScheme = 'amber',
 }: MetricCardProps) {
-  const scheme = COLOR_MAP[colorScheme];
+  const scheme = COLOR_MAP[colorScheme] || COLOR_MAP.amber;
 
   const content = (
     <div
-      className={`relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-card transition-all duration-200 dark:border-white/[0.08] dark:bg-[#13131b] ${
+      className={`relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-card transition-all duration-200 dark:border-amber-500/15 dark:bg-[#111116] ${
         href ? `hover:-translate-y-0.5 hover:shadow-card-hover ${scheme.border}` : ''
       }`}
     >
@@ -71,7 +71,7 @@ export default function MetricCard({
         <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           {title}
         </span>
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${scheme.bg} ${scheme.text}`}>
+        <div className={`flex h-10 w-10 items-center justify-center rounded-xl border border-amber-500/20 ${scheme.bg} ${scheme.text}`}>
           {icon}
         </div>
       </div>

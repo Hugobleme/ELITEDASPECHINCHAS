@@ -18,7 +18,6 @@ import {
   MousePointerClick,
   CheckCircle2,
   ArrowRight,
-  Radio,
   Sparkles,
   Store,
   ShieldCheck,
@@ -58,11 +57,11 @@ export default function AdminDashboardPage() {
   return (
     <div className="space-y-8">
       {/* Banner de Boas-Vindas & Status da Automação */}
-      <div className="relative overflow-hidden rounded-3xl border border-violet-500/25 bg-gradient-to-r from-violet-950 via-[#0f0c1e] to-[#07060d] p-6 text-white shadow-2xl sm:p-8">
-        <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-violet-500/15 blur-3xl" />
+      <div className="relative overflow-hidden rounded-3xl border border-amber-500/25 bg-gradient-to-r from-[#18140a] via-[#0f0c05] to-[#070709] p-6 text-white shadow-2xl sm:p-8">
+        <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-amber-500/10 blur-3xl" />
         <div className="relative z-10 flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-full bg-violet-500/20 px-3 py-1 text-xs font-bold text-violet-300 backdrop-blur-md border border-violet-500/30">
+            <div className="inline-flex items-center gap-2 rounded-full bg-amber-500/15 px-3 py-1 text-xs font-black text-amber-400 backdrop-blur-md border border-amber-500/30">
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
               <span>Catálogo & Vitrine Web Ativos</span>
             </div>
@@ -77,7 +76,7 @@ export default function AdminDashboardPage() {
           <div className="flex items-center gap-3">
             <Link
               href="/admin/ofertas"
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-violet-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:scale-105 active:scale-95"
+              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 px-5 py-3 text-xs font-black text-slate-950 shadow-lg shadow-amber-500/25 transition-all hover:from-amber-400 hover:to-yellow-300 hover:scale-105 active:scale-95"
             >
               <Inbox className="h-4 w-4" />
               <span>Revisar Fila ({pendingCount})</span>
@@ -94,7 +93,7 @@ export default function AdminDashboardPage() {
           value={metricsLoading ? '...' : pendingCount}
           subtitle="Aguardando curadoria"
           icon={<Inbox className="h-5 w-5" />}
-          colorScheme="purple"
+          colorScheme="amber"
           href="/admin/ofertas"
         />
 
@@ -122,7 +121,7 @@ export default function AdminDashboardPage() {
           value={metricsLoading ? '...' : `${metrics?.approval_rate_pct ?? 84}%`}
           subtitle="Qualidade das fontes"
           icon={<CheckCircle2 className="h-5 w-5" />}
-          colorScheme="purple"
+          colorScheme="amber"
         />
       </div>
 
@@ -132,18 +131,18 @@ export default function AdminDashboardPage() {
         <div className="space-y-4 lg:col-span-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-violet-500" />
-              <h3 className="text-base font-bold text-slate-900 dark:text-white">
+              <Sparkles className="h-5 w-5 text-amber-500" />
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
                 Fila de Curadoria Recente
               </h3>
-              <span className="rounded-md bg-violet-100 px-2 py-0.5 text-xs font-black text-violet-600 dark:bg-violet-950 dark:text-violet-400">
+              <span className="rounded-md bg-amber-500/15 px-2 py-0.5 text-xs font-black text-amber-600 dark:text-amber-400">
                 {pendingCount}
               </span>
             </div>
 
             <Link
               href="/admin/ofertas"
-              className="inline-flex items-center gap-1 text-xs font-bold text-violet-600 hover:text-violet-700 dark:text-violet-400"
+              className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 hover:text-amber-500 dark:text-amber-400"
             >
               <span>Ver todas</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -155,12 +154,12 @@ export default function AdminDashboardPage() {
               {[1, 2].map((i) => (
                 <div
                   key={i}
-                  className="h-36 w-full animate-pulse rounded-2xl bg-white dark:bg-[#13131b]"
+                  className="h-36 w-full animate-pulse rounded-2xl bg-white dark:bg-[#111116]"
                 />
               ))}
             </div>
           ) : pendingOffers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-white/[0.1] dark:bg-[#13131b]/60 backdrop-blur-sm">
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-amber-500/20 dark:bg-[#111116]/60 backdrop-blur-sm">
               <CheckCircle2 className="h-10 w-10 text-emerald-500" />
               <h4 className="mt-3 text-sm font-bold text-slate-800 dark:text-slate-200">
                 Fila de curadoria zerada!
@@ -191,9 +190,9 @@ export default function AdminDashboardPage() {
         {/* Coluna Direita: Top Lojas & Status das Fontes */}
         <div className="space-y-6 lg:col-span-4">
           {/* Top Lojas */}
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-card dark:border-white/[0.08] dark:bg-[#13131b]">
+          <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-card dark:border-amber-500/15 dark:bg-[#111116]">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3 dark:border-white/[0.06]">
-              <Store className="h-4 w-4 text-violet-500" />
+              <Store className="h-4 w-4 text-amber-500" />
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
                 Top Lojas em Volume
               </h4>
@@ -206,9 +205,9 @@ export default function AdminDashboardPage() {
                     {item.store}
                   </span>
                   <div className="flex items-center gap-2">
-                    <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100 dark:bg-[#0c0c14]">
+                    <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100 dark:bg-[#070709]">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500"
+                        className="h-full rounded-full bg-gradient-to-r from-amber-500 to-yellow-400"
                         style={{ width: `${Math.min(100, (item.count / 60) * 100)}%` }}
                       />
                     </div>
@@ -222,10 +221,10 @@ export default function AdminDashboardPage() {
           </div>
 
           {/* Ações Rápidas do Painel */}
-          <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-card dark:border-white/[0.08] dark:bg-[#13131b]">
+          <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-card dark:border-amber-500/15 dark:bg-[#111116]">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 dark:border-white/[0.06]">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-violet-500" />
+                <Sparkles className="h-4 w-4 text-amber-500" />
                 <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">
                   Ações Rápidas
                 </h4>
@@ -235,17 +234,17 @@ export default function AdminDashboardPage() {
             <div className="mt-4 space-y-3 text-xs">
               <Link
                 href="/admin/ofertas"
-                className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 hover:bg-slate-100 dark:bg-[#0c0c14] dark:hover:bg-white/[0.05] transition-colors"
+                className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 hover:bg-slate-100 dark:bg-[#070709] dark:hover:bg-white/[0.05] transition-colors"
               >
                 <span className="font-bold text-slate-800 dark:text-zinc-200">Gerenciar Ofertas</span>
-                <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-extrabold text-violet-800 dark:bg-violet-950 dark:text-violet-300">
+                <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-black text-amber-600 dark:text-amber-400">
                   Acessar
                 </span>
               </Link>
               <Link
                 href="/"
                 target="_blank"
-                className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 hover:bg-slate-100 dark:bg-[#0c0c14] dark:hover:bg-white/[0.05] transition-colors"
+                className="flex items-center justify-between rounded-xl bg-slate-50 p-2.5 hover:bg-slate-100 dark:bg-[#070709] dark:hover:bg-white/[0.05] transition-colors"
               >
                 <span className="font-bold text-slate-800 dark:text-zinc-200">Ver Vitrine Pública</span>
                 <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-extrabold text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">

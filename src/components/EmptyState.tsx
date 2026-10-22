@@ -16,9 +16,9 @@ export default function EmptyState({
 }: EmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300/80 bg-white/60 p-8 sm:p-14 text-center dark:border-slate-800 dark:bg-slate-900/40 backdrop-blur-sm">
-      <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-violet-500/15 to-fuchsia-500/10 text-violet-500 dark:from-violet-500/25 dark:to-fuchsia-500/15 shadow-inner">
+      <div className="relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-tr from-amber-500/20 to-yellow-500/10 text-amber-500 dark:from-amber-500/25 dark:to-yellow-500/15 shadow-inner">
         <SearchX className="h-9 w-9 stroke-[2.2]" />
-        <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-fuchsia-500 text-white shadow-sm">
+        <div className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-slate-950 font-black shadow-sm">
           <Sparkles className="h-3.5 w-3.5" />
         </div>
       </div>
@@ -34,7 +34,7 @@ export default function EmptyState({
         <button
           type="button"
           onClick={onReset}
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-violet-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-violet-500/35 active:scale-95 cursor-pointer"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 px-5 py-2.5 text-xs sm:text-sm font-black text-slate-950 shadow-md shadow-amber-500/25 border border-amber-300/40 transition-all hover:from-amber-400 hover:to-yellow-300 active:scale-95 cursor-pointer"
         >
           <RotateCcw className="h-4 w-4" />
           <span>Redefinir Filtros</span>

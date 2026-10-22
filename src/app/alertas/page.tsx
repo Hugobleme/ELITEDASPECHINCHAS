@@ -90,7 +90,7 @@ export default function AlertasPage() {
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 space-y-8">
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-        <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+        <Link href="/" className="hover:text-amber-500 dark:hover:text-amber-400 transition-colors">
           Início
         </Link>
         <ChevronRight className="h-3 w-3 text-slate-400" />
@@ -98,31 +98,31 @@ export default function AlertasPage() {
       </nav>
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200/80 pb-6 dark:border-white/[0.08]">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200/80 pb-6 dark:border-amber-500/15">
         <div>
           <div className="flex items-center gap-2.5 mb-1.5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-500 dark:bg-violet-500/20 shadow-sm">
-              <Bell className="h-5 w-5 fill-violet-500" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 shadow-sm border border-amber-500/20">
+              <Bell className="h-5 w-5 fill-amber-500" />
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white">
               Meus Alertas de Preço
             </h1>
           </div>
           <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-zinc-400">
-            Cadastre termos e seja notificado quando surgir uma promoção abaixo do preço de mercado.
+            Cadastre termos e seja notificado quando surgir uma promoção com desconto real.
           </p>
         </div>
 
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-violet-50 dark:bg-violet-950/40 border border-violet-200/60 dark:border-violet-900/50 text-xs font-bold text-violet-700 dark:text-violet-300 w-fit">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 dark:bg-amber-500/10 border border-amber-500/30 text-xs font-black text-amber-600 dark:text-amber-400 w-fit">
           <Bell className="h-3.5 w-3.5 fill-current" />
           <span>{activeAlerts.length} {activeAlerts.length === 1 ? 'alerta ativo' : 'alertas ativos'}</span>
         </div>
       </div>
 
       {/* Formulário Inline de Criação de Alerta */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-card dark:border-white/[0.08] dark:bg-[#13131b]">
+      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-card dark:border-amber-500/15 dark:bg-[#111116]">
         <div className="flex items-center gap-2 mb-4">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-600 text-white text-xs font-bold">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black text-xs shadow-sm shadow-amber-500/20">
             <Plus className="h-4 w-4" />
           </div>
           <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
@@ -151,9 +151,9 @@ export default function AlertasPage() {
                   placeholder="Ex: PlayStation 5, Galaxy S24, Air Fryer..."
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
-                  className="w-full rounded-xl border border-slate-200/80 bg-slate-50 py-2.5 pl-9 pr-4 text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-violet-500/20 dark:border-white/[0.08] dark:bg-[#0c0c14] dark:text-zinc-100 min-h-[44px]"
+                  className="w-full rounded-xl border border-slate-200/80 bg-slate-50 py-2.5 pl-9 pr-4 text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 focus:border-amber-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 dark:border-white/[0.08] dark:bg-[#070709] dark:text-zinc-100 min-h-[44px]"
                 />
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
               </div>
             </div>
 
@@ -166,7 +166,7 @@ export default function AlertasPage() {
                 id="alert-store"
                 value={selectedStore}
                 onChange={(e) => setSelectedStore(e.target.value)}
-                className="w-full rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-700 focus:border-violet-500 focus:outline-none dark:border-white/[0.08] dark:bg-[#0c0c14] dark:text-zinc-200 min-h-[44px]"
+                className="w-full rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-700 focus:border-amber-400 focus:outline-none dark:border-white/[0.08] dark:bg-[#070709] dark:text-zinc-200 min-h-[44px]"
               >
                 <option value="">Todas as Lojas</option>
                 {MOCK_STORES.map((s) => (
@@ -186,7 +186,7 @@ export default function AlertasPage() {
                 id="alert-category"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-700 focus:border-violet-500 focus:outline-none dark:border-white/[0.08] dark:bg-[#0c0c14] dark:text-zinc-200 min-h-[44px]"
+                className="w-full rounded-xl border border-slate-200/80 bg-slate-50 px-3 py-2.5 text-xs sm:text-sm font-bold text-slate-700 focus:border-amber-400 focus:outline-none dark:border-white/[0.08] dark:bg-[#070709] dark:text-zinc-200 min-h-[44px]"
               >
                 <option value="">Todas as Categorias</option>
                 {MOCK_CATEGORIES.filter((c) => c.slug !== 'todas').map((c) => (
@@ -212,7 +212,7 @@ export default function AlertasPage() {
                     onClick={() => setTargetDiscount(val)}
                     className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all min-h-[36px] cursor-pointer ${
                       targetDiscount === val
-                        ? 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-sm'
+                        ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-sm'
                         : 'border border-slate-200/80 bg-slate-50 text-slate-600 hover:bg-slate-100 dark:border-white/[0.08] dark:bg-[#1a1a26] dark:text-zinc-400 dark:hover:bg-white/[0.05]'
                     }`}
                   >
@@ -225,9 +225,9 @@ export default function AlertasPage() {
             <button
               type="submit"
               disabled={createAlertMutation.isPending}
-              className="inline-flex min-h-[44px] items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-xs sm:text-sm font-bold shadow-md shadow-violet-500/25 transition-all cursor-pointer active:scale-95"
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 text-xs sm:text-sm font-black shadow-md shadow-amber-500/25 transition-all cursor-pointer active:scale-95"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 text-slate-950" />
               <span>Salvar Alerta de Preço</span>
             </button>
           </div>
@@ -245,7 +245,7 @@ export default function AlertasPage() {
             {Array.from({ length: 2 }).map((_, i) => (
               <div
                 key={i}
-                className="h-20 rounded-2xl bg-slate-100 dark:bg-[#13131b] animate-pulse border border-slate-200/60 dark:border-white/[0.08]"
+                className="h-20 rounded-2xl bg-slate-100 dark:bg-[#111116] animate-pulse border border-slate-200/60 dark:border-amber-500/15"
               />
             ))}
           </div>
@@ -254,12 +254,12 @@ export default function AlertasPage() {
             {activeAlerts.map((alert) => (
               <div
                 key={alert.id}
-                className="group relative flex flex-col justify-between p-5 rounded-2xl border border-slate-200/80 bg-white dark:border-white/[0.08] dark:bg-[#13131b] shadow-card hover:border-violet-400/60 dark:hover:border-violet-500/50 transition-all"
+                className="group relative flex flex-col justify-between p-5 rounded-2xl border border-slate-200/80 bg-white dark:border-amber-500/15 dark:bg-[#111116] shadow-card hover:border-amber-400/60 dark:hover:border-amber-500/50 transition-all"
               >
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-3">
                     <div className="flex items-center gap-2.5">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-500/10 text-violet-500 dark:bg-violet-500/20 font-bold text-xs">
+                      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 font-bold text-xs border border-amber-500/20">
                         <Bell className="w-4 h-4 fill-current" />
                       </span>
                       <h3 className="font-black text-slate-900 dark:text-white text-sm sm:text-base">
@@ -280,7 +280,7 @@ export default function AlertasPage() {
 
                   {/* Filtros do Alerta */}
                   <div className="flex flex-wrap items-center gap-2 mt-2">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-fuchsia-50 dark:bg-fuchsia-950/40 text-fuchsia-700 dark:text-fuchsia-300 text-xs font-bold border border-fuchsia-200/60 dark:border-fuchsia-900/40">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-black border border-amber-500/20">
                       <Percent className="w-3 h-3" />
                       {alert.target_discount}% OFF ou mais
                     </span>
@@ -304,7 +304,7 @@ export default function AlertasPage() {
             ))}
           </div>
         ) : (
-          <div className="rounded-3xl border border-dashed border-slate-300 dark:border-white/[0.1] p-8 text-center bg-white/70 dark:bg-[#13131b]/60 backdrop-blur-sm">
+          <div className="rounded-3xl border border-dashed border-slate-300 dark:border-amber-500/20 p-8 text-center bg-white/70 dark:bg-[#111116]/60 backdrop-blur-sm">
             <p className="text-sm font-bold text-slate-700 dark:text-zinc-300">
               Nenhum alerta cadastrado no momento.
             </p>

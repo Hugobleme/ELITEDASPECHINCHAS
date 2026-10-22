@@ -46,7 +46,7 @@ export default function CouponCard({ coupon, className = '' }: CouponCardProps) 
 
   return (
     <div
-      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-violet-400/60 hover:shadow-card-hover dark:border-white/[0.08] dark:bg-[#13131b] dark:hover:border-violet-500/50 ${className}`}
+      className={`group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-card transition-all duration-300 hover:-translate-y-1 hover:border-amber-500/60 hover:shadow-card-hover dark:border-white/[0.08] dark:bg-[#111116] dark:hover:border-amber-500/50 ${className}`}
     >
       {/* Top row: Loja + Verified badge */}
       <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-white/[0.06]">
@@ -75,7 +75,7 @@ export default function CouponCard({ coupon, className = '' }: CouponCardProps) 
       {/* Middle: Desconto, Descrição e Regras */}
       <div className="my-3 space-y-1.5 flex-1">
         <div className="flex items-center gap-1.5">
-          <Sparkles className="h-4 w-4 text-violet-500" />
+          <Sparkles className="h-4 w-4 text-amber-500" />
           <span className="text-xl sm:text-2xl font-black tracking-tight text-slate-900 dark:text-white">
             {coupon.discount_text}
           </span>
@@ -95,13 +95,13 @@ export default function CouponCard({ coupon, className = '' }: CouponCardProps) 
       <div className="mt-2 pt-3 border-t border-slate-100 dark:border-white/[0.06] space-y-2">
         <div className="flex items-center gap-2">
           {/* Caixa do Código com estilo tracejado */}
-          <div className="flex-1 flex items-center justify-between rounded-xl border border-dashed border-violet-400/80 bg-violet-50/60 px-3 py-2 text-xs font-mono font-black text-violet-700 dark:border-violet-500/40 dark:bg-violet-950/40 dark:text-violet-300 select-all">
+          <div className="flex-1 flex items-center justify-between rounded-xl border border-dashed border-amber-500/50 bg-amber-500/10 px-3 py-2 text-xs font-mono font-black text-amber-700 dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-300 select-all">
             <span className="tracking-wider truncate">{coupon.code}</span>
             <button
               type="button"
               onClick={handleCopyCode}
               aria-label={`Copiar código ${coupon.code}`}
-              className="p-1 text-violet-600 hover:text-violet-800 dark:text-violet-400 dark:hover:text-violet-200 rounded-lg hover:bg-violet-200/50 transition-colors"
+              className="p-1 text-amber-600 hover:text-amber-800 dark:text-amber-400 dark:hover:text-amber-200 rounded-lg hover:bg-amber-500/20 transition-colors"
             >
               {copied ? <Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
             </button>
@@ -111,10 +111,10 @@ export default function CouponCard({ coupon, className = '' }: CouponCardProps) 
           <button
             type="button"
             onClick={handleCopyCode}
-            className={`min-h-[38px] px-3.5 rounded-xl text-xs font-bold transition-all cursor-pointer inline-flex items-center gap-1.5 active:scale-95 ${
+            className={`min-h-[38px] px-3.5 rounded-xl text-xs font-black transition-all cursor-pointer inline-flex items-center gap-1.5 active:scale-95 ${
               copied
                 ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-500/25'
-                : 'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-sm shadow-violet-500/25'
+                : 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 shadow-sm shadow-amber-500/25 border border-amber-300/40'
             }`}
           >
             {copied ? (
@@ -137,7 +137,7 @@ export default function CouponCard({ coupon, className = '' }: CouponCardProps) 
             href={coupon.affiliate_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1 text-[11px] font-bold text-slate-500 hover:text-violet-600 dark:text-zinc-400 dark:hover:text-violet-400 py-1 transition-colors group/link"
+            className="flex items-center justify-center gap-1 text-[11px] font-bold text-slate-500 hover:text-amber-500 dark:text-zinc-400 dark:hover:text-amber-400 py-1 transition-colors group/link"
           >
             <span>Usar cupom na {coupon.store}</span>
             <ExternalLink className="h-3 w-3 transition-transform group-hover/link:translate-x-0.5" />

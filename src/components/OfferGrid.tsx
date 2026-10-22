@@ -53,7 +53,7 @@ export default function OfferGrid({
           <button
             type="button"
             onClick={onRetry}
-            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-violet-500/25 transition-all hover:bg-violet-700 active:scale-95"
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 px-5 py-2.5 text-xs font-black text-slate-950 shadow-md shadow-amber-500/25 border border-amber-300/40 transition-all hover:from-amber-400 hover:to-yellow-300 active:scale-95"
           >
             Tentar Novamente
           </button>
@@ -102,16 +102,16 @@ export default function OfferGrid({
             type="button"
             onClick={onFetchNextPage}
             disabled={isFetchingNextPage}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-800 shadow-sm transition-all hover:border-violet-300 hover:bg-violet-50/50 hover:text-violet-600 active:scale-95 disabled:opacity-50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-violet-500/40 dark:hover:bg-slate-800 dark:hover:text-violet-400"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-800 shadow-sm transition-all hover:border-amber-400 hover:bg-amber-50/50 hover:text-amber-600 active:scale-95 disabled:opacity-50 dark:border-zinc-800 dark:bg-[#111116] dark:text-zinc-200 dark:hover:border-amber-500/40 dark:hover:bg-[#16161f] dark:hover:text-amber-400 cursor-pointer"
           >
             {isFetchingNextPage ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin text-violet-500" />
+                <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
                 <span>Carregando mais ofertas...</span>
               </>
             ) : (
               <>
-                <ArrowDown className="h-4 w-4 text-violet-500" />
+                <ArrowDown className="h-4 w-4 text-amber-500" />
                 <span>Carregar mais ofertas</span>
               </>
             )}

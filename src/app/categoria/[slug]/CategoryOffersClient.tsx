@@ -59,18 +59,18 @@ export default function CategoryOffersClient({
       />
 
       <div className="flex-1 space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-3.5 shadow-subtle dark:border-white/[0.08] dark:bg-[#13131b]/90">
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white/85 backdrop-blur-xl p-3.5 shadow-subtle dark:border-white/[0.08] dark:bg-[#111116]/90">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setIsMobileFilterOpen(true)}
               aria-label="Abrir filtros de categoria"
-              className="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 min-h-[44px] cursor-pointer lg:hidden dark:border-white/[0.08] dark:bg-[#1a1a26] dark:text-zinc-200 dark:hover:bg-white/[0.05]"
+              className="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-slate-50 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 min-h-[44px] cursor-pointer lg:hidden dark:border-white/[0.08] dark:bg-[#16161f] dark:text-zinc-200 dark:hover:bg-white/[0.05]"
             >
-              <SlidersHorizontal className="h-4 w-4 text-violet-500" />
+              <SlidersHorizontal className="h-4 w-4 text-amber-500" />
               <span>Filtros</span>
               {hasActiveFilters && (
-                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-violet-500 text-[10px] text-white">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-[10px] font-black text-slate-950">
                   •
                 </span>
               )}

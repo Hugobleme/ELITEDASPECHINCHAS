@@ -147,13 +147,13 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
 
       {/* Breadcrumb de Navegação */}
       <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400">
-        <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+        <Link href="/" className="hover:text-amber-500 dark:hover:text-amber-400 transition-colors">
           Início
         </Link>
         <ChevronRight className="h-3 w-3 text-slate-400" />
         <Link
           href={`/categoria/${offer.category}`}
-          className="capitalize hover:text-violet-600 dark:hover:text-violet-400 transition-colors"
+          className="capitalize hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
         >
           {offer.category.replace(/-/g, ' ')}
         </Link>
@@ -164,14 +164,14 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
       </nav>
 
       {/* Main Container da Oferta */}
-      <div className="overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-6 shadow-card sm:p-8 md:p-10 dark:border-white/[0.08] dark:bg-[#13131b]">
+      <div className="overflow-hidden rounded-3xl border border-slate-200/90 bg-white p-6 shadow-card sm:p-8 md:p-10 dark:border-amber-500/20 dark:bg-[#111116]">
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
           {/* Lado Esquerdo: Imagem do Produto */}
           <div className="flex flex-col items-center lg:col-span-6">
-            <div className="relative aspect-square w-full max-w-lg overflow-hidden rounded-2xl bg-slate-50/50 p-6 shadow-inner border border-slate-100 dark:border-white/[0.06] dark:bg-[#0c0c14]">
-              {/* Badge OFF chamativo */}
+            <div className="relative aspect-square w-full max-w-lg overflow-hidden rounded-2xl bg-slate-50/50 p-6 shadow-inner border border-slate-100 dark:border-white/[0.06] dark:bg-[#0c0c10]">
+              {/* Badge OFF chamativo em Ouro */}
               {offer.discount_pct > 0 && (
-                <div className="absolute left-4 top-4 z-10 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-rose-600 px-3 py-1.5 text-sm font-black text-white shadow-lg shadow-fuchsia-500/30">
+                <div className="absolute left-4 top-4 z-10 flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 px-3 py-1.5 text-sm font-black text-slate-950 shadow-lg shadow-amber-500/30 border border-amber-300/40">
                   <TrendingDown className="h-4 w-4 stroke-[3]" />
                   <span>{formatDiscount(offer.discount_pct)}</span>
                 </div>
@@ -196,7 +196,7 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
                 <div className="flex items-center gap-2">
                   <Link
                     href={`/loja/${encodeURIComponent(offer.store.toLowerCase().replace(/\s+/g, '-'))}`}
-                    className="inline-flex items-center gap-1.5 rounded-lg bg-violet-50 px-3 py-1 text-xs font-bold text-violet-600 hover:bg-violet-100 dark:bg-violet-950/40 dark:text-violet-400 transition-colors"
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-600 hover:bg-amber-500/20 dark:bg-amber-500/15 dark:text-amber-400 transition-colors border border-amber-500/20"
                   >
                     <Tag className="h-3.5 w-3.5" />
                     <span>Vendido por {offer.store}</span>
@@ -290,7 +290,7 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
         {/* Detalhes Adicionais e Descrição do Produto */}
         <div className="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800/80 space-y-4">
           <div className="flex items-center gap-2 text-slate-900 dark:text-white">
-            <Info className="h-5 w-5 text-violet-500" />
+            <Info className="h-5 w-5 text-amber-500" />
             <h2 className="text-lg font-black tracking-tight">Sobre esta Oferta</h2>
           </div>
           <div className="prose dark:prose-invert max-w-none text-xs sm:text-sm text-slate-600 dark:text-zinc-300 leading-relaxed space-y-2">
@@ -312,7 +312,7 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
       </div>
 
       {/* Sticky Bottom Bar on Mobile */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#0a0a0f]/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-white/[0.08] p-3 px-4 pb-safe shadow-2xl flex items-center justify-between gap-3">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#070709]/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-amber-500/20 p-3 px-4 pb-safe shadow-2xl flex items-center justify-between gap-3">
         <div className="min-w-0">
           <span className="block text-[10px] font-bold text-slate-400 uppercase">Preço com Desconto</span>
           <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">
@@ -334,7 +334,7 @@ export default async function OfferDetailPage({ params }: OfferPageProps) {
       {relatedOffers.length > 0 && (
         <section className="mt-14 space-y-6">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500 dark:bg-violet-500/20">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 dark:bg-amber-500/20">
               <Sparkles className="h-4 w-4" />
             </div>
             <h2 className="text-xl font-bold text-slate-900 dark:text-white">

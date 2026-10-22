@@ -2,9 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
-  Flame,
   Search,
   X,
   Heart,
@@ -15,6 +15,7 @@ import {
   Tag,
   Store,
   ChevronRight,
+  Crown,
 } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 import CategoryChips from './CategoryChips';
@@ -44,7 +45,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/85 backdrop-blur-xl dark:border-white/[0.08] dark:bg-[#0a0a0f]/85 transition-colors">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200/80 bg-white/90 backdrop-blur-xl dark:border-amber-500/15 dark:bg-[#070709]/90 transition-colors">
       {/* Top Navbar */}
       <div className="mx-auto max-w-7xl px-3 py-2.5 sm:px-6 sm:py-3">
         {/* Row 1: Logo & Actions on Mobile, or Inline with Search on Desktop */}
@@ -55,22 +56,29 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label={isMobileMenuOpen ? 'Fechar menu de navegação' : 'Abrir menu de navegação'}
             aria-expanded={isMobileMenuOpen}
-            className="md:hidden flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-[#181822] transition-colors cursor-pointer"
+            className="md:hidden flex h-11 w-11 items-center justify-center rounded-xl text-slate-700 hover:bg-slate-100 dark:text-zinc-300 dark:hover:bg-[#14141c] transition-colors cursor-pointer"
           >
             {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
 
-          {/* Logo */}
-          <Link href="/" className="group flex items-center gap-2 sm:gap-2.5 shrink-0">
-            <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-md shadow-violet-500/25 transition-transform duration-200 group-hover:scale-105">
-              <Flame className="h-5 w-5 sm:h-6 sm:w-6 fill-white stroke-white" />
+          {/* Logo Oficial */}
+          <Link href="/" className="group flex items-center gap-2.5 sm:gap-3 shrink-0">
+            <div className="relative h-11 w-11 sm:h-12 sm:w-12 rounded-full overflow-hidden ring-2 ring-amber-400/80 shadow-lg shadow-amber-500/25 transition-transform duration-200 group-hover:scale-105 bg-black">
+              <Image
+                src="/logo.png"
+                alt="Elite das Pechinchas Logo"
+                fill
+                sizes="(max-width: 640px) 44px, 48px"
+                className="object-cover"
+                priority
+              />
             </div>
             <div className="flex flex-col">
               <span className="text-base sm:text-xl font-black tracking-tight text-slate-900 dark:text-white leading-tight">
-                ELITEDAS<span className="bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">PECHINCHAS</span>
+                ELITE<span className="text-slate-400 dark:text-zinc-400 text-xs sm:text-sm font-bold tracking-widest mx-1">DAS</span><span className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 bg-clip-text text-transparent">PECHINCHAS</span>
               </span>
-              <span className="hidden text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500 sm:block">
-                Promoções e cupons verificados
+              <span className="hidden text-[10px] font-black uppercase tracking-wider text-amber-500 dark:text-amber-400 sm:block">
+                Grandes ofertas, todo dia!
               </span>
             </div>
           </Link>
@@ -89,7 +97,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
                 placeholder="Buscar produtos, marcas, celulares, notebooks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200/90 bg-slate-100/90 py-2.5 pl-10 pr-10 text-sm font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-violet-500/15 dark:border-white/[0.08] dark:bg-[#13131b]/90 dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-violet-500 dark:focus:bg-[#13131b]"
+                className="w-full rounded-2xl border border-slate-200/90 bg-slate-100/90 py-2.5 pl-10 pr-10 text-sm font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-amber-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-amber-500/15 dark:border-white/[0.08] dark:bg-[#111116] dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-amber-400 dark:focus:bg-[#111116]"
               />
               <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
               {searchQuery && (
@@ -111,9 +119,9 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
             <Link
               href="/cupons"
               title="Cupons de Desconto Verificados"
-              className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-violet-50 hover:text-violet-600 dark:hover:bg-violet-950/30 dark:hover:text-violet-300 border border-slate-200/80 dark:border-white/[0.08] transition-colors min-h-[44px]"
+              className="hidden lg:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-amber-500/10 hover:text-amber-500 dark:hover:bg-amber-500/15 dark:hover:text-amber-300 border border-slate-200/80 dark:border-amber-500/20 transition-colors min-h-[44px]"
             >
-              <Ticket className="w-4 h-4 text-fuchsia-500" />
+              <Ticket className="w-4 h-4 text-amber-500" />
               <span>Cupons</span>
             </Link>
 
@@ -122,7 +130,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
               href="/favoritos"
               title="Meus Favoritos"
               aria-label="Meus Favoritos"
-              className="relative p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-rose-400 dark:hover:bg-[#181822] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
+              className="relative p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-rose-400 dark:hover:bg-[#14141c] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
             >
               <Heart className="w-5 h-5" />
               {favorites.length > 0 && (
@@ -138,7 +146,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
               href="/alertas"
               title="Meus Alertas de Preço"
               aria-label="Meus Alertas de Preço"
-              className="p-2 rounded-xl text-slate-500 hover:text-violet-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-violet-400 dark:hover:bg-[#181822] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
+              className="p-2 rounded-xl text-slate-500 hover:text-amber-500 hover:bg-slate-100 dark:text-zinc-400 dark:hover:text-amber-400 dark:hover:bg-[#14141c] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer"
             >
               <Bell className="w-5 h-5" />
             </Link>
@@ -162,15 +170,15 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
                 placeholder="Buscar promoções, celulares, tvs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-100/90 py-2.5 pl-10 pr-10 text-sm sm:text-base font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-violet-500/15 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-violet-500 dark:focus:bg-slate-900"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-100/90 py-2.5 pl-10 pr-10 text-sm sm:text-base font-medium text-slate-800 transition-all placeholder:text-slate-400 focus:border-amber-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-amber-500/15 dark:border-white/[0.08] dark:bg-[#111116] dark:text-zinc-100 dark:placeholder:text-zinc-500 dark:focus:border-amber-400 dark:focus:bg-[#111116]"
               />
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 dark:text-zinc-500" />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={handleClear}
                   aria-label="Limpar busca"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -182,15 +190,15 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
 
       {/* Mobile Navigation Drawer */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200/80 bg-white/95 px-4 py-4 dark:border-slate-800/80 dark:bg-slate-950/95 shadow-xl transition-all">
+        <div className="md:hidden border-t border-slate-200/80 bg-white/95 px-4 py-4 dark:border-amber-500/15 dark:bg-[#0a0a0f]/95 shadow-xl transition-all">
           <nav aria-label="Navegação Mobile" className="flex flex-col space-y-1">
             <Link
               href="/"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center justify-between min-h-[44px] px-3.5 py-2.5 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-100 dark:text-zinc-200 dark:hover:bg-zinc-800/80 transition-colors"
+              className="flex items-center justify-between min-h-[44px] px-3.5 py-2.5 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-100 dark:text-zinc-200 dark:hover:bg-[#14141c] transition-colors"
             >
               <div className="flex items-center gap-3">
-                <Home className="h-4 w-4 text-violet-500" />
+                <Home className="h-4 w-4 text-amber-500" />
                 <span>Página Inicial</span>
               </div>
               <ChevronRight className="h-4 w-4 text-slate-400" />
@@ -199,14 +207,14 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
             <Link
               href="/cupons"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="flex items-center justify-between min-h-[44px] px-3.5 py-2.5 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-100 dark:text-zinc-200 dark:hover:bg-zinc-800/80 transition-colors"
+              className="flex items-center justify-between min-h-[44px] px-3.5 py-2.5 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-100 dark:text-zinc-200 dark:hover:bg-[#14141c] transition-colors"
             >
               <div className="flex items-center gap-3">
-                <Ticket className="h-4 w-4 text-red-500" />
+                <Ticket className="h-4 w-4 text-amber-500" />
                 <span>Cupons de Desconto</span>
               </div>
-              <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold text-red-600 dark:bg-red-950/50 dark:text-red-400">
-                Novos
+              <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-500 dark:text-amber-300 border border-amber-500/30">
+                Verificados
               </span>
             </Link>
 
@@ -232,7 +240,7 @@ export default function Header({ showCategorySubbar = true }: HeaderProps) {
               className="flex items-center justify-between min-h-[44px] px-3.5 py-2.5 rounded-xl text-sm font-bold text-slate-800 hover:bg-slate-100 dark:text-zinc-200 dark:hover:bg-zinc-800/80 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <Bell className="h-4 w-4 text-violet-500" />
+                <Bell className="h-4 w-4 text-amber-500" />
                 <span>Alertas de Preço</span>
               </div>
               <ChevronRight className="h-4 w-4 text-slate-400" />

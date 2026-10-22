@@ -339,7 +339,7 @@ export default function StoreLogo({
   const initial = (storeName || 'L').charAt(0).toUpperCase();
   return (
     <div
-      className={`inline-flex shrink-0 items-center justify-center bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white font-black shadow-xs overflow-hidden ${sizeClasses} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-xs overflow-hidden ${sizeClasses} ${className}`}
       title={storeName}
     >
       <span>{initial}</span>

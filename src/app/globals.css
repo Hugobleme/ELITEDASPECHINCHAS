@@ -9,22 +9,22 @@
     --card: #ffffff;
     --card-foreground: #09090b;
     --border: #e2e8f0;
-    --primary: #7c3aed;
-    --primary-foreground: #ffffff;
+    --primary: #f59e0b;
+    --primary-foreground: #09090b;
     --accent-emerald: #059669;
-    --accent-fuchsia: #d946ef;
+    --accent-gold: #f59e0b;
   }
 
   .dark {
-    --background: #0a0a0f;
+    --background: #070709;
     --foreground: #f8fafc;
-    --card: #13131b;
+    --card: #111116;
     --card-foreground: #f8fafc;
-    --border: rgba(255, 255, 255, 0.08);
-    --primary: #8b5cf6;
-    --primary-foreground: #ffffff;
+    --border: rgba(245, 158, 11, 0.15);
+    --primary: #fbbf24;
+    --primary-foreground: #09090b;
     --accent-emerald: #10b981;
-    --accent-fuchsia: #ec4899;
+    --accent-gold: #fbbf24;
   }
 
   * {

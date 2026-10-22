@@ -32,7 +32,7 @@ export function UserMenu() {
       <button
         type="button"
         onClick={() => openAuthModal('login')}
-        className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-bold rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white transition-all shadow-md shadow-violet-500/25 active:scale-95 cursor-pointer"
+        className="inline-flex items-center gap-2 px-4 py-2 text-xs sm:text-sm font-black rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 transition-all shadow-md shadow-amber-500/25 border border-amber-300/40 active:scale-95 cursor-pointer"
       >
         <User className="w-4 h-4" />
         <span>Entrar</span>
@@ -55,10 +55,10 @@ export function UserMenu() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1 pl-1.5 pr-3 rounded-full border border-slate-200/90 dark:border-white/[0.08] bg-white dark:bg-[#13131b] hover:bg-slate-50 dark:hover:bg-[#1a1a26] transition-all shadow-sm cursor-pointer"
+        className="flex items-center gap-2 p-1 pl-1.5 pr-3 rounded-full border border-slate-200/90 dark:border-amber-500/20 bg-white dark:bg-[#111116] hover:bg-slate-50 dark:hover:bg-[#16161f] transition-all shadow-sm cursor-pointer"
         aria-expanded={isOpen}
       >
-        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-500 text-white font-black text-xs flex items-center justify-center shadow-sm">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 text-slate-950 font-black text-xs flex items-center justify-center shadow-sm">
           {initials}
         </div>
         <span className="hidden md:inline-block text-xs font-bold text-slate-800 dark:text-zinc-100 max-w-[100px] truncate">
@@ -68,7 +68,7 @@ export function UserMenu() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2.5 w-64 bg-white/95 dark:bg-[#13131b]/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/80 dark:border-white/[0.08] py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 mt-2.5 w-64 bg-white/95 dark:bg-[#111116]/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-200/80 dark:border-amber-500/20 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
           {/* Cabeçalho do usuário */}
           <div className="px-4 py-3 border-b border-slate-100 dark:border-white/[0.06]">
             <p className="text-xs font-bold text-slate-900 dark:text-white truncate">
@@ -83,7 +83,7 @@ export function UserMenu() {
             <Link
               href="/favoritos"
               onClick={() => setIsOpen(false)}
-              className="flex items-center justify-between px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-slate-100/80 dark:hover:bg-[#1a1a26] transition-colors"
+              className="flex items-center justify-between px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-slate-100/80 dark:hover:bg-[#16161f] transition-colors"
             >
               <div className="flex items-center gap-2.5">
                 <Heart className="w-4 h-4 text-rose-500" />
@@ -99,14 +99,14 @@ export function UserMenu() {
             <Link
               href="/alertas"
               onClick={() => setIsOpen(false)}
-              className="flex items-center justify-between px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-slate-100/80 dark:hover:bg-[#1a1a26] transition-colors"
+              className="flex items-center justify-between px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-slate-100/80 dark:hover:bg-[#16161f] transition-colors"
             >
               <div className="flex items-center gap-2.5">
-                <Bell className="w-4 h-4 text-violet-500" />
+                <Bell className="w-4 h-4 text-amber-500" />
                 <span>Alertas de Preço</span>
               </div>
               {alerts.length > 0 && (
-                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400">
+                <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400">
                   {alerts.length}
                 </span>
               )}
@@ -120,7 +120,7 @@ export function UserMenu() {
               }}
               className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-zinc-200 hover:bg-slate-100/80 dark:hover:bg-[#1a1a26] transition-colors text-left cursor-pointer"
             >
-              <Sparkles className="w-4 h-4 text-fuchsia-400" />
+              <Sparkles className="w-4 h-4 text-amber-400" />
               <span>Personalizar Feed</span>
             </button>
           </div>

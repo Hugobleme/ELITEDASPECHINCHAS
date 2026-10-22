@@ -31,7 +31,7 @@ export default function FavoritosPage() {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 space-y-6">
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-        <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+        <Link href="/" className="hover:text-amber-500 dark:hover:text-amber-400 transition-colors">
           Início
         </Link>
         <ChevronRight className="h-3 w-3 text-slate-400" />
@@ -62,19 +62,19 @@ export default function FavoritosPage() {
 
       {/* Banner Informativo para Visitante não logado */}
       {!isAuthenticated && !isAuthLoading && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-violet-200/80 bg-violet-50/70 p-4 dark:border-violet-500/30 dark:bg-[#13131b]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 dark:border-amber-500/30 dark:bg-[#111116]">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white shadow-sm">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 text-slate-950 font-black shadow-sm shadow-amber-500/20">
               <ShieldCheck className="h-5 w-5" />
             </div>
-            <p className="text-xs sm:text-sm font-medium text-violet-900 dark:text-zinc-200">
+            <p className="text-xs sm:text-sm font-medium text-amber-900 dark:text-zinc-200">
               Você está visualizando a demonstração da sua lista de favoritos. Conecte sua conta gratuita para sincronizar em qualquer dispositivo.
             </p>
           </div>
           <button
             type="button"
             onClick={() => openAuthModal('login')}
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-bold text-xs transition-all shadow-md shadow-violet-500/20 cursor-pointer shrink-0 min-h-[44px]"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xs transition-all shadow-md shadow-amber-500/20 border border-amber-300/40 cursor-pointer shrink-0 min-h-[44px]"
           >
             <LogIn className="h-3.5 w-3.5" />
             <span>Fazer Login / Cadastrar</span>
@@ -93,7 +93,7 @@ export default function FavoritosPage() {
 
       {/* Estado Vazio */}
       {!isLoading && displayedOffers.length === 0 && (
-        <div className="mx-auto max-w-md my-12 p-6 sm:p-8 text-center rounded-3xl border border-dashed border-slate-300 dark:border-white/[0.1] bg-white/70 dark:bg-[#13131b]/60 backdrop-blur-sm">
+        <div className="mx-auto max-w-md my-12 p-6 sm:p-8 text-center rounded-3xl border border-dashed border-slate-300 dark:border-white/[0.1] bg-white/70 dark:bg-[#111116]/60 backdrop-blur-sm">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-rose-50 dark:bg-rose-950/30 text-rose-500">
             <Heart className="h-8 w-8 fill-rose-500/30" />
           </div>
@@ -105,7 +105,7 @@ export default function FavoritosPage() {
           </p>
           <Link
             href="/"
-            className="w-full sm:w-auto inline-flex min-h-[44px] items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-violet-500/25 active:scale-95 cursor-pointer"
+            className="w-full sm:w-auto inline-flex min-h-[44px] items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 font-black text-xs sm:text-sm transition-all shadow-md shadow-amber-500/25 border border-amber-300/40 active:scale-95 cursor-pointer"
           >
             <Sparkles className="w-4 h-4" />
             <span>Explorar Promoções do Dia</span>

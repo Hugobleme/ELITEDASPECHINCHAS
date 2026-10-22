@@ -11,7 +11,6 @@ import {
   Trash2,
   Edit3,
   Clock,
-  SendHorizontal,
   ExternalLink,
   MessageSquare,
 } from 'lucide-react';
@@ -55,10 +54,10 @@ export default function CurationCard({
 
   return (
     <div
-      className={`relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 shadow-card transition-all duration-200 dark:bg-[#13131b] ${
+      className={`relative flex flex-col justify-between overflow-hidden rounded-2xl border bg-white p-5 shadow-card transition-all duration-200 dark:bg-[#111116] ${
         isSelected
-          ? 'border-violet-500 ring-2 ring-violet-500/20 dark:border-violet-500'
-          : 'border-slate-200/80 hover:border-slate-300 dark:border-white/[0.08] dark:hover:border-violet-500/50'
+          ? 'border-amber-400 ring-2 ring-amber-400/20 dark:border-amber-400'
+          : 'border-slate-200/80 hover:border-slate-300 dark:border-amber-500/15 dark:hover:border-amber-500/50'
       }`}
     >
       {/* Top Bar: Checkbox + Loja + Data */}
@@ -68,7 +67,7 @@ export default function CurationCard({
             type="checkbox"
             checked={isSelected}
             onChange={() => onToggleSelect(id)}
-            className="h-4 w-4 cursor-pointer rounded border-slate-300 text-violet-500 accent-violet-500 focus:ring-violet-500"
+            className="h-4 w-4 cursor-pointer rounded border-slate-300 text-amber-500 accent-amber-500 focus:ring-amber-400"
           />
 
           <span className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-700 dark:bg-[#1a1a26] dark:text-zinc-200">
@@ -92,9 +91,9 @@ export default function CurationCard({
       {/* Meio: Preview do Produto */}
       <div className="my-4 grid grid-cols-1 gap-4 sm:grid-cols-12">
         {/* Imagem com badge OFF */}
-        <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-slate-50 p-2 sm:col-span-3 sm:aspect-square dark:bg-[#0c0c14]">
+        <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-slate-50 p-2 sm:col-span-3 sm:aspect-square dark:bg-[#070709]">
           {discount_pct > 0 && (
-            <span className="absolute left-2 top-2 z-10 rounded-md bg-gradient-to-r from-fuchsia-600 to-rose-600 px-2 py-0.5 text-[11px] font-black text-white shadow">
+            <span className="absolute left-2 top-2 z-10 rounded-md bg-gradient-to-r from-amber-500 to-yellow-400 px-2 py-0.5 text-[11px] font-black text-slate-950 shadow">
               {formatDiscount(discount_pct)}
             </span>
           )}
@@ -104,7 +103,7 @@ export default function CurationCard({
         {/* Informações de Título e Preço */}
         <div className="flex flex-col justify-between sm:col-span-9">
           <div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-violet-600 dark:text-violet-400">
+            <span className="text-[10px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
               {category}
             </span>
             <h4 className="mt-0.5 text-sm font-bold leading-snug text-slate-900 dark:text-white line-clamp-2">
@@ -178,7 +177,7 @@ export default function CurationCard({
             type="button"
             onClick={() => onPublish(id)}
             disabled={isActionLoading}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-4 py-1.5 text-xs font-extrabold text-white shadow-sm shadow-violet-500/20 hover:from-violet-500 hover:to-fuchsia-500 active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 px-4 py-1.5 text-xs font-black text-slate-950 shadow-sm shadow-amber-500/20 hover:from-amber-400 hover:to-yellow-300 active:scale-95 disabled:opacity-50 cursor-pointer"
             title="Publicar na vitrine agora"
           >
             <Send className="h-3.5 w-3.5" />

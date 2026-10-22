@@ -34,11 +34,11 @@ function OfferCardComponent({ offer }: OfferCardProps) {
   } = offer;
 
   return (
-    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:border-violet-500/40 hover:shadow-card-hover dark:border-white/[0.08] dark:bg-[#13131b] dark:hover:border-violet-500/50 dark:hover:shadow-card-hover-dark">
+    <div className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-card transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-500/40 hover:shadow-card-hover dark:border-white/[0.08] dark:bg-[#111116] dark:hover:border-amber-500/50 dark:hover:shadow-card-hover-dark">
       {/* Top Header: Store, Temperature & Relative Time */}
       <div className="relative flex items-center justify-between gap-1.5 border-b border-slate-100 px-3.5 py-2.5 dark:border-white/[0.06]">
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-[#1a1a26] dark:text-zinc-200 dark:border dark:border-white/[0.06] truncate max-w-[130px]">
+          <span className="inline-flex items-center gap-1.5 rounded-lg bg-slate-100 px-2 py-0.5 text-xs font-bold text-slate-700 dark:bg-[#16161f] dark:text-zinc-200 dark:border dark:border-white/[0.06] truncate max-w-[130px]">
             <StoreLogo storeName={store} size="xs" />
             <span className="truncate">{store}</span>
           </span>
@@ -53,18 +53,18 @@ function OfferCardComponent({ offer }: OfferCardProps) {
       {/* Product Image + Discount Badge */}
       <Link
         href={`/oferta/${id}`}
-        className="relative block aspect-[4/3] w-full overflow-hidden bg-slate-50/50 p-4 transition-colors border-b border-slate-100/80 dark:border-white/[0.04] dark:bg-[#0d0d14]"
+        className="relative block aspect-[4/3] w-full overflow-hidden bg-slate-50/50 p-4 transition-colors border-b border-slate-100/80 dark:border-white/[0.04] dark:bg-[#0c0c10]"
       >
-        {/* Desconto Chamativo no canto */}
+        {/* Desconto Chamativo Dourado como na tag da logo */}
         {discount_pct > 0 && (
-          <div className="absolute left-3 top-3 z-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-fuchsia-600 via-pink-600 to-rose-600 px-2.5 py-1 text-xs font-black tracking-wide text-white shadow-md shadow-fuchsia-500/30">
+          <div className="absolute left-3 top-3 z-10 flex items-center justify-center rounded-xl bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 px-2.5 py-1 text-xs font-black tracking-wide text-slate-950 shadow-md shadow-amber-500/30 border border-amber-300/40">
             {formatDiscount(discount_pct)}
           </div>
         )}
 
         {/* Botão de Favoritar flutuante */}
         <div className="absolute right-3 top-3 z-20">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 shadow-sm backdrop-blur-md transition-all hover:scale-110 hover:bg-white dark:bg-[#1a1a26]/90 dark:hover:bg-[#222234] dark:border dark:border-white/[0.1]">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 shadow-sm backdrop-blur-md transition-all hover:scale-110 hover:bg-white dark:bg-[#16161f]/90 dark:hover:bg-[#20202c] dark:border dark:border-white/[0.1]">
             <FavoriteButton offerId={id} size="sm" />
           </div>
         </div>
@@ -86,7 +86,7 @@ function OfferCardComponent({ offer }: OfferCardProps) {
           {/* Title */}
           <Link href={`/oferta/${id}`}>
             <h3
-              className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 transition-colors group-hover:text-violet-600 dark:text-zinc-100 dark:group-hover:text-violet-400"
+              className="line-clamp-2 text-sm font-bold leading-snug text-slate-900 transition-colors group-hover:text-amber-500 dark:text-zinc-100 dark:group-hover:text-amber-400"
               title={title}
             >
               {title}
@@ -132,7 +132,7 @@ function OfferCardComponent({ offer }: OfferCardProps) {
           <Link
             href={`/oferta/${id}`}
             aria-label={`Ver detalhes de ${title}`}
-            className="flex items-center justify-center gap-1 rounded-xl border border-slate-200/90 bg-slate-50/80 px-3 py-2 text-xs font-bold text-slate-700 transition-all hover:border-violet-300 hover:bg-violet-50/60 hover:text-violet-700 min-h-[42px] active:scale-95 dark:border-white/[0.08] dark:bg-[#1a1a26] dark:text-zinc-200 dark:hover:border-violet-500/40 dark:hover:bg-[#222234] dark:hover:text-white"
+            className="flex items-center justify-center gap-1 rounded-xl border border-slate-200/90 bg-slate-50/80 px-3 py-2 text-xs font-bold text-slate-700 transition-all hover:border-amber-300 hover:bg-amber-50/60 hover:text-amber-700 min-h-[42px] active:scale-95 dark:border-white/[0.08] dark:bg-[#16161f] dark:text-zinc-200 dark:hover:border-amber-500/40 dark:hover:bg-[#20202c] dark:hover:text-amber-300"
           >
             <span>Detalhes</span>
             <ChevronRight className="h-3 w-3 opacity-60" />

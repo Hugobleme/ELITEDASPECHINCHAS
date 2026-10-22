@@ -27,17 +27,17 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* 1. Cliques por Dia (Linha) */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-amber-500/15 dark:bg-[#111116]">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-white/[0.06]">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-100 text-violet-600 dark:bg-violet-950 dark:text-violet-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 dark:bg-amber-500/20">
               <TrendingUp className="h-4 w-4" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white">
               Cliques nos Links de Afiliado por Dia
             </h3>
           </div>
-          <span className="text-xs font-black text-violet-600 dark:text-violet-400">
+          <span className="text-xs font-black text-amber-600 dark:text-amber-400">
             {metrics.clicks_week.toLocaleString('pt-BR')} cliques
           </span>
         </div>
@@ -50,9 +50,9 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
               <YAxis tickLine={false} tick={{ fontSize: 11 }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#121217',
+                  backgroundColor: '#070709',
                   borderRadius: '12px',
-                  border: '1px solid #27272a',
+                  border: '1px solid #f59e0b40',
                   color: '#ffffff',
                   fontSize: '12px',
                 }}
@@ -61,9 +61,9 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
               <Line
                 type="monotone"
                 dataKey="clicks"
-                stroke="#8b5cf6"
+                stroke="#f59e0b"
                 strokeWidth={3}
-                dot={{ r: 4, fill: '#8b5cf6' }}
+                dot={{ r: 4, fill: '#f59e0b' }}
                 activeDot={{ r: 6 }}
               />
             </LineChart>
@@ -72,13 +72,13 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
       </div>
 
       {/* 2. Taxa de Aprovação vs Rejeição (Donut / Pizza) */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-amber-500/15 dark:bg-[#111116]">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-white/[0.06]">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400">
               <PieIcon className="h-4 w-4" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white">
               Taxa de Aprovação da Curadoria
             </h3>
           </div>
@@ -105,9 +105,9 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
               </Pie>
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#121217',
+                  backgroundColor: '#070709',
                   borderRadius: '12px',
-                  border: '1px solid #27272a',
+                  border: '1px solid #f59e0b40',
                   color: '#ffffff',
                   fontSize: '12px',
                 }}
@@ -123,13 +123,13 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
       </div>
 
       {/* 3. Ofertas por Loja (Barras) */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-amber-500/15 dark:bg-[#111116]">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-white/[0.06]">
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-950 dark:text-blue-400">
               <Store className="h-4 w-4" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white">
               Volume de Ofertas por Loja
             </h3>
           </div>
@@ -143,28 +143,28 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
               <YAxis tickLine={false} tick={{ fontSize: 11 }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#121217',
+                  backgroundColor: '#070709',
                   borderRadius: '12px',
-                  border: '1px solid #27272a',
+                  border: '1px solid #f59e0b40',
                   color: '#ffffff',
                   fontSize: '12px',
                 }}
                 formatter={(value: any) => [`${value} ofertas`, 'Volume']}
               />
-              <Bar dataKey="count" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="count" fill="#f59e0b" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* 4. Ofertas por Categoria (Barras Horizontais / Verticais) */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-amber-500/15 dark:bg-[#111116]">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-white/[0.06]">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-950 dark:text-purple-400">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 dark:bg-amber-500/20">
               <Tag className="h-4 w-4" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <h3 className="text-sm font-black text-slate-900 dark:text-white">
               Distribuição por Categoria
             </h3>
           </div>
@@ -178,15 +178,15 @@ export default function MetricsCharts({ metrics }: MetricsChartsProps) {
               <YAxis tickLine={false} tick={{ fontSize: 11 }} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: '#121217',
+                  backgroundColor: '#070709',
                   borderRadius: '12px',
-                  border: '1px solid #27272a',
+                  border: '1px solid #f59e0b40',
                   color: '#ffffff',
                   fontSize: '12px',
                 }}
                 formatter={(value: any) => [`${value} produtos`, 'Volume']}
               />
-              <Bar dataKey="count" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="count" fill="#d97706" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -11,7 +11,7 @@ const MetricsCharts = dynamic(() => import('@/components/admin/MetricsCharts'), 
   loading: () => (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {[1, 2, 3, 4].map((i) => (
-        <div key={i} className="h-72 animate-pulse rounded-3xl bg-white dark:bg-slate-900" />
+        <div key={i} className="h-72 animate-pulse rounded-3xl bg-white dark:bg-[#111116]" />
       ))}
     </div>
   ),
@@ -27,8 +27,6 @@ import {
   Calendar,
 } from 'lucide-react';
 
-const COLORS = ['#f97316', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'];
-
 export default function AdminMetricsPage() {
   const [range, setRange] = useState('7d');
   const { data: metrics, isLoading } = useAdminMetrics(range);
@@ -36,10 +34,10 @@ export default function AdminMetricsPage() {
   if (isLoading || !metrics) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-800" />
+        <div className="h-8 w-48 animate-pulse rounded-lg bg-slate-200 dark:bg-[#111116]" />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-72 animate-pulse rounded-3xl bg-white dark:bg-slate-900" />
+            <div key={i} className="h-72 animate-pulse rounded-3xl bg-white dark:bg-[#111116]" />
           ))}
         </div>
       </div>
@@ -54,19 +52,19 @@ export default function AdminMetricsPage() {
           <h2 className="text-xl font-black text-slate-900 dark:text-white">
             Métricas de Conversão & Engajamento
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
+          <p className="text-xs text-slate-500 dark:text-zinc-400">
             Acompanhe o tráfego gerado nos links de afiliado e o desempenho da curadoria.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm dark:border-amber-500/15 dark:bg-[#111116]">
           <button
             type="button"
             onClick={() => setRange('7d')}
-            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
               range === '7d'
-                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
+                ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 dark:text-zinc-400'
             }`}
           >
             Últimos 7 dias
@@ -74,10 +72,10 @@ export default function AdminMetricsPage() {
           <button
             type="button"
             onClick={() => setRange('30d')}
-            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all ${
+            className={`rounded-xl px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
               range === '30d'
-                ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm'
-                : 'text-slate-600 hover:text-slate-900 dark:text-slate-400'
+                ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-sm'
+                : 'text-slate-600 hover:text-slate-900 dark:text-zinc-400'
             }`}
           >
             Últimos 30 dias
@@ -89,11 +87,11 @@ export default function AdminMetricsPage() {
       <MetricsCharts metrics={metrics} />
 
       {/* Tabela: Top 10 Ofertas Mais Clicadas */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/90">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-slate-800">
+      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-sm dark:border-amber-500/15 dark:bg-[#111116]">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4 dark:border-white/[0.06]">
           <div className="flex items-center gap-2">
-            <MousePointerClick className="h-5 w-5 text-violet-500" />
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">
+            <MousePointerClick className="h-5 w-5 text-amber-500" />
+            <h3 className="text-base font-black text-slate-900 dark:text-white">
               Top Ofertas Mais Clicadas (Mais Populares)
             </h3>
           </div>
@@ -103,7 +101,7 @@ export default function AdminMetricsPage() {
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:border-slate-800">
+              <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:border-white/[0.06]">
                 <th className="pb-3 pl-2">Posição</th>
                 <th className="pb-3">Produto</th>
                 <th className="pb-3">Loja</th>
@@ -112,15 +110,15 @@ export default function AdminMetricsPage() {
                 <th className="pb-3 text-right">Ação</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+            <tbody className="divide-y divide-slate-100 dark:divide-white/[0.06]">
               {metrics.top_clicked_offers.map((offer, index) => (
-                <tr key={offer.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                  <td className="py-3 pl-2 font-extrabold text-violet-600 dark:text-violet-400">
+                <tr key={offer.id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02]">
+                  <td className="py-3 pl-2 font-black text-amber-500 dark:text-amber-400">
                     #{index + 1}
                   </td>
                   <td className="py-3">
                     <div className="flex items-center gap-3">
-                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-50 p-1 dark:bg-slate-950">
+                      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-50 p-1 dark:bg-[#070709]">
                         <ImageWithFallback src={offer.image_url} alt={offer.title} fill className="object-contain" />
                       </div>
                       <span className="font-semibold text-slate-800 dark:text-slate-200 line-clamp-1 max-w-sm">
@@ -129,7 +127,7 @@ export default function AdminMetricsPage() {
                     </div>
                   </td>
                   <td className="py-3">
-                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 dark:bg-[#1a1a26] dark:text-slate-300">
                       {offer.store}
                     </span>
                   </td>
@@ -144,7 +142,7 @@ export default function AdminMetricsPage() {
                       href={offer.affiliate_link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-xs font-bold text-violet-600 hover:underline dark:text-violet-400"
+                      className="inline-flex items-center gap-1 text-xs font-bold text-amber-500 hover:underline dark:text-amber-400"
                     >
                       <span>Abrir</span>
                       <ExternalLink className="h-3 w-3" />

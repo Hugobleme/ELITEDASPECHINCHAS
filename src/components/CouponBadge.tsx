@@ -32,9 +32,9 @@ export default function CouponBadge({
       <div
         onClick={handleCopy}
         title="Clique para copiar cupom"
-        className={`group relative inline-flex items-center gap-1.5 rounded-lg border border-dashed border-violet-400/90 bg-violet-50/95 px-2.5 py-1 text-[11px] font-bold text-violet-900 transition-all hover:bg-violet-100 hover:border-violet-500 cursor-pointer dark:border-violet-500/50 dark:bg-violet-950/40 dark:text-violet-300 dark:hover:bg-violet-950/70 ${className}`}
+        className={`group relative inline-flex items-center gap-1.5 rounded-lg border border-dashed border-amber-500/50 bg-amber-500/10 px-2.5 py-1 text-[11px] font-bold text-amber-900 transition-all hover:bg-amber-500/20 hover:border-amber-500 cursor-pointer dark:border-amber-500/40 dark:bg-amber-500/15 dark:text-amber-300 dark:hover:bg-amber-500/25 ${className}`}
       >
-        <Ticket className="h-3.5 w-3.5 text-violet-600 dark:text-violet-400" />
+        <Ticket className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
         <span className="font-mono tracking-wider font-extrabold">{code}</span>
         {copied ? (
           <span className="inline-flex items-center gap-0.5 text-[10px] text-emerald-600 font-extrabold dark:text-emerald-400">
@@ -50,14 +50,14 @@ export default function CouponBadge({
   // Tamanho Médio / Grande (Página de Detalhes)
   return (
     <div
-      className={`flex items-center justify-between gap-3 rounded-2xl border-2 border-dashed border-violet-400/80 bg-gradient-to-r from-violet-50/90 to-fuchsia-50/70 p-4 shadow-sm dark:border-violet-500/40 dark:from-violet-950/30 dark:to-fuchsia-950/20 ${className}`}
+      className={`flex items-center justify-between gap-3 rounded-2xl border-2 border-dashed border-amber-500/40 bg-gradient-to-r from-amber-500/10 to-yellow-500/5 p-4 shadow-sm dark:border-amber-500/30 dark:from-[#1a1506] dark:to-[#111116] ${className}`}
     >
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 to-fuchsia-600 text-white shadow-sm">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 text-slate-950 font-black shadow-sm">
           <Ticket className="h-5 w-5" />
         </div>
         <div>
-          <span className="block text-[11px] font-bold uppercase tracking-wider text-violet-800 dark:text-violet-300">
+          <span className="block text-[11px] font-black uppercase tracking-wider text-amber-600 dark:text-amber-400">
             Cupom de Desconto Verificado
           </span>
           <span className="font-mono text-lg font-black tracking-widest text-slate-900 dark:text-white">
@@ -69,10 +69,10 @@ export default function CouponBadge({
       <button
         type="button"
         onClick={handleCopy}
-        className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-bold transition-all shadow-sm active:scale-95 cursor-pointer ${
+        className={`inline-flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-xs font-black transition-all shadow-sm active:scale-95 cursor-pointer ${
           copied
             ? 'bg-emerald-600 text-white shadow-emerald-500/20'
-            : 'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-violet-500/25 hover:shadow-md'
+            : 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 text-slate-950 shadow-amber-500/25 hover:shadow-md border border-amber-300/40'
         }`}
       >
         {copied ? (

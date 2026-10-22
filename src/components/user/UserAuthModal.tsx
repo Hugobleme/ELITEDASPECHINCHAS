@@ -91,7 +91,7 @@ export function UserAuthModal() {
               onClick={() => { openAuthModal('login'); setError(null); }}
               className={`text-sm sm:text-base font-bold transition-all pb-1.5 border-b-2 cursor-pointer ${
                 authModalTab === 'login'
-                  ? 'border-violet-500 text-violet-600 dark:text-violet-400'
+                  ? 'border-amber-500 text-amber-500 dark:text-amber-400'
                   : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
@@ -102,7 +102,7 @@ export function UserAuthModal() {
               onClick={() => { openAuthModal('register'); setError(null); }}
               className={`text-sm sm:text-base font-bold transition-all pb-1.5 border-b-2 cursor-pointer ${
                 authModalTab === 'register'
-                  ? 'border-violet-500 text-violet-600 dark:text-violet-400'
+                  ? 'border-amber-500 text-amber-500 dark:text-amber-400'
                   : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
@@ -122,7 +122,7 @@ export function UserAuthModal() {
         {/* Corpo do Modal com Scroll Suave */}
         <div className="p-5 sm:p-6 overflow-y-auto flex-1">
           <div className="text-center mb-6">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-violet-50 dark:bg-violet-950/40 text-violet-600 dark:text-violet-400 border border-violet-200/60 dark:border-violet-900/40 mb-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/30 mb-2">
               <Sparkles className="w-3.5 h-3.5" />
               Elite das Pechinchas
             </span>
@@ -187,7 +187,7 @@ export function UserAuthModal() {
                     placeholder="Seu nome"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none dark:text-white"
+                    className="w-full pl-9 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none dark:text-white"
                   />
                 </div>
               </div>
@@ -203,7 +203,7 @@ export function UserAuthModal() {
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none dark:text-white"
+                  className="w-full pl-9 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none dark:text-white"
                 />
               </div>
             </div>
@@ -218,7 +218,7 @@ export function UserAuthModal() {
                   placeholder="Mínimo 6 caracteres"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 focus:outline-none dark:text-white"
+                  className="w-full pl-9 pr-4 py-2.5 text-xs sm:text-sm bg-slate-50 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 focus:outline-none dark:text-white"
                 />
               </div>
             </div>
@@ -226,7 +226,7 @@ export function UserAuthModal() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 px-4 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 active:scale-[0.98] text-white font-bold rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-violet-500/25 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+              className="w-full mt-2 py-3 px-4 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:to-yellow-300 active:scale-[0.98] text-slate-950 font-black rounded-xl text-xs sm:text-sm transition-all shadow-md shadow-amber-500/25 border border-amber-300/40 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
             >
               {loading ? (
                 <>
@@ -247,9 +247,9 @@ export function UserAuthModal() {
               type="button"
               onClick={handleDemoLogin}
               disabled={loading}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300 hover:bg-violet-100 dark:hover:bg-violet-900/50 text-xs font-bold transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 border border-amber-500/20 text-xs font-bold transition-colors cursor-pointer"
             >
-              <CheckCircle2 className="w-3.5 h-3.5 text-violet-500" />
+              <CheckCircle2 className="w-3.5 h-3.5 text-amber-500" />
               <span>Acessar com 1-Clique (Modo Demo)</span>
             </button>
           </div>

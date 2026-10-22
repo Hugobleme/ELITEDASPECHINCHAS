@@ -90,7 +90,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
 
       {/* Breadcrumbs */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-        <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+        <Link href="/" className="hover:text-amber-500 dark:hover:text-amber-400 transition-colors">
           Início
         </Link>
         <ChevronRight className="h-3 w-3 text-slate-400" />
@@ -98,17 +98,17 @@ export default function CategoryPage({ params }: CategoryPageProps) {
       </nav>
 
       {/* Banner da Categoria */}
-      <div className="relative overflow-hidden rounded-3xl border border-violet-500/25 bg-gradient-to-br from-violet-950 via-[#0f0c1e] to-[#07060d] p-6 sm:p-8 text-white shadow-2xl">
-        <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-violet-500/15 blur-3xl" />
-        <div className="pointer-events-none absolute -left-12 -bottom-12 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl" />
+      <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-[#1a1406] via-[#0d0c07] to-[#070709] p-6 sm:p-8 text-white shadow-2xl shadow-amber-950/40">
+        <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-amber-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-12 -bottom-12 h-48 w-48 rounded-full bg-yellow-500/10 blur-3xl" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-600 text-white shadow-glow-brand">
+            <div className="flex h-11 w-11 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-amber-600 text-slate-950 font-black shadow-glow-gold">
               <Tag className="h-5 w-5 sm:h-6 sm:w-6 stroke-[2.5]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center rounded-full bg-violet-500/20 px-2.5 py-0.5 text-[11px] font-bold text-violet-300 border border-violet-500/30">
+                <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[11px] font-bold text-amber-300 border border-amber-500/30">
                   Categoria Oficial
                 </span>
               </div>

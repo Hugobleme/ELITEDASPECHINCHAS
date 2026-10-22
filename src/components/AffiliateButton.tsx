@@ -48,11 +48,11 @@ function AffiliateButtonComponent({
 
   const variantStyles = {
     primary:
-      'bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-md shadow-violet-500/25 hover:shadow-xl hover:shadow-violet-500/35 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
+      'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:via-yellow-300 hover:to-amber-400 text-slate-950 font-black shadow-md shadow-amber-500/25 hover:shadow-xl hover:shadow-amber-500/35 border border-amber-300/40 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
     card:
-      'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-sm shadow-violet-500/20 hover:shadow-md hover:shadow-violet-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
+      'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 hover:from-amber-400 hover:via-yellow-300 hover:to-amber-400 text-slate-950 font-black shadow-sm shadow-amber-500/20 hover:shadow-md hover:shadow-amber-500/30 border border-amber-300/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
     secondary:
-      'border-2 border-violet-500/80 text-violet-600 dark:text-violet-400 hover:bg-violet-50 dark:hover:bg-violet-950/30 active:scale-[0.98]',
+      'border-2 border-amber-500/80 text-amber-500 dark:text-amber-400 hover:bg-amber-500/10 dark:hover:bg-amber-500/20 active:scale-[0.98]',
   };
 
   return (
@@ -62,7 +62,7 @@ function AffiliateButtonComponent({
       rel="noopener noreferrer"
       onClick={handleClick}
       aria-label={`${defaultLabel} (Abre em nova aba)`}
-      className={`inline-flex items-center justify-center transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-violet-500/40 select-none ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
+      className={`inline-flex items-center justify-center transition-all duration-200 cursor-pointer focus:outline-none focus:ring-2 focus:ring-amber-500/40 select-none ${sizeStyles[size]} ${variantStyles[variant]} ${className}`}
       title={defaultLabel}
     >
       {clicked ? (

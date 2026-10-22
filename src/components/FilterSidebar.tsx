@@ -97,12 +97,12 @@ export default function FilterSidebar({
       {/* Header do Filtro */}
       <div className="flex items-center justify-between border-b border-slate-200/80 pb-3 dark:border-zinc-800">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500 dark:bg-violet-500/20">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-500 dark:bg-amber-500/20">
             <SlidersHorizontal className="h-4 w-4" />
           </div>
           <h2 className="text-sm font-bold text-slate-900 dark:text-zinc-100">Filtros</h2>
           {activeFiltersCount > 0 && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-violet-600 text-[11px] font-black text-white shadow-sm shadow-violet-500/30">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-amber-500 text-[11px] font-black text-slate-950 shadow-sm shadow-amber-500/30">
               {activeFiltersCount}
             </span>
           )}
@@ -113,7 +113,7 @@ export default function FilterSidebar({
             <button
               type="button"
               onClick={onReset}
-              className="flex items-center gap-1 text-xs font-bold text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 transition-colors cursor-pointer"
+              className="flex items-center gap-1 text-xs font-bold text-amber-500 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300 transition-colors cursor-pointer"
             >
               <RotateCcw className="h-3 w-3" />
               <span>Limpar</span>
@@ -136,10 +136,10 @@ export default function FilterSidebar({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <label htmlFor="min-discount-slider" className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-zinc-300">
-            <Percent className="h-3.5 w-3.5 text-violet-500" />
+            <Percent className="h-3.5 w-3.5 text-amber-500" />
             <span>Desconto Mínimo</span>
           </label>
-          <span className="rounded-lg bg-violet-100/90 px-2 py-0.5 text-xs font-black text-violet-700 dark:bg-violet-950/60 dark:text-violet-300">
+          <span className="rounded-lg bg-amber-500/15 px-2 py-0.5 text-xs font-black text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">
             {minDiscount}% ou mais
           </span>
         </div>
@@ -151,7 +151,7 @@ export default function FilterSidebar({
           step="5"
           value={minDiscount}
           onChange={(e) => onMinDiscountChange(Number(e.target.value))}
-          className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-violet-600 dark:bg-zinc-800"
+          className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-slate-200 accent-amber-500 dark:bg-zinc-800"
         />
         <div className="flex justify-between text-[10px] font-semibold text-slate-400 dark:text-zinc-500">
           <span>0%</span>
@@ -164,7 +164,7 @@ export default function FilterSidebar({
       {/* 2. Filtro por Loja */}
       <div className="space-y-1.5">
         <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-zinc-300">
-          <Store className="h-3.5 w-3.5 text-violet-500" />
+          <Store className="h-3.5 w-3.5 text-amber-500" />
           <span>Lojas Parceiras</span>
         </label>
         <div className="space-y-1">
@@ -173,7 +173,7 @@ export default function FilterSidebar({
             onClick={() => onStoreChange('')}
             className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all ${
               !selectedStore
-                ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-sm shadow-violet-500/25'
+                ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-sm shadow-amber-500/25 border border-amber-300/40'
                 : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
             }`}
           >
@@ -181,7 +181,7 @@ export default function FilterSidebar({
               <div
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] ${
                   !selectedStore
-                    ? 'bg-white/20 text-white'
+                    ? 'bg-black/20 text-slate-950 font-black'
                     : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-300'
                 }`}
               >
@@ -189,7 +189,7 @@ export default function FilterSidebar({
               </div>
               <span className="truncate">Todas as lojas</span>
             </div>
-            {!selectedStore && <Check className="h-3.5 w-3.5 shrink-0 text-white" />}
+            {!selectedStore && <Check className="h-3.5 w-3.5 shrink-0 text-slate-950 font-black" />}
           </button>
           {displayedStores.map((s) => {
             const isSelected = selectedStore.toLowerCase() === s.name.toLowerCase();
@@ -200,7 +200,7 @@ export default function FilterSidebar({
                 onClick={() => onStoreChange(isSelected ? '' : s.name)}
                 className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all ${
                   isSelected
-                    ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-sm shadow-violet-500/25'
+                    ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-sm shadow-amber-500/25 border border-amber-300/40'
                     : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
                 }`}
               >
@@ -209,7 +209,7 @@ export default function FilterSidebar({
                   <span className="truncate">{s.name}</span>
                 </div>
                 {isSelected ? (
-                  <Check className="h-3.5 w-3.5 shrink-0 text-white" />
+                  <Check className="h-3.5 w-3.5 shrink-0 text-slate-950 font-black" />
                 ) : s.count ? (
                   <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
                     {s.count}
@@ -222,7 +222,7 @@ export default function FilterSidebar({
             <button
               type="button"
               onClick={() => setShowAllStores(!showAllStores)}
-              className="text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline pt-0.5 pl-1 cursor-pointer"
+              className="text-[11px] font-bold text-amber-500 dark:text-amber-400 hover:underline pt-0.5 pl-1 cursor-pointer"
             >
               {showAllStores ? 'Mostrar menos' : `+ Ver mais (${stores.length - 5})`}
             </button>
@@ -233,7 +233,7 @@ export default function FilterSidebar({
       {/* 3. Filtro por Categoria */}
       <div className="space-y-1.5">
         <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-zinc-300">
-          <Tag className="h-3.5 w-3.5 text-violet-500" />
+          <Tag className="h-3.5 w-3.5 text-amber-500" />
           <span>Categorias</span>
         </label>
         <div className="space-y-1">
@@ -242,7 +242,7 @@ export default function FilterSidebar({
             onClick={() => onCategoryChange('todas')}
             className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all ${
               !selectedCategory || selectedCategory === 'todas'
-                ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-sm shadow-violet-500/25'
+                ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-sm shadow-amber-500/25 border border-amber-300/40'
                 : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
             }`}
           >
@@ -253,7 +253,7 @@ export default function FilterSidebar({
               <span className="truncate">Todas as categorias</span>
             </div>
             {(!selectedCategory || selectedCategory === 'todas') && (
-              <Check className="h-3.5 w-3.5 shrink-0 text-white" />
+              <Check className="h-3.5 w-3.5 shrink-0 text-slate-950 font-black" />
             )}
           </button>
           {displayedCategories.map((c) => {
@@ -266,7 +266,7 @@ export default function FilterSidebar({
                 onClick={() => onCategoryChange(isSelected ? 'todas' : c.slug)}
                 className={`flex w-full items-center justify-between rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all ${
                   isSelected
-                    ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white font-bold shadow-sm shadow-violet-500/25'
+                    ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-sm shadow-amber-500/25 border border-amber-300/40'
                     : 'text-slate-600 hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-800'
                 }`}
               >
@@ -277,7 +277,7 @@ export default function FilterSidebar({
                   <span className="truncate">{c.name}</span>
                 </div>
                 {isSelected ? (
-                  <Check className="h-3.5 w-3.5 shrink-0 text-white" />
+                  <Check className="h-3.5 w-3.5 shrink-0 text-slate-950 font-black" />
                 ) : c.count ? (
                   <span className="shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-500 dark:bg-zinc-800 dark:text-zinc-400">
                     {c.count}
@@ -290,7 +290,7 @@ export default function FilterSidebar({
             <button
               type="button"
               onClick={() => setShowAllCategories(!showAllCategories)}
-              className="text-[11px] font-bold text-violet-600 dark:text-violet-400 hover:underline pt-0.5 pl-1 cursor-pointer"
+              className="text-[11px] font-bold text-amber-500 dark:text-amber-400 hover:underline pt-0.5 pl-1 cursor-pointer"
             >
               {showAllCategories ? 'Mostrar menos' : `+ Ver mais (${nonTodasCategories.length - 5})`}
             </button>
@@ -309,7 +309,7 @@ export default function FilterSidebar({
     <>
       {/* Desktop Sidebar: FIXA na tela, sem scroll interno, tudo visível */}
       <aside className="hidden w-72 shrink-0 lg:block">
-        <div className="sticky top-20 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-card dark:border-white/[0.08] dark:bg-[#13131b]">
+        <div className="sticky top-20 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-card dark:border-white/[0.08] dark:bg-[#111116]">
           {content}
         </div>
       </aside>
@@ -324,18 +324,18 @@ export default function FilterSidebar({
           />
 
           {/* Drawer Panel */}
-          <div className="relative ml-auto flex h-full w-full max-w-xs sm:max-w-sm flex-col bg-white shadow-2xl dark:bg-[#13131b] animate-in slide-in-from-right duration-200 border-l dark:border-white/[0.08]">
+          <div className="relative ml-auto flex h-full w-full max-w-xs sm:max-w-sm flex-col bg-white shadow-2xl dark:bg-[#111116] animate-in slide-in-from-right duration-200 border-l dark:border-white/[0.08]">
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-5 sm:p-6">
               {content}
             </div>
 
             {/* Pinned Bottom CTA with safe-area padding */}
-            <div className="sticky bottom-0 z-10 border-t border-slate-200/80 bg-white/95 backdrop-blur-md p-4 pb-safe dark:border-white/[0.08] dark:bg-[#13131b]/95">
+            <div className="sticky bottom-0 z-10 border-t border-slate-200/80 bg-white/95 backdrop-blur-md p-4 pb-safe dark:border-white/[0.08] dark:bg-[#111116]/95">
               <button
                 type="button"
                 onClick={onCloseMobile}
-                className="w-full rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 py-3 text-center text-sm font-bold text-white shadow-md shadow-violet-500/25 hover:from-violet-500 hover:to-fuchsia-500 active:scale-95 cursor-pointer"
+                className="w-full rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 py-3 text-center text-sm font-black text-slate-950 shadow-md shadow-amber-500/25 border border-amber-300/40 hover:from-amber-400 hover:to-yellow-300 active:scale-95 cursor-pointer"
               >
                 Ver Ofertas
               </button>

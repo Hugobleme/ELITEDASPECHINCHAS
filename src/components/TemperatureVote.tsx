@@ -66,7 +66,7 @@ export default function TemperatureVote({
           animating ? 'scale-110' : 'scale-100'
         } ${
           isHot
-            ? 'bg-fuchsia-50 text-fuchsia-600 dark:bg-fuchsia-950/40 dark:text-fuchsia-400'
+            ? 'bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20'
             : 'bg-sky-50 text-sky-600 dark:bg-sky-950/40 dark:text-sky-400'
         } ${className}`}
         title={`Temperatura da oferta: ${temperature}°`}
@@ -79,17 +79,17 @@ export default function TemperatureVote({
 
   return (
     <div
-      className={`inline-flex items-center gap-1 rounded-2xl border border-slate-200/90 bg-white p-1 shadow-sm dark:border-slate-800 dark:bg-slate-900 ${className}`}
+      className={`inline-flex items-center gap-1 rounded-2xl border border-slate-200/90 bg-white p-1 shadow-sm dark:border-amber-500/20 dark:bg-[#111116] ${className}`}
     >
       {/* Botão Frio */}
       <button
         type="button"
         onClick={(e) => handleVote('cold', e)}
         title="Oferta fria"
-        className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all ${
+        className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all cursor-pointer ${
           userVote === 'cold'
             ? 'bg-sky-500 text-white shadow-sm'
-            : 'text-slate-400 hover:bg-slate-100 hover:text-sky-500 dark:hover:bg-slate-800'
+            : 'text-slate-400 hover:bg-slate-100 hover:text-sky-500 dark:hover:bg-[#1a1a26]'
         }`}
       >
         <Snowflake className="h-4 w-4" />
@@ -101,7 +101,7 @@ export default function TemperatureVote({
           animating ? 'scale-110' : 'scale-100'
         } ${
           isHot
-            ? 'text-fuchsia-600 dark:text-fuchsia-400'
+            ? 'text-amber-600 dark:text-amber-400'
             : 'text-sky-600 dark:text-sky-400'
         }`}
       >
@@ -116,10 +116,10 @@ export default function TemperatureVote({
         type="button"
         onClick={(e) => handleVote('hot', e)}
         title="Oferta muito quente!"
-        className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all ${
+        className={`flex h-8 w-8 items-center justify-center rounded-xl transition-all cursor-pointer ${
           userVote === 'hot'
-            ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white shadow-sm shadow-fuchsia-500/30'
-            : 'text-slate-400 hover:bg-slate-100 hover:text-fuchsia-500 dark:hover:bg-slate-800'
+            ? 'bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-sm shadow-amber-500/30'
+            : 'text-slate-400 hover:bg-slate-100 hover:text-amber-500 dark:hover:bg-[#1a1a26]'
         }`}
       >
         <Flame className="h-4 w-4 fill-current" />

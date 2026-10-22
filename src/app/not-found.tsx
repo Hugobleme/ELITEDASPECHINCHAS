@@ -8,8 +8,8 @@ export default function NotFound() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6 text-center">
-      <div className="relative mx-auto mb-8 flex h-28 w-28 items-center justify-center rounded-3xl bg-gradient-to-tr from-violet-600/20 via-purple-600/20 to-fuchsia-600/20 text-violet-600 dark:text-violet-400 border border-violet-500/30 shadow-2xl shadow-violet-500/10">
-        <div className="pointer-events-none absolute -inset-4 rounded-full bg-violet-600/20 blur-2xl" />
+      <div className="relative mx-auto mb-8 flex h-28 w-28 items-center justify-center rounded-3xl bg-gradient-to-tr from-amber-500/20 via-yellow-500/20 to-amber-500/10 text-amber-500 dark:text-amber-400 border border-amber-500/30 shadow-2xl shadow-amber-500/10">
+        <div className="pointer-events-none absolute -inset-4 rounded-full bg-amber-500/10 blur-2xl" />
         <span className="text-4xl sm:text-5xl font-black tracking-tighter">404</span>
       </div>
 
@@ -25,7 +25,7 @@ export default function NotFound() {
       <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
         <Link
           href="/"
-          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-violet-500/25 transition-all hover:from-violet-500 hover:to-fuchsia-500 hover:shadow-lg active:scale-95 cursor-pointer"
+          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 px-6 py-2.5 text-sm font-black text-slate-950 shadow-md shadow-amber-500/25 transition-all hover:from-amber-400 hover:to-yellow-300 hover:shadow-lg active:scale-95 cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Voltar ao Início</span>
@@ -33,17 +33,17 @@ export default function NotFound() {
 
         <Link
           href="/cupons"
-          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-white/[0.08] dark:bg-[#13131b] dark:text-zinc-200 dark:hover:bg-white/[0.05] transition-all active:scale-95 cursor-pointer"
+          className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl border border-slate-200/80 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:bg-slate-50 dark:border-amber-500/20 dark:bg-[#111116] dark:text-zinc-200 dark:hover:bg-white/[0.05] transition-all active:scale-95 cursor-pointer"
         >
-          <Ticket className="h-4 w-4 text-violet-500" />
+          <Ticket className="h-4 w-4 text-amber-500" />
           <span>Explorar Cupons Verificados</span>
         </Link>
       </div>
 
       {/* Categorias Sugeridas */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white/60 p-6 sm:p-8 dark:border-white/[0.08] dark:bg-[#13131b]/60 backdrop-blur-sm">
+      <div className="rounded-3xl border border-slate-200/80 bg-white/60 p-6 sm:p-8 dark:border-amber-500/15 dark:bg-[#111116]/60 backdrop-blur-sm">
         <div className="flex items-center justify-center gap-2 mb-4">
-          <Sparkles className="h-4 w-4 text-violet-500" />
+          <Sparkles className="h-4 w-4 text-amber-500" />
           <h2 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
             Categorias em Destaque
           </h2>
@@ -54,7 +54,7 @@ export default function NotFound() {
             <Link
               key={cat.slug}
               href={`/categoria/${cat.slug}`}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-violet-400 hover:text-violet-600 dark:border-white/[0.08] dark:bg-[#13131b] dark:text-zinc-300 dark:hover:border-violet-500 transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200/80 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 hover:border-amber-400 hover:text-amber-600 dark:border-white/[0.08] dark:bg-[#1a1a26] dark:text-zinc-300 dark:hover:border-amber-500 dark:hover:text-amber-400 transition-colors"
             >
               <span>{cat.name}</span>
               {cat.count && (

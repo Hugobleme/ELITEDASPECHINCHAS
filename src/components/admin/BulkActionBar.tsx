@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Check, X, Send, Trash2, CheckCheck } from 'lucide-react';
+import { Check, X, Send, Trash2 } from 'lucide-react';
 
 interface BulkActionBarProps {
   selectedCount: number;
@@ -23,9 +23,9 @@ export default function BulkActionBar({
   if (selectedCount === 0) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 z-40 flex max-w-[calc(100vw-1rem)] -translate-x-1/2 items-center gap-1.5 rounded-2xl border border-slate-700 bg-slate-900/95 px-2.5 py-2 text-white shadow-2xl backdrop-blur-md xs:gap-2.5 xs:px-4 xs:py-2.5 dark:border-white/[0.1] dark:bg-[#13131b]/95">
-      <div className="flex shrink-0 items-center gap-1.5 border-r border-slate-700 pr-2 text-xs font-semibold xs:gap-2 dark:border-white/[0.1]">
-        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-600 text-xs font-black text-white">
+    <div className="fixed bottom-6 left-1/2 z-40 flex max-w-[calc(100vw-1rem)] -translate-x-1/2 items-center gap-1.5 rounded-2xl border border-amber-500/30 bg-[#070709]/95 px-2.5 py-2 text-white shadow-2xl backdrop-blur-md xs:gap-2.5 xs:px-4 xs:py-2.5">
+      <div className="flex shrink-0 items-center gap-1.5 border-r border-amber-500/20 pr-2 text-xs font-semibold xs:gap-2">
+        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-xs font-black text-slate-950">
           {selectedCount}
         </span>
         <span className="hidden sm:inline">selecionada{selectedCount > 1 ? 's' : ''}</span>
@@ -37,7 +37,7 @@ export default function BulkActionBar({
           type="button"
           onClick={onApproveAll}
           disabled={isLoading}
-          className="inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-2.5 py-2 text-xs font-bold text-white transition-all hover:bg-emerald-500 active:scale-95 disabled:opacity-50 xs:px-3.5"
+          className="inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-xl bg-emerald-600 px-2.5 py-2 text-xs font-bold text-white transition-all hover:bg-emerald-500 active:scale-95 disabled:opacity-50 xs:px-3.5 cursor-pointer"
           title="Aprovar todas as selecionadas"
         >
           <Check className="h-3.5 w-3.5 shrink-0" />
@@ -49,7 +49,7 @@ export default function BulkActionBar({
           type="button"
           onClick={onPublishAll}
           disabled={isLoading}
-          className="inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-2.5 py-2 text-xs font-bold text-white transition-all hover:from-violet-500 hover:to-fuchsia-500 active:scale-95 disabled:opacity-50 xs:px-3.5"
+          className="inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 px-2.5 py-2 text-xs font-black text-slate-950 transition-all hover:from-amber-400 hover:to-yellow-300 active:scale-95 disabled:opacity-50 xs:px-3.5 cursor-pointer"
           title="Publicar todas imediatamente na vitrine"
         >
           <Send className="h-3.5 w-3.5 shrink-0" />
@@ -61,7 +61,7 @@ export default function BulkActionBar({
           type="button"
           onClick={onRejectAll}
           disabled={isLoading}
-          className="inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-xl bg-red-600/90 px-2.5 py-2 text-xs font-bold text-white transition-all hover:bg-red-500 active:scale-95 disabled:opacity-50 xs:px-3.5"
+          className="inline-flex min-h-[38px] items-center justify-center gap-1.5 rounded-xl bg-red-600/90 px-2.5 py-2 text-xs font-bold text-white transition-all hover:bg-red-500 active:scale-95 disabled:opacity-50 xs:px-3.5 cursor-pointer"
           title="Rejeitar todas as selecionadas"
         >
           <Trash2 className="h-3.5 w-3.5 shrink-0" />
@@ -73,7 +73,7 @@ export default function BulkActionBar({
       <button
         type="button"
         onClick={onClearSelection}
-        className="flex min-h-[38px] min-w-[38px] items-center justify-center rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+        className="flex min-h-[38px] min-w-[38px] items-center justify-center rounded-lg p-1.5 text-slate-400 hover:bg-[#1a1a26] hover:text-slate-200 cursor-pointer"
         title="Limpar seleção"
         aria-label="Limpar seleção"
       >

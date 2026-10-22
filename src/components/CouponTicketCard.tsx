@@ -31,7 +31,7 @@ export default function CouponTicketCard({
     <div
       onClick={handleClick}
       title={`Clique para copiar cupom ${coupon.code} e abrir ${coupon.store}`}
-      className={`group relative flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-2 sm:p-2.5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-violet-500/70 hover:shadow-md dark:border-white/[0.08] dark:bg-[#13131b] dark:hover:border-violet-500/60 cursor-pointer overflow-hidden ${className}`}
+      className={`group relative flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-2 sm:p-2.5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-500/70 hover:shadow-md dark:border-white/[0.08] dark:bg-[#111116] dark:hover:border-amber-500/60 cursor-pointer overflow-hidden ${className}`}
       style={{
         // Máscara radial criando o recorte semicircular característico de ticket na borda direita
         WebkitMaskImage:

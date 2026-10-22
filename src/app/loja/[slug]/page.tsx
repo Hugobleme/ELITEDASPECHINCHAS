@@ -90,7 +90,7 @@ export default function StorePage({ params }: StorePageProps) {
 
       {/* Breadcrumbs */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-        <Link href="/" className="hover:text-violet-600 dark:hover:text-violet-400 transition-colors">
+        <Link href="/" className="hover:text-amber-500 dark:hover:text-amber-400 transition-colors">
           Início
         </Link>
         <ChevronRight className="h-3 w-3 text-slate-400" />
@@ -98,9 +98,9 @@ export default function StorePage({ params }: StorePageProps) {
       </nav>
 
       {/* Banner da Loja com Logo e Link Oficial */}
-      <div className="relative overflow-hidden rounded-3xl border border-violet-500/25 bg-gradient-to-br from-violet-950 via-[#0f0c1e] to-[#07060d] p-6 sm:p-8 text-white shadow-2xl">
-        <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-violet-500/15 blur-3xl" />
-        <div className="pointer-events-none absolute -left-12 -bottom-12 h-48 w-48 rounded-full bg-fuchsia-500/10 blur-3xl" />
+      <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-br from-[#1a1406] via-[#0d0c07] to-[#070709] p-6 sm:p-8 text-white shadow-2xl shadow-amber-950/40">
+        <div className="pointer-events-none absolute -right-12 -top-12 h-64 w-64 rounded-full bg-amber-500/15 blur-3xl" />
+        <div className="pointer-events-none absolute -left-12 -bottom-12 h-48 w-48 rounded-full bg-yellow-500/10 blur-3xl" />
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <StoreLogo

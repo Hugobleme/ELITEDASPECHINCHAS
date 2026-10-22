@@ -2,16 +2,17 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Flame, ShieldCheck, Heart, Sparkles, Send, Bell } from 'lucide-react';
+import Image from 'next/image';
+import { ShieldCheck, Heart, Sparkles, Bell } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="mt-24 border-t border-slate-200/80 bg-slate-50/60 text-slate-600 dark:border-white/[0.06] dark:bg-[#07070b] dark:text-zinc-400">
+    <footer className="mt-24 border-t border-slate-200/80 bg-slate-50/60 text-slate-600 dark:border-amber-500/15 dark:bg-[#070709] dark:text-zinc-400">
       {/* Site Value Proposition Banner */}
-      <div className="border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-white/[0.06] dark:bg-[#0d0d14]/80">
+      <div className="border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-white/[0.06] dark:bg-[#0d0c07]/80">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row sm:px-6">
           <div className="flex items-center gap-3.5 text-center sm:text-left">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-violet-500/10 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/20">
               <Sparkles className="h-5 w-5 stroke-[2.5]" />
             </div>
             <div>
@@ -25,7 +26,7 @@ export default function Footer() {
           </div>
           <Link
             href="/cupons"
-            className="inline-flex w-full min-h-[42px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 px-5 py-2.5 text-xs font-black text-white shadow-md shadow-violet-500/25 transition-all hover:opacity-95 active:scale-95 sm:w-auto"
+            className="inline-flex w-full min-h-[42px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 px-5 py-2.5 text-xs font-black text-slate-950 shadow-md shadow-amber-500/25 border border-amber-300/40 transition-all hover:opacity-95 active:scale-95 sm:w-auto"
           >
             <Bell className="h-4 w-4" />
             <span>Explorar Cupons</span>
@@ -37,15 +38,30 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-10 md:grid-cols-4">
           {/* Coluna 1: Sobre */}
           <div className="space-y-4 md:col-span-2">
-            <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-violet-600 via-purple-600 to-fuchsia-500 text-white shadow-md shadow-violet-500/25">
-                <Flame className="h-5 w-5 fill-white stroke-white" />
+            <div className="flex items-center gap-3">
+              <div className="relative h-11 w-11 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-yellow-300 to-amber-600 shadow-md shadow-amber-500/25">
+                <Image
+                  src="/logo.png"
+                  alt="Elite das Pechinchas"
+                  width={44}
+                  height={44}
+                  className="h-full w-full rounded-full object-cover bg-black"
+                />
               </div>
-              <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
-                ELITEDAS<span className="bg-gradient-to-r from-violet-500 to-fuchsia-500 bg-clip-text text-transparent">PECHINCHAS</span>
-              </span>
+              <div>
+                <span className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
+                  <span className="text-amber-400">ELITE</span>{' '}
+                  <span className="text-slate-800 dark:text-white">DAS</span>{' '}
+                  <span className="bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-500 bg-clip-text text-transparent">
+                    PECHINCHAS
+                  </span>
+                </span>
+                <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-amber-500 dark:text-amber-400">
+                  Grandes Ofertas, Todo Dia!
+                </span>
+              </div>
             </div>
-            <p className="max-w-md text-xs leading-relaxed text-slate-500 dark:text-slate-400">
+            <p className="max-w-md text-xs leading-relaxed text-slate-500 dark:text-zinc-400">
               O agregador definitivo de promoções e cupons da internet brasileira. Monitoramos continuamente os maiores e-commerces para garantir que você só pague o menor preço histórico em produtos verificados.
             </p>
             <div className="flex items-center gap-2 pt-1 text-xs font-semibold text-slate-400">
@@ -62,27 +78,27 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs font-medium">
               <li>
-                <Link href="/loja/amazon" className="transition-colors hover:text-violet-500">
+                <Link href="/loja/amazon" className="transition-colors hover:text-amber-500 dark:hover:text-amber-400">
                   Ofertas Amazon
                 </Link>
               </li>
               <li>
-                <Link href="/loja/mercado-livre" className="transition-colors hover:text-violet-500">
+                <Link href="/loja/mercado-livre" className="transition-colors hover:text-amber-500 dark:hover:text-amber-400">
                   Mercado Livre
                 </Link>
               </li>
               <li>
-                <Link href="/loja/kabum" className="transition-colors hover:text-violet-500">
+                <Link href="/loja/kabum" className="transition-colors hover:text-amber-500 dark:hover:text-amber-400">
                   Kabum Gamer
                 </Link>
               </li>
               <li>
-                <Link href="/loja/magalu" className="transition-colors hover:text-violet-500">
+                <Link href="/loja/magalu" className="transition-colors hover:text-amber-500 dark:hover:text-amber-400">
                   Magazine Luiza
                 </Link>
               </li>
               <li>
-                <Link href="/loja/shopee" className="transition-colors hover:text-violet-500">
+                <Link href="/loja/shopee" className="transition-colors hover:text-amber-500 dark:hover:text-amber-400">
                   Shopee Oficial
                 </Link>
               </li>
@@ -96,27 +112,27 @@ export default function Footer() {
             </h4>
             <ul className="space-y-2 text-xs font-medium">
               <li>
-                <Link href="/categoria/eletronicos" className="transition-colors hover:text-violet-500">
+                <Link href="/categoria/eletronicos" className="transition-colors hover:text-amber-500 dark:hover:text-amber-400">
                   Eletrônicos & Celulares
                 </Link>
               </li>
               <li>
-                <Link href="/categoria/informatica" className="transition-colors hover:text-violet-500">
+                <Link href="/categoria/informatica" className="transition-colors hover:text-amber-500 dark:hover:text-amber-400">
                   Informática & Hardware
                 </Link>
               </li>
               <li>
-                <Link href="/categoria/games" className="transition-colors hover:text-violet-500">
+                <Link href="/categoria/games" className="transition-colors hover:text-amber-500 dark:hover:text-amber-400">
                   Games & Consoles
                 </Link>
               </li>
               <li>
-                <Link href="/categoria/casa-e-cozinha" className="transition-colors hover:text-violet-500">
+                <Link href="/categoria/casa-e-cozinha" className="transition-colors hover:text-amber-500 dark:hover:text-amber-400">
                   Casa & Eletrodomésticos
                 </Link>
               </li>
               <li>
-                <Link href="/categoria/tv-e-audio" className="transition-colors hover:text-violet-500">
+                <Link href="/categoria/tv-e-audio" className="transition-colors hover:text-amber-500 dark:hover:text-amber-400">
                   Smart TVs & Áudio
                 </Link>
               </li>
@@ -125,9 +141,9 @@ export default function Footer() {
         </div>
 
         {/* Transparency Notice */}
-        <div className="mt-10 rounded-2xl border border-slate-200/90 bg-white p-4 dark:border-white/[0.06] dark:bg-[#13131b]">
+        <div className="mt-10 rounded-2xl border border-slate-200/90 bg-white p-4 dark:border-amber-500/15 dark:bg-[#111116]">
           <div className="flex items-start sm:items-center gap-2.5 text-xs text-slate-500 dark:text-zinc-400">
-            <ShieldCheck className="h-4 w-4 shrink-0 text-violet-500 mt-0.5 sm:mt-0" />
+            <ShieldCheck className="h-4 w-4 shrink-0 text-amber-500 mt-0.5 sm:mt-0" />
             <p className="leading-relaxed">
               <strong className="text-slate-700 dark:text-zinc-300">Transparência & Afiliados:</strong> Este site contém links de afiliados. Quando você clica e realiza uma compra através de nossas indicações, podemos receber uma pequena comissão das lojas parceiras sem absolutamente nenhum custo extra para você. Os preços exibidos dependem da disponibilidade dos lojistas.
             </p>
@@ -139,7 +155,7 @@ export default function Footer() {
           <p>© {new Date().getFullYear()} Elite das Pechinchas. Todos os direitos reservados.</p>
           <div className="flex items-center gap-1.5 font-medium">
             <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-            <span>Preços e estoques sujeitos a alterações pelas lojas.</span>
+            <span>Grandes Ofertas, Todo Dia! Preços sujeitos a alterações pelas lojas parceiras.</span>
           </div>
         </div>
       </div>
