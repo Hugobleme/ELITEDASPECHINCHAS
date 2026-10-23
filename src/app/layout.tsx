@@ -32,13 +32,14 @@ const inter = Inter({
 });
 
 export const viewport = {
-  themeColor: '#7c3aed',
+  themeColor: '#070709',
   width: 'device-width',
   initialScale: 1,
 };
 
 export const metadata: Metadata = {
-  title: 'Elite das Pechinchas — As Melhores Promoções e Cupons da Internet',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://elitedaspechinchas.vercel.app'),
+  title: 'Elite das Pechinchas — Grandes Ofertas, Todo Dia!',
   description:
     'Agregador de promoções com curadoria e links verificados. Encontre descontos imperdíveis em eletrônicos, celulares, games, eletrodomésticos e muito mais.',
   keywords: ['promoções', 'ofertas', 'desconto', 'cupons', 'black friday', 'amazon', 'mercado livre', 'kabum', 'magalu', 'pechinchas'],
@@ -46,16 +47,29 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico', sizes: '32x32' },
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
-    apple: '/apple-touch-icon.png',
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
   },
   openGraph: {
-    title: 'Elite das Pechinchas — Promoções Verificadas em Tempo Real',
+    title: 'Elite das Pechinchas — Grandes Ofertas, Todo Dia!',
     description: 'Ofertas com desconto real reunidas em um só lugar.',
     type: 'website',
     locale: 'pt_BR',
     siteName: 'Elite das Pechinchas',
+    images: [
+      {
+        url: '/logo.png',
+        width: 1024,
+        height: 1024,
+        alt: 'Elite das Pechinchas - Logotipo Oficial',
+      },
+    ],
   },
 };
 

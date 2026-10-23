@@ -1,11 +1,11 @@
 {
   "name": "Elite das Pechinchas",
   "short_name": "Pechinchas",
-  "description": "As melhores promoções, ofertas e cupons de desconto verificados da internet.",
+  "description": "Grandes ofertas, todo dia! Promoções e cupons de desconto verificados da internet.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#09090c",
-  "theme_color": "#7c3aed",
+  "background_color": "#070709",
+  "theme_color": "#070709",
   "orientation": "portrait-primary",
   "icons": [
     {
